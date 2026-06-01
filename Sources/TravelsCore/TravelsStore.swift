@@ -1,0 +1,412 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+import Foundation
+
+public final class TravelsStore: @unchecked Sendable {
+    private let database: SQLiteDatabase
+
+    public init(path: String) throws {
+        database = try SQLiteDatabase(path: path)
+        try migrate()
+    }
+
+    public convenience init(url: URL) throws {
+        try self.init(path: url.path)
+    }
+
+    public func migrate() throws {
+        try database.execute("""
+        CREATE TABLE IF NOT EXISTS geolocations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            latitude REAL NOT NULL DEFAULT 0,
+            longitude REAL NOT NULL DEFAULT 0,
+            radius REAL NOT NULL DEFAULT 0,
+            identifier TEXT NOT NULL DEFAULT '',
+            horizontalAccuracy REAL NOT NULL DEFAULT -1,
+            verticalAccuracy REAL NOT NULL DEFAULT -1,
+            altitude REAL NOT NULL DEFAULT 0,
+            timestamp REAL,
+            minLatitude REAL,
+            maxLatitude REAL,
+            minLongitude REAL,
+            maxLongitude REAL,
+            timeZoneIdentifier TEXT NOT NULL DEFAULT '',
+            name TEXT NOT NULL DEFAULT '',
+            subThoroughfare TEXT NOT NULL DEFAULT '',
+            thoroughfare TEXT NOT NULL DEFAULT '',
+            subLocality TEXT NOT NULL DEFAULT '',
+            locality TEXT NOT NULL DEFAULT '',
+            subAdministrativeArea TEXT NOT NULL DEFAULT '',
+            administrativeArea TEXT NOT NULL DEFAULT '',
+            postalCode TEXT NOT NULL DEFAULT '',
+            isoCountryCode TEXT NOT NULL DEFAULT '',
+            country TEXT NOT NULL DEFAULT '',
+            inlandWater TEXT NOT NULL DEFAULT '',
+            ocean TEXT NOT NULL DEFAULT '',
+            areasOfInterest TEXT NOT NULL DEFAULT ''
+        )
+        """)
+
+        try database.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            horizontalAccuracy REAL NOT NULL DEFAULT -1,
+            verticalAccuracy REAL NOT NULL DEFAULT -1,
+            altitude REAL NOT NULL DEFAULT 0,
+            course REAL NOT NULL DEFAULT -1,
+            speed REAL NOT NULL DEFAULT -1,
+            timestamp REAL NOT NULL,
+            localizedDate TEXT,
+            source INTEGER NOT NULL,
+            geolocationID INTEGER,
+            note TEXT NOT NULL DEFAULT '',
+            tags TEXT NOT NULL DEFAULT '',
+            externalReference TEXT NOT NULL DEFAULT '',
+            isDemo INTEGER NOT NULL DEFAULT 0,
+            UNIQUE(latitude, longitude, timestamp, source, externalReference),
+            FOREIGN KEY(geolocationID) REFERENCES geolocations(id)
+        )
+        """)
+
+        try database.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY NOT NULL,
+            value TEXT NOT NULL
+        )
+        """)
+
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_events_localized_date ON events(localizedDate)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_events_source ON events(source)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_geolocations_place ON geolocations(country, administrativeArea, subAdministrativeArea, locality)")
+    }
+
+    @discardableResult
+    public func saveGeolocation(_ geolocation: Geolocation) throws -> Int64 {
+        let areas = Geolocation.normalizedAreasOfInterest(geolocation.areasOfInterest).joined(separator: "|||TRAVELS|||")
+        try database.execute(
+            """
+            INSERT INTO geolocations (
+                latitude, longitude, radius, identifier, horizontalAccuracy, verticalAccuracy, altitude,
+                timestamp, minLatitude, maxLatitude, minLongitude, maxLongitude, timeZoneIdentifier,
+                name, subThoroughfare, thoroughfare, subLocality, locality, subAdministrativeArea,
+                administrativeArea, postalCode, isoCountryCode, country, inlandWater, ocean, areasOfInterest
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            parameters: [
+                .real(geolocation.latitude),
+                .real(geolocation.longitude),
+                .real(geolocation.radius),
+                .text(geolocation.identifier),
+                .real(geolocation.horizontalAccuracy),
+                .real(geolocation.verticalAccuracy),
+                .real(geolocation.altitude),
+                optionalDate(geolocation.timestamp),
+                optionalDouble(geolocation.minLatitude),
+                optionalDouble(geolocation.maxLatitude),
+                optionalDouble(geolocation.minLongitude),
+                optionalDouble(geolocation.maxLongitude),
+                .text(geolocation.timeZoneIdentifier),
+                .text(geolocation.name),
+                .text(geolocation.subThoroughfare),
+                .text(geolocation.thoroughfare),
+                .text(geolocation.subLocality),
+                .text(geolocation.locality),
+                .text(geolocation.subAdministrativeArea),
+                .text(geolocation.administrativeArea),
+                .text(geolocation.postalCode),
+                .text(geolocation.isoCountryCode),
+                .text(geolocation.country),
+                .text(geolocation.inlandWater),
+                .text(geolocation.ocean),
+                .text(areas)
+            ]
+        )
+        return database.lastInsertRowID()
+    }
+
+    @discardableResult
+    public func saveEvent(_ event: LocationEvent, isDemo: Bool = false) throws -> Int64 {
+        if let duplicate = try findDuplicate(event) {
+            return duplicate.id ?? 0
+        }
+        try database.execute(
+            """
+            INSERT INTO events (
+                latitude, longitude, horizontalAccuracy, verticalAccuracy, altitude, course, speed,
+                timestamp, localizedDate, source, geolocationID, note, tags, externalReference, isDemo
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            parameters: [
+                .real(event.latitude),
+                .real(event.longitude),
+                .real(event.horizontalAccuracy),
+                .real(event.verticalAccuracy),
+                .real(event.altitude),
+                .real(event.course),
+                .real(event.speed),
+                .real(event.timestamp.timeIntervalSinceReferenceDate),
+                optionalString(event.localizedDate),
+                .integer(Int64(event.source.rawValue)),
+                optionalInt(event.geolocationID),
+                .text(event.note),
+                .text(event.tags),
+                .text(event.externalReference),
+                .integer(isDemo ? 1 : 0)
+            ]
+        )
+        return database.lastInsertRowID()
+    }
+
+    public func events(on date: Date, includePreviousDayContext: Bool = false, includeDemo: Bool = true) throws -> [EventDetail] {
+        let day = TravelsDateTools.localizedDayString(for: date, timeZoneIdentifier: nil)
+        var parameters: [SQLiteValue] = [.text(day)]
+        var predicate = "e.localizedDate = ?"
+        if includePreviousDayContext {
+            let previous = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
+            predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? ORDER BY timestamp DESC LIMIT 1))"
+            parameters.append(.text(TravelsDateTools.localizedDayString(for: previous, timeZoneIdentifier: nil)))
+        }
+        if !includeDemo {
+            predicate += " AND e.isDemo = 0"
+        }
+        return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
+    }
+
+    public func search(_ criteria: SearchCriteria, includeDemo: Bool = true) throws -> [EventDetail] {
+        var predicates: [String] = []
+        var parameters: [SQLiteValue] = []
+
+        if let start = criteria.startDate {
+            predicates.append("e.timestamp >= ?")
+            parameters.append(.real(start.timeIntervalSinceReferenceDate))
+        }
+        if let end = criteria.endDate {
+            predicates.append("e.timestamp < ?")
+            parameters.append(.real(end.timeIntervalSinceReferenceDate))
+        }
+        if criteria.hasNote {
+            predicates.append("length(trim(e.note)) > 0")
+        }
+        if let value = nonAny(criteria.country) {
+            predicates.append("g.country = ?")
+            parameters.append(.text(value))
+        }
+        if let value = nonAny(criteria.administrativeArea) {
+            predicates.append("g.administrativeArea = ?")
+            parameters.append(.text(value))
+        }
+        if let value = nonAny(criteria.subAdministrativeArea) {
+            predicates.append("g.subAdministrativeArea = ?")
+            parameters.append(.text(value))
+        }
+        if let value = nonAny(criteria.locality) {
+            predicates.append("g.locality = ?")
+            parameters.append(.text(value))
+        }
+        if let value = nonAny(criteria.bodyOfWater) {
+            predicates.append("(g.inlandWater = ? OR g.ocean = ?)")
+            parameters.append(.text(value))
+            parameters.append(.text(value))
+        }
+        if let source = criteria.source {
+            predicates.append("e.source = ?")
+            parameters.append(.integer(Int64(source.rawValue)))
+        }
+        let term = criteria.term.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !term.isEmpty {
+            predicates.append("""
+            (
+                e.note LIKE ? OR e.tags LIKE ? OR g.name LIKE ? OR g.thoroughfare LIKE ? OR
+                g.locality LIKE ? OR g.administrativeArea LIKE ? OR g.country LIKE ? OR
+                g.areasOfInterest LIKE ? OR g.inlandWater LIKE ? OR g.ocean LIKE ?
+            )
+            """)
+            for _ in 0..<10 {
+                parameters.append(.text("%\(term)%"))
+            }
+        }
+        if !includeDemo {
+            predicates.append("e.isDemo = 0")
+        }
+
+        let predicate = predicates.isEmpty ? "1 = 1" : predicates.joined(separator: " AND ")
+        return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
+    }
+
+    public func updateNote(eventID: Int64, note: String) throws {
+        try database.execute("UPDATE events SET note = ? WHERE id = ?", parameters: [.text(note), .integer(eventID)])
+    }
+
+    public func deleteEvent(eventID: Int64) throws {
+        try database.execute("DELETE FROM events WHERE id = ?", parameters: [.integer(eventID)])
+    }
+
+    public func eventCount(includeDemo: Bool = true) throws -> Int {
+        let rows = try database.query("SELECT count(*) AS count FROM events WHERE (? = 1 OR isDemo = 0)", parameters: [.integer(includeDemo ? 1 : 0)])
+        return Int(rows.first?["count"]?.int64 ?? 0)
+    }
+
+    public func geolocation(id: Int64) throws -> Geolocation? {
+        let rows = try database.query("SELECT * FROM geolocations WHERE id = ?", parameters: [.integer(id)])
+        return rows.first.map(geolocation(from:))
+    }
+
+    public func findDuplicate(_ event: LocationEvent) throws -> LocationEvent? {
+        let rows = try database.query(
+            """
+            SELECT * FROM events
+            WHERE latitude = ? AND longitude = ? AND timestamp = ?
+            AND source = ? AND externalReference = ?
+            LIMIT 1
+            """,
+            parameters: [
+                .real(event.latitude),
+                .real(event.longitude),
+                .real(event.timestamp.timeIntervalSinceReferenceDate),
+                .integer(Int64(event.source.rawValue)),
+                .text(event.externalReference)
+            ]
+        )
+        return rows.first.map(event(from:))
+    }
+
+    public func setSetting(_ key: String, value: String) throws {
+        try database.execute(
+            "INSERT INTO settings(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            parameters: [.text(key), .text(value)]
+        )
+    }
+
+    public func setting(_ key: String) throws -> String? {
+        try database.query("SELECT value FROM settings WHERE key = ?", parameters: [.text(key)]).first?["value"]?.string
+    }
+
+    private func fetchEventDetails(where predicate: String, parameters: [SQLiteValue], order: String) throws -> [EventDetail] {
+        let rows = try database.query(
+            """
+            SELECT
+                e.id AS event_id, e.latitude AS event_latitude, e.longitude AS event_longitude,
+                e.horizontalAccuracy AS event_horizontalAccuracy, e.verticalAccuracy AS event_verticalAccuracy,
+                e.altitude AS event_altitude, e.course AS event_course, e.speed AS event_speed,
+                e.timestamp AS event_timestamp, e.localizedDate AS event_localizedDate,
+                e.source AS event_source, e.geolocationID AS event_geolocationID, e.note AS event_note,
+                e.tags AS event_tags, e.externalReference AS event_externalReference,
+                g.*
+            FROM events e
+            LEFT JOIN geolocations g ON g.id = e.geolocationID
+            WHERE \(predicate)
+            ORDER BY \(order)
+            """,
+            parameters: parameters
+        )
+        return rows.map { row in
+            let event = event(fromJoined: row)
+            let geolocation = row["id"]?.int64 == nil ? nil : geolocation(from: row)
+            return EventDetail(event: event, geolocation: geolocation)
+        }
+    }
+
+    private func event(from row: [String: SQLiteValue]) -> LocationEvent {
+        LocationEvent(
+            id: row["id"]?.int64,
+            latitude: row["latitude"]?.double ?? 0,
+            longitude: row["longitude"]?.double ?? 0,
+            horizontalAccuracy: row["horizontalAccuracy"]?.double ?? -1,
+            verticalAccuracy: row["verticalAccuracy"]?.double ?? -1,
+            altitude: row["altitude"]?.double ?? 0,
+            course: row["course"]?.double ?? -1,
+            speed: row["speed"]?.double ?? -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: row["timestamp"]?.double ?? 0),
+            localizedDate: row["localizedDate"]?.string,
+            source: EventSource(rawValue: Int(row["source"]?.int64 ?? 5)) ?? .invalid,
+            geolocationID: row["geolocationID"]?.int64,
+            note: row["note"]?.string ?? "",
+            tags: row["tags"]?.string ?? "",
+            externalReference: row["externalReference"]?.string ?? ""
+        )
+    }
+
+    private func event(fromJoined row: [String: SQLiteValue]) -> LocationEvent {
+        LocationEvent(
+            id: row["event_id"]?.int64,
+            latitude: row["event_latitude"]?.double ?? 0,
+            longitude: row["event_longitude"]?.double ?? 0,
+            horizontalAccuracy: row["event_horizontalAccuracy"]?.double ?? -1,
+            verticalAccuracy: row["event_verticalAccuracy"]?.double ?? -1,
+            altitude: row["event_altitude"]?.double ?? 0,
+            course: row["event_course"]?.double ?? -1,
+            speed: row["event_speed"]?.double ?? -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: row["event_timestamp"]?.double ?? 0),
+            localizedDate: row["event_localizedDate"]?.string,
+            source: EventSource(rawValue: Int(row["event_source"]?.int64 ?? 5)) ?? .invalid,
+            geolocationID: row["event_geolocationID"]?.int64,
+            note: row["event_note"]?.string ?? "",
+            tags: row["event_tags"]?.string ?? "",
+            externalReference: row["event_externalReference"]?.string ?? ""
+        )
+    }
+
+    private func geolocation(from row: [String: SQLiteValue]) -> Geolocation {
+        Geolocation(
+            id: row["id"]?.int64,
+            latitude: row["latitude"]?.double ?? 0,
+            longitude: row["longitude"]?.double ?? 0,
+            radius: row["radius"]?.double ?? 0,
+            identifier: row["identifier"]?.string ?? "",
+            horizontalAccuracy: row["horizontalAccuracy"]?.double ?? -1,
+            verticalAccuracy: row["verticalAccuracy"]?.double ?? -1,
+            altitude: row["altitude"]?.double ?? 0,
+            timestamp: (row["timestamp"]?.double).map { Date(timeIntervalSinceReferenceDate: $0) },
+            minLatitude: row["minLatitude"]?.double,
+            maxLatitude: row["maxLatitude"]?.double,
+            minLongitude: row["minLongitude"]?.double,
+            maxLongitude: row["maxLongitude"]?.double,
+            timeZoneIdentifier: row["timeZoneIdentifier"]?.string ?? "",
+            name: row["name"]?.string ?? "",
+            subThoroughfare: row["subThoroughfare"]?.string ?? "",
+            thoroughfare: row["thoroughfare"]?.string ?? "",
+            subLocality: row["subLocality"]?.string ?? "",
+            locality: row["locality"]?.string ?? "",
+            subAdministrativeArea: row["subAdministrativeArea"]?.string ?? "",
+            administrativeArea: row["administrativeArea"]?.string ?? "",
+            postalCode: row["postalCode"]?.string ?? "",
+            isoCountryCode: row["isoCountryCode"]?.string ?? "",
+            country: row["country"]?.string ?? "",
+            inlandWater: row["inlandWater"]?.string ?? "",
+            ocean: row["ocean"]?.string ?? "",
+            areasOfInterest: (row["areasOfInterest"]?.string ?? "").components(separatedBy: "|||TRAVELS|||")
+        )
+    }
+
+    private func optionalString(_ value: String?) -> SQLiteValue {
+        guard let value else { return .null }
+        return .text(value)
+    }
+
+    private func optionalInt(_ value: Int64?) -> SQLiteValue {
+        guard let value else { return .null }
+        return .integer(value)
+    }
+
+    private func optionalDouble(_ value: Double?) -> SQLiteValue {
+        guard let value else { return .null }
+        return .real(value)
+    }
+
+    private func optionalDate(_ value: Date?) -> SQLiteValue {
+        guard let value else { return .null }
+        return .real(value.timeIntervalSinceReferenceDate)
+    }
+
+    private func nonAny(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty, value != "Any" else {
+            return nil
+        }
+        return value
+    }
+}

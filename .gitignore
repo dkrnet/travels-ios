@@ -1,0 +1,16 @@
+.DS_Store
+.build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.ipa
+*.xcarchive
+*.dSYM
+*.mobileprovision
+*.p12
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+!Fixtures/*.sqlite

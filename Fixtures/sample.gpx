@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Sample Travels GPX</name>
+    <time>2026-05-31T12:00:00Z</time>
+  </metadata>
+  <trk>
+    <trkseg>
+      <trkpt lat="37.331700" lon="-122.030100">
+        <time>2026-05-31T12:00:00Z</time>
+        <heading>90</heading>
+        <speed>1.2</speed>
+        <horizontalAccuracy>12</horizontalAccuracy>
+        <timeZone>America/Los_Angeles</timeZone>
+        <name>Apple Park</name>
+        <locality>Cupertino</locality>
+        <administrativeArea>California</administrativeArea>
+        <country>United States</country>
+        <areasOfInterest>Apple Park|||TRAVELS|||Apple Park</areasOfInterest>
+        <note>Sample import</note>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
+
