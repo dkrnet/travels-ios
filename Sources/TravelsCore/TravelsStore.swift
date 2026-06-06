@@ -66,6 +66,7 @@ public final class TravelsStore: @unchecked Sendable {
             note TEXT NOT NULL DEFAULT '',
             tags TEXT NOT NULL DEFAULT '',
             externalReference TEXT NOT NULL DEFAULT '',
+            photoFilename TEXT NOT NULL DEFAULT '',
             isDemo INTEGER NOT NULL DEFAULT 0,
             UNIQUE(latitude, longitude, timestamp, source, externalReference),
             FOREIGN KEY(geolocationID) REFERENCES geolocations(id)
@@ -83,6 +84,7 @@ public final class TravelsStore: @unchecked Sendable {
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_localized_date ON events(localizedDate)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_source ON events(source)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_geolocations_place ON geolocations(country, administrativeArea, subAdministrativeArea, locality)")
+        try ensureColumnExists(table: "events", column: "photoFilename", definition: "TEXT NOT NULL DEFAULT ''")
     }
 
     @discardableResult
@@ -138,8 +140,8 @@ public final class TravelsStore: @unchecked Sendable {
             """
             INSERT INTO events (
                 latitude, longitude, horizontalAccuracy, verticalAccuracy, altitude, course, speed,
-                timestamp, localizedDate, source, geolocationID, note, tags, externalReference, isDemo
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                timestamp, localizedDate, source, geolocationID, note, tags, externalReference, photoFilename, isDemo
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             parameters: [
                 .real(event.latitude),
@@ -156,6 +158,7 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.note),
                 .text(event.tags),
                 .text(event.externalReference),
+                .text(event.photoFilename),
                 .integer(isDemo ? 1 : 0)
             ]
         )
@@ -173,6 +176,15 @@ public final class TravelsStore: @unchecked Sendable {
         }
         if !includeDemo {
             predicate += " AND e.isDemo = 0"
+        }
+        return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
+    }
+
+    public func allEvents(includeDemo: Bool = true) throws -> [EventDetail] {
+        var predicate = "1 = 1"
+        let parameters: [SQLiteValue] = []
+        if !includeDemo {
+            predicate = "e.isDemo = 0"
         }
         return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
     }
@@ -251,8 +263,57 @@ public final class TravelsStore: @unchecked Sendable {
         return Int(rows.first?["count"]?.int64 ?? 0)
     }
 
+    public func latestEventDate(includeDemo: Bool = true) throws -> Date? {
+        let rows = try database.query(
+            "SELECT timestamp FROM events WHERE (? = 1 OR isDemo = 0) ORDER BY timestamp DESC LIMIT 1",
+            parameters: [.integer(includeDemo ? 1 : 0)]
+        )
+        return rows.first?["timestamp"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+    }
+
+    public func oldestEventDate(includeDemo: Bool = true) throws -> Date? {
+        let rows = try database.query(
+            "SELECT timestamp FROM events WHERE (? = 1 OR isDemo = 0) ORDER BY timestamp ASC LIMIT 1",
+            parameters: [.integer(includeDemo ? 1 : 0)]
+        )
+        return rows.first?["timestamp"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+    }
+
+    public func eventsNeedingGeolocation(includeDemo: Bool = true) throws -> [EventDetail] {
+        var predicate = "(e.geolocationID IS NULL OR g.id IS NULL OR trim(g.name) = '')"
+        if !includeDemo {
+            predicate += " AND e.isDemo = 0"
+        }
+        return try fetchEventDetails(where: predicate, parameters: [], order: "e.timestamp ASC")
+    }
+
+    public func attachGeolocation(_ geolocationID: Int64, toEvent eventID: Int64) throws {
+        try database.execute(
+            "UPDATE events SET geolocationID = ? WHERE id = ?",
+            parameters: [.integer(geolocationID), .integer(eventID)]
+        )
+    }
+
     public func geolocation(id: Int64) throws -> Geolocation? {
         let rows = try database.query("SELECT * FROM geolocations WHERE id = ?", parameters: [.integer(id)])
+        return rows.first.map(geolocation(from:))
+    }
+
+    public func geolocation(near latitude: Double, longitude: Double, tolerance: Double = 0.0001) throws -> Geolocation? {
+        let rows = try database.query(
+            """
+            SELECT * FROM geolocations
+            WHERE ABS(latitude - ?) <= ? AND ABS(longitude - ?) <= ?
+            ORDER BY timestamp DESC, id DESC
+            LIMIT 1
+            """,
+            parameters: [
+                .real(latitude),
+                .real(tolerance),
+                .real(longitude),
+                .real(tolerance)
+            ]
+        )
         return rows.first.map(geolocation(from:))
     }
 
@@ -295,7 +356,7 @@ public final class TravelsStore: @unchecked Sendable {
                 e.altitude AS event_altitude, e.course AS event_course, e.speed AS event_speed,
                 e.timestamp AS event_timestamp, e.localizedDate AS event_localizedDate,
                 e.source AS event_source, e.geolocationID AS event_geolocationID, e.note AS event_note,
-                e.tags AS event_tags, e.externalReference AS event_externalReference,
+                e.tags AS event_tags, e.externalReference AS event_externalReference, e.photoFilename AS event_photoFilename,
                 g.*
             FROM events e
             LEFT JOIN geolocations g ON g.id = e.geolocationID
@@ -327,7 +388,8 @@ public final class TravelsStore: @unchecked Sendable {
             geolocationID: row["geolocationID"]?.int64,
             note: row["note"]?.string ?? "",
             tags: row["tags"]?.string ?? "",
-            externalReference: row["externalReference"]?.string ?? ""
+            externalReference: row["externalReference"]?.string ?? "",
+            photoFilename: row["photoFilename"]?.string ?? ""
         )
     }
 
@@ -347,7 +409,8 @@ public final class TravelsStore: @unchecked Sendable {
             geolocationID: row["event_geolocationID"]?.int64,
             note: row["event_note"]?.string ?? "",
             tags: row["event_tags"]?.string ?? "",
-            externalReference: row["event_externalReference"]?.string ?? ""
+            externalReference: row["event_externalReference"]?.string ?? "",
+            photoFilename: row["event_photoFilename"]?.string ?? ""
         )
     }
 
@@ -408,5 +471,13 @@ public final class TravelsStore: @unchecked Sendable {
             return nil
         }
         return value
+    }
+
+    private func ensureColumnExists(table: String, column: String, definition: String) throws {
+        let rows = try database.query("PRAGMA table_info(\(table))")
+        guard !rows.contains(where: { $0["name"]?.string == column }) else {
+            return
+        }
+        try database.execute("ALTER TABLE \(table) ADD COLUMN \(column) \(definition)")
     }
 }
