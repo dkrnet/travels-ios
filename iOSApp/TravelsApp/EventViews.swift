@@ -4,7 +4,11 @@
 
 import MapKit
 import SwiftUI
+import UIKit
+
+#if canImport(TravelsCore)
 import TravelsCore
+#endif
 
 struct EventMapView: View {
     @EnvironmentObject private var model: TravelsModel
@@ -12,6 +16,10 @@ struct EventMapView: View {
 
     var body: some View {
         Map {
+            ForEach(routeSegments) { segment in
+                MapPolyline(coordinates: segment.coordinates)
+                    .stroke(segment.color, lineWidth: 3)
+            }
             ForEach(events) { detail in
                 Annotation(markerTitle(for: detail), coordinate: detail.coordinate) {
                     Button {
@@ -26,10 +34,17 @@ struct EventMapView: View {
                     .buttonStyle(.plain)
                 }
             }
-            if events.count > 1 {
-                MapPolyline(coordinates: events.map(\.coordinate))
-                    .stroke(.orange, lineWidth: 3)
-            }
+        }
+    }
+
+    private var routeSegments: [RouteSegment] {
+        guard events.count > 1 else { return [] }
+        return events.indices.dropLast().map { index in
+            RouteSegment(
+                id: "\(index)-\(index + 1)",
+                coordinates: [events[index].coordinate, events[index + 1].coordinate],
+                color: color(for: events[index + 1]).opacity(0.9)
+            )
         }
     }
 
@@ -150,6 +165,25 @@ struct EventDetailView: View {
                     }
                 }
 
+                if needsAddressResolution {
+                    Section {
+                        Button("Resolve Address Now") {
+                            Task {
+                                await model.resolveAddress(for: detail)
+                            }
+                        }
+                    }
+                }
+
+                if let url = model.photoURL(for: detail), let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                    Section("Photo") {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+
                 Section {
                     Button("Open in Maps") {
                         openInMaps()
@@ -200,6 +234,12 @@ struct EventDetailView: View {
         item.name = primaryText
         item.openInMaps()
     }
+
+    private var needsAddressResolution: Bool {
+        guard let geolocation = detail.geolocation else { return true }
+        return geolocation.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
 }
 
 extension EventDetail {
@@ -208,9 +248,15 @@ extension EventDetail {
     }
 }
 
+private struct RouteSegment: Identifiable {
+    let id: String
+    let coordinates: [CLLocationCoordinate2D]
+    let color: Color
+}
+
 func symbol(for source: EventSource) -> String {
     switch source {
-    case .locationServices: "location.fill"
+    case .locationServices: "location.circle.fill"
     case .imported: "square.and.arrow.down"
     case .photo: "photo"
     case .manual: "mappin"
@@ -220,7 +266,6 @@ func symbol(for source: EventSource) -> String {
 }
 
 func color(for detail: EventDetail) -> Color {
-    guard detail.geolocation != nil else { return .white }
     let formatter = DateFormatter()
     formatter.dateFormat = "H"
     if let identifier = detail.geolocation?.timeZoneIdentifier, let timeZone = TimeZone(identifier: identifier) {
@@ -228,10 +273,10 @@ func color(for detail: EventDetail) -> Color {
     }
     let hour = Int(formatter.string(from: detail.event.timestamp)) ?? 0
     switch hour {
-    case 6...8: .yellow
-    case 9...14: .blue
-    case 15...17: .purple
-    case 18...20: .red
-    default: .gray
+    case 6...8: return Color.yellow
+    case 9...14: return Color.blue
+    case 15...17: return Color.purple
+    case 18...20: return Color.red
+    default: return Color.gray
     }
 }
