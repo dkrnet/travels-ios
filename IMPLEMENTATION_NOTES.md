@@ -26,13 +26,19 @@ This first pass is intentionally split into a reusable core package and an iOS S
 - Privacy lock uses LocalAuthentication and hides map/list content until unlocked.
 - Settings include separate powered and battery update distances, matching the old develop-branch TODO.
 
-## Still Needed
+## Completed
 
 - Create an Xcode iOS app target and set the bundle identifier.
-- Add a real Core Location service and background mode entitlements.
-- Add reverse-geocoding queue/service implementation.
-- Add photo picker import and photo preview permissions.
+- Add a Core Location-backed tracking service with background location support.
+- Add reverse-geocoding lookup, queueing, and throttling.
+- Add photo picker import and photo preview support.
 - Add GPX export UI.
 - Add richer search filters for place hierarchy pickers.
 - Add App Store privacy strings and final permission copy.
+- Add developer diagnostics for address-resolution debugging in debug builds.
+
+## Still Needed
+
 - Run on a real device to validate background location behavior.
+- Polish the location icons so they do not imply travel direction or heading.
+- Review any remaining shipping copy after device validation.
