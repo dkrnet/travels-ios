@@ -40,6 +40,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var note: String
     public var tags: String
     public var externalReference: String
+    public var photoFilename: String
 
     public init(
         id: Int64? = nil,
@@ -56,7 +57,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         geolocationID: Int64? = nil,
         note: String = "",
         tags: String = "",
-        externalReference: String = ""
+        externalReference: String = "",
+        photoFilename: String = ""
     ) {
         self.id = id
         self.latitude = latitude
@@ -73,6 +75,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         self.note = note
         self.tags = tags
         self.externalReference = externalReference
+        self.photoFilename = photoFilename
     }
 }
 
@@ -219,6 +222,7 @@ public struct SearchCriteria: Equatable, Sendable {
 
 public struct AppSettings: Codable, Equatable, Sendable {
     public var autoAddLocations: Bool
+    public var backgroundLocationEnabled: Bool
     public var resolveAddresses: Bool
     public var resolveMissingAddresses: Bool
     public var includePreviousDayContext: Bool
@@ -230,6 +234,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
 
     public init(
         autoAddLocations: Bool = true,
+        backgroundLocationEnabled: Bool = true,
         resolveAddresses: Bool = true,
         resolveMissingAddresses: Bool = true,
         includePreviousDayContext: Bool = true,
@@ -240,6 +245,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         batteryUpdateDistanceMeters: Int = 1_000
     ) {
         self.autoAddLocations = autoAddLocations
+        self.backgroundLocationEnabled = backgroundLocationEnabled
         self.resolveAddresses = resolveAddresses
         self.resolveMissingAddresses = resolveMissingAddresses
         self.includePreviousDayContext = includePreviousDayContext
@@ -248,6 +254,47 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.preferListView = preferListView
         self.poweredUpdateDistanceMeters = poweredUpdateDistanceMeters
         self.batteryUpdateDistanceMeters = batteryUpdateDistanceMeters
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case autoAddLocations
+        case backgroundLocationEnabled
+        case resolveAddresses
+        case resolveMissingAddresses
+        case includePreviousDayContext
+        case includeDemoData
+        case requireAuthentication
+        case preferListView
+        case poweredUpdateDistanceMeters
+        case batteryUpdateDistanceMeters
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.autoAddLocations = try container.decodeIfPresent(Bool.self, forKey: .autoAddLocations) ?? true
+        self.backgroundLocationEnabled = try container.decodeIfPresent(Bool.self, forKey: .backgroundLocationEnabled) ?? true
+        self.resolveAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveAddresses) ?? true
+        self.resolveMissingAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveMissingAddresses) ?? true
+        self.includePreviousDayContext = try container.decodeIfPresent(Bool.self, forKey: .includePreviousDayContext) ?? true
+        self.includeDemoData = try container.decodeIfPresent(Bool.self, forKey: .includeDemoData) ?? true
+        self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false
+        self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? false
+        self.poweredUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .poweredUpdateDistanceMeters) ?? 500
+        self.batteryUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .batteryUpdateDistanceMeters) ?? 1_000
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(autoAddLocations, forKey: .autoAddLocations)
+        try container.encode(backgroundLocationEnabled, forKey: .backgroundLocationEnabled)
+        try container.encode(resolveAddresses, forKey: .resolveAddresses)
+        try container.encode(resolveMissingAddresses, forKey: .resolveMissingAddresses)
+        try container.encode(includePreviousDayContext, forKey: .includePreviousDayContext)
+        try container.encode(includeDemoData, forKey: .includeDemoData)
+        try container.encode(requireAuthentication, forKey: .requireAuthentication)
+        try container.encode(preferListView, forKey: .preferListView)
+        try container.encode(poweredUpdateDistanceMeters, forKey: .poweredUpdateDistanceMeters)
+        try container.encode(batteryUpdateDistanceMeters, forKey: .batteryUpdateDistanceMeters)
     }
 }
 
