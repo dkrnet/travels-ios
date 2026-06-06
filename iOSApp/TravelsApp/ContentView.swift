@@ -4,14 +4,22 @@
 
 import MapKit
 import SwiftUI
-import TravelsCore
 import UniformTypeIdentifiers
+
+#if canImport(TravelsCore)
+import TravelsCore
+#endif
 
 struct ContentView: View {
     @EnvironmentObject private var model: TravelsModel
     @State private var showingSettings = false
     @State private var showingSearch = false
+    @State private var showingDatePicker = false
     @State private var showingImporter = false
+    @State private var showingPhotoImporter = false
+    @State private var showingDeveloperDiagnostics = false
+    @State private var shareItem: ShareItem?
+    @State private var datePickerSelection = Date()
 
     var body: some View {
         NavigationStack {
@@ -37,8 +45,10 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                     }
+                    .disabled(Calendar.current.startOfDay(for: model.selectedDate) <= model.dateSelectionRange().lowerBound)
                     Button {
-                        model.selectDate(Date())
+                        datePickerSelection = model.clampedDateSelection(model.selectedDate)
+                        showingDatePicker = true
                     } label: {
                         Image(systemName: "calendar")
                     }
@@ -47,6 +57,7 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "chevron.right")
                     }
+                    .disabled(Calendar.current.startOfDay(for: model.selectedDate) >= model.dateSelectionRange().upperBound)
                 }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -63,6 +74,15 @@ struct ContentView: View {
                     }
                     Menu {
                         Button("Import GPX") { showingImporter = true }
+                        Button("Import Photo") { showingPhotoImporter = true }
+                        Button("Export GPX") {
+                            if let url = model.exportCurrentDayGPX() {
+                                shareItem = ShareItem(url: url)
+                            }
+                        }
+                        #if DEBUG
+                        Button("Developer Diagnostics") { showingDeveloperDiagnostics = true }
+                        #endif
                         Button("Settings") { showingSettings = true }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -77,6 +97,30 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingSearch) {
                 SearchView()
+            }
+            .sheet(isPresented: $showingDatePicker) {
+                DatePickerSheet(
+                    selection: $datePickerSelection,
+                    range: model.dateSelectionRange(),
+                    onCancel: {
+                        showingDatePicker = false
+                    },
+                    onDone: {
+                        model.selectDate(datePickerSelection)
+                        showingDatePicker = false
+                    }
+                )
+            }
+            .sheet(isPresented: $showingPhotoImporter) {
+                PhotoImportView()
+            }
+            #if DEBUG
+            .sheet(isPresented: $showingDeveloperDiagnostics) {
+                DeveloperDiagnosticsView()
+            }
+            #endif
+            .sheet(item: $shareItem) { item in
+                ShareSheet(items: [item.url])
             }
             .fileImporter(isPresented: $showingImporter, allowedContentTypes: [UTType(filenameExtension: "gpx") ?? .xml], allowsMultipleSelection: false) { result in
                 if case .success(let urls) = result, let url = urls.first {
@@ -95,6 +139,36 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.events.count))"
+    }
+}
+
+private struct DatePickerSheet: View {
+    @Binding var selection: Date
+    let range: ClosedRange<Date>
+    let onCancel: () -> Void
+    let onDone: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            DatePicker(
+                "Choose a day",
+                selection: $selection,
+                in: range,
+                displayedComponents: .date
+            )
+            .datePickerStyle(.graphical)
+            .labelsHidden()
+            .padding()
+            .navigationTitle("Choose Date")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done", action: onDone)
+                }
+            }
+        }
     }
 }
 
