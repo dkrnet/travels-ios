@@ -40,6 +40,19 @@ struct TravelsTool {
             }
             print("Imported \(result.events.count) GPX events; skipped \(result.skippedInvalidPoints) invalid points.")
 
+        case "export-gpx":
+            guard args.count == 3 else {
+                print("Usage: travels-tool export-gpx <modern.sqlite> <output.gpx>")
+                return
+            }
+            let modernURL = URL(fileURLWithPath: args.dropFirst().first!)
+            let outputURL = URL(fileURLWithPath: args.dropFirst(2).first!)
+            let store = try TravelsStore(url: modernURL)
+            let events = try store.allEvents()
+            let xml = try GPXExporter.export(events: events)
+            try xml.write(to: outputURL, atomically: true, encoding: .utf8)
+            print("Exported \(events.count) events to \(outputURL.path).")
+
         default:
             printUsage()
         }
@@ -50,6 +63,7 @@ struct TravelsTool {
         travels-tool commands:
           import-legacy <legacy travels.sqlite> <modern.sqlite>
           import-gpx <file.gpx> <modern.sqlite>
+          export-gpx <modern.sqlite> <output.gpx>
         """)
     }
 }
