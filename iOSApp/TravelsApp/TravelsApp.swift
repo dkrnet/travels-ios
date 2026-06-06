@@ -3,7 +3,10 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import SwiftUI
+
+#if canImport(TravelsCore)
 import TravelsCore
+#endif
 
 @main
 struct TravelsApp: App {
