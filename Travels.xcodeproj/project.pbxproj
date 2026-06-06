@@ -146,7 +146,7 @@
 				1D2A3B4C5D6E7F8100010037 /* DemoData.swift */,
 			);
 			name = Sources;
-			sourceTree = SOURCE_ROOT;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
