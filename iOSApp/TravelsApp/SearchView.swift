@@ -102,7 +102,6 @@ struct SearchView: View {
                                     .onTapGesture {
                                         if let id = detail.id {
                                             model.focusAfterCapture(eventID: id, timestamp: detail.event.timestamp)
-                                            model.selectedEvent = detail
                                         }
                                         dismiss()
                                     }
