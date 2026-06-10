@@ -57,14 +57,14 @@ A future developer should be able to regenerate the application from scratch wit
 
 ## Versioning requirements
 
-Travels uses semantic marketing versions for the App Store-facing version number and automatic development build metadata for the bundle version.
-
-- Marketing version: `2.0.0`
-- Development build version format for untagged commits: `2.0.0-dev.<build-count>+<git-short-sha>`
-- Tagged commit build version format: `2.0.0.<build-count>+<git-short-sha>` where `build-count` resets to `0`
-- The build count increments for each app build and is stored locally in a gitignored state file so the version updates automatically at build time.
-- The About screen should display the build version directly, for example: `Version 2.0.0-dev.0+8508546`
-- Future development builds should keep the same pattern so the visible version matches the build metadata scheme.
+- Travels shall use semantic marketing versions for the App Store-facing version number.
+- Travels shall use automatic development build metadata for the bundle version.
+- The initial marketing version shall be `2.0.0` unless intentionally changed.
+- Untagged development build versions shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`.
+- Tagged commit build versions shall use the form `2.0.0.<build-count>+<git-short-sha>`, where `build-count` resets to `0`.
+- The build count shall increment for each app build and may be stored locally in a gitignored state file so the version updates automatically at build time.
+- The About screen shall display the build version directly, for example `Version 2.0.0-dev.0+8508546`.
+- Future development builds shall keep the same pattern so the visible version matches the build metadata scheme unless this requirement is intentionally changed.
 
 ## Data storage requirements
 
@@ -246,10 +246,10 @@ Settings shall load sensible defaults when missing and shall preserve forward co
 - Ordinary source changes should not be committed directly to `main`.
 - Non-trivial changes shall update tests or explicitly document why no automated test is practical.
 - Documentation changes shall remain synchronized with implementation behavior.
-- AI/LLM-assisted changes shall follow the delivery mode in `AGENTS.md` that matches the assistant's access level.
-- If an AI/LLM assistant is providing changes to a developer without direct repository access, it shall provide valid unified diffs suitable for `patch` or `git apply`, unless another format is explicitly requested.
-- If an AI/LLM assistant has direct repository access, it shall prefer a branch and pull-request workflow, with the repository branch, commits, and pull request serving as the primary review artifact.
-- In all AI/LLM delivery modes, generated changes shall be scoped to the requested work, shall avoid unrelated edits, shall update requirements and tests when behavior changes, and shall accurately report what validation was or was not performed.
+- AI/LLM-assisted changes shall follow `AGENTS.md` and shall use the delivery mode that matches the assistant's access level.
+- If an AI/LLM provides changes to a developer without direct repository access, it shall provide valid unified diffs suitable for `git apply` or `patch -p1`, unless another format is explicitly requested.
+- If an AI/LLM has direct repository access, it shall prefer a branch and pull request workflow, with the branch, commits, and pull request serving as the primary review artifact unless a patch is explicitly requested.
+- In all modes, AI/LLM-assisted changes shall be scoped to the requested work, shall avoid unrelated edits, shall update requirements and tests when behavior changes, and shall accurately report what validation was or was not performed.
 - Pull requests should be focused and reviewable.
 - Broad rewrites are discouraged unless required by an explicit requirement.
 
