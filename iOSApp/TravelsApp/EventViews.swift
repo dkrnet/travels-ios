@@ -58,6 +58,9 @@ struct EventMapView: View {
             .onChange(of: model.mapCameraCommandID) { _, _ in
                 updateCameraPosition()
             }
+            .onChange(of: events.count) { _, newValue in
+                updateCameraPosition()
+            }
             .onMapCameraChange(frequency: .onEnd) { context in
                 model.updateMapCameraRegion(context.region)
                 updateVisibleEventIDs(in: context.region)
@@ -646,6 +649,8 @@ struct EventListView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .coordinateSpace(name: "EventListScroll")
+                .onAppear {
+                }
                 .task(id: model.listScrollCommandID) {
                     guard let target = model.listScrollTargetEventID else { return }
                     await Task.yield()

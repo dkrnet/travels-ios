@@ -280,6 +280,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         var event = LocationFiltering.event(from: sample, source: .locationServices)
         if decision == .acceptAndReplacePrevious {
             event.geolocationID = latestAcceptedEvent?.geolocationID
+        } else {
         }
         do {
             let eventID = try await save(

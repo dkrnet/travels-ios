@@ -271,14 +271,17 @@ final class TravelsModel: ObservableObject {
     }
 
     func updateMapVisibleEventIDs(_ eventIDs: [Int64]) {
+        guard mapVisibleEventIDs != eventIDs else { return }
         mapVisibleEventIDs = eventIDs
     }
 
     func updateMapCameraRegion(_ region: MKCoordinateRegion?) {
+        guard !regionsApproximatelyEqual(mapCameraRegion, region) else { return }
         mapCameraRegion = region
     }
 
     func updateListVisibleEventIDs(_ eventIDs: [Int64]) {
+        guard listVisibleEventIDs != eventIDs else { return }
         listVisibleEventIDs = eventIDs
     }
 
@@ -1051,6 +1054,21 @@ final class TravelsModel: ObservableObject {
             && coordinate.latitude <= latitudeMax
             && coordinate.longitude >= longitudeMin
             && coordinate.longitude <= longitudeMax
+    }
+
+    private func regionsApproximatelyEqual(_ lhs: MKCoordinateRegion?, _ rhs: MKCoordinateRegion?) -> Bool {
+        switch (lhs, rhs) {
+        case (nil, nil):
+            return true
+        case let (lhs?, rhs?):
+            let centerDelta = abs(lhs.center.latitude - rhs.center.latitude)
+                + abs(lhs.center.longitude - rhs.center.longitude)
+            let spanDelta = abs(lhs.span.latitudeDelta - rhs.span.latitudeDelta)
+                + abs(lhs.span.longitudeDelta - rhs.span.longitudeDelta)
+            return centerDelta < 0.000001 && spanDelta < 0.000001
+        default:
+            return false
+        }
     }
 
     private func addressResolutionLabel(for detail: EventDetail) -> String {

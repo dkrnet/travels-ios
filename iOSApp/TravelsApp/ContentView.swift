@@ -34,6 +34,7 @@ struct ContentView: View {
                             .id(model.selectedDate)
                     } else {
                         EventMapView(day: model.selectedDate, events: model.displayedEvents)
+                            .id(model.selectedDate)
                     }
                 }
                 .blur(radius: model.isUnlocked ? 0 : 18)
@@ -119,9 +120,11 @@ struct ContentView: View {
                                 shareItem = ShareItem(url: url)
                             }
                         }
-                        #if DEBUG
-                        Button("Developer Diagnostics") { showingDeveloperDiagnostics = true }
-                        #endif
+#if DEBUG
+                        Button("Developer Diagnostics") {
+                            showingDeveloperDiagnostics = true
+                        }
+#endif
                         Button("Settings") { showingSettings = true }
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -160,21 +163,20 @@ struct ContentView: View {
                     }
                     .disabled(!model.isUnlocked)
 
-                    Button {
-                        model.addCurrentLocation()
-                    } label: {
-                        Image(systemName: "plus")
-                            .foregroundStyle(.primary)
-                    }
-                    .disabled(!model.canAddCurrentLocation)
-                    .contextMenu {
+                    Menu {
                         Button("Add Current Location") {
                             model.addCurrentLocation()
                         }
                         Button("Force Add Stopped Location") {
                             model.addCurrentLocation(forceStopped: true)
                         }
+                    } label: {
+                        Image(systemName: "plus")
+                            .foregroundStyle(.primary)
+                    } primaryAction: {
+                        model.addCurrentLocation()
                     }
+                    .disabled(!model.canAddCurrentLocation)
                 }
             }
             .sheet(item: $model.selectedEvent) { detail in
@@ -205,11 +207,11 @@ struct ContentView: View {
             .sheet(isPresented: $showingPhotoImporter) {
                 PhotoImportView()
             }
-            #if DEBUG
+#if DEBUG
             .sheet(isPresented: $showingDeveloperDiagnostics) {
                 DeveloperDiagnosticsView()
             }
-            #endif
+#endif
             .sheet(item: $shareItem) { item in
                 ShareSheet(items: [item.url])
             }
@@ -245,6 +247,8 @@ struct ContentView: View {
                 @unknown default:
                     break
                 }
+            }
+            .onAppear {
             }
         }
     }

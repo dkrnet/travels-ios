@@ -1,4 +1,3 @@
-#if DEBUG
 import Foundation
 import UniformTypeIdentifiers
 import SwiftUI
@@ -7,6 +6,7 @@ import SwiftUI
 import TravelsCore
 #endif
 
+#if DEBUG
 struct DeveloperDiagnosticsView: View {
     @EnvironmentObject private var model: TravelsModel
     @Environment(\.dismiss) private var dismiss

@@ -311,7 +311,7 @@
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "2.0.0-dev.0+8508546";
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = TA68L2V5PJ;
@@ -328,7 +328,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.davidredmond.travels;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -349,7 +349,7 @@
 				CODE_SIGNING_ALLOWED = YES;
 				CODE_SIGNING_REQUIRED = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = "2.0.0-dev.0+8508546";
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf-with-dsym;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = TA68L2V5PJ;
@@ -366,7 +366,7 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.davidredmond.travels;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
