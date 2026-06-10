@@ -1,1 +1,2 @@
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 #include? "Signing.local.xcconfig"

@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import Foundation
 
@@ -163,6 +164,8 @@ enum SolarTwilight {
            solarMidday <= sunset,
            eventDate >= sunrise,
            eventDate <= sunset {
+            // REGRESSION GUARD: Day progress is anchored to solar noon as the midpoint so morning and afternoon
+            // move smoothly from sunrise -> midday -> sunset instead of drifting toward either boundary.
             let percent: Double
             if eventDate <= solarMidday {
                 guard solarMidday > sunrise else {
@@ -191,6 +194,8 @@ enum SolarTwilight {
            civilDusk < nextLocalMidnight,
            eventDate > civilDusk,
            eventDate < nextLocalMidnight {
+            // REGRESSION GUARD: Night is intentionally split at local midnight because dusk and dawn are not
+            // symmetric around midnight; treating them as one span caused incorrect night percentages.
             let percent = clamp(eventDate.timeIntervalSince(civilDusk) / nextLocalMidnight.timeIntervalSince(civilDusk))
             return SolarPeriodResult(period: .nightBeforeMidnight, percent: percent)
         }
@@ -199,6 +204,8 @@ enum SolarTwilight {
            civilDawn > localMidnight,
            eventDate >= localMidnight,
            eventDate < civilDawn {
+            // REGRESSION GUARD: Use the current day's midnight-to-dawn span separately so after-midnight events
+            // do not inherit the previous evening's duration.
             let percent = clamp(eventDate.timeIntervalSince(localMidnight) / civilDawn.timeIntervalSince(localMidnight))
             return SolarPeriodResult(period: .nightAfterMidnight, percent: percent)
         }
