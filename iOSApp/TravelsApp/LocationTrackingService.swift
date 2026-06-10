@@ -228,6 +228,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return
         }
         if let clError = error as? CLError, clError.code == .denied {
+            // Regression guard: denied authorization should surface the friendly access message
+            // instead of leaking the raw kCLErrorDomain error back to the user.
             onAuthorizationStateChanged?("Location access is needed for Travels.")
             return
         }

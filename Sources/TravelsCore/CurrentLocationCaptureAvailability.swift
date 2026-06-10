@@ -13,6 +13,8 @@ public enum CurrentLocationCaptureAvailability {
         hasLocationPermission: Bool,
         isUnlocked: Bool
     ) -> Bool {
+        // Regression guard: this availability check intentionally centralizes every reason the
+        // Add action must be hidden or disabled so the UI stays truthful on all devices.
         guard isUnlocked else { return false }
         guard locationServicesEnabled else { return false }
         guard hasLocationPermission else { return false }

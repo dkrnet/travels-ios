@@ -140,22 +140,33 @@ struct ContentView: View {
                     .disabled(!model.isUnlocked)
 
                     Menu {
-                        displaySelectionButton("All", isSelected: model.isAllMapDisplaySelected) {
-                            model.selectAllMapDisplay()
-                        }
-                        displaySelectionButton(
-                            "Stopped Only",
-                            isSelected: model.isStoppedOnlyMapDisplaySelected,
-                            isEnabled: model.hasStoppedLocations
-                        ) {
-                            model.selectStoppedOnlyMapDisplay()
-                        }
+                        // Regression guard: keep menu selection visuals on system controls so
+                        // the selected-state indicator and label spacing stay consistent on
+                        // compact phone menus.
+                        Toggle("All", isOn: Binding(
+                            get: { model.isAllMapDisplaySelected() },
+                            set: { isOn in
+                                if isOn {
+                                    model.selectAllMapDisplay()
+                                }
+                            }
+                        ))
+                        Toggle("Stopped Only", isOn: Binding(
+                            get: { model.isStoppedOnlyMapDisplaySelected() },
+                            set: { isOn in
+                                if isOn {
+                                    model.selectStoppedOnlyMapDisplay()
+                                }
+                            }
+                        ))
+                        .disabled(!model.hasStoppedLocations)
 
                         if !model.detectedTrips.isEmpty {
                             ForEach(model.detectedTrips, id: \.id) { trip in
-                                displaySelectionButton(trip.displayName, isSelected: { model.isTripMapDisplaySelected(trip.id) }) {
-                                    model.toggleTripDisplay(trip.id)
-                                }
+                                Toggle(trip.displayName, isOn: Binding(
+                                    get: { model.isTripMapDisplaySelected(trip.id) },
+                                    set: { isOn in model.setTripDisplay(trip.id, isSelected: isOn) }
+                                ))
                             }
                         }
                     } label: {
@@ -260,28 +271,6 @@ struct ContentView: View {
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
     }
 
-    @ViewBuilder
-    private func displaySelectionButton(
-        _ title: String,
-        isSelected: @escaping () -> Bool,
-        isEnabled: Bool = true,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button {
-            action()
-        } label: {
-            HStack {
-                if isSelected() {
-                    Image(systemName: "checkmark")
-                } else {
-                    Image(systemName: "checkmark")
-                        .hidden()
-                }
-                Text(title)
-            }
-        }
-        .disabled(!isEnabled)
-    }
 }
 
 private struct PermissionBanner: View {
