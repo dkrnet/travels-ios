@@ -44,7 +44,7 @@ public enum GPXImporter {
 }
 
 public enum GPXExporter {
-    private static let travelsNamespace = "https://github.com/dkrnet/travels-ios/gpx/extensions/1"
+    fileprivate static let travelsNamespace = "https://github.com/dkrnet/travels-ios/gpx/extensions/1"
 
     public static func export(events: [EventDetail], title: String = "Travels life tracker log") throws -> String {
         guard !events.isEmpty else { throw TravelsError.emptyExport }
@@ -87,64 +87,16 @@ public enum GPXExporter {
         xml += "\n        <time>\(formatter.string(from: event.timestamp))</time>"
         appendStandardText("name", geolocation?.name, to: &xml)
         appendStandardText("cmt", event.note, to: &xml)
+        appendStandardText("desc", readablePlaceSummary(for: geolocation), to: &xml)
         appendStandardText("src", event.source.displayName, to: &xml)
 
-        var eventExtension = ""
-        appendTravelsText("horizontalAccuracyMeters", value: event.horizontalAccuracy >= 0 ? String(event.horizontalAccuracy) : nil, to: &eventExtension)
-        appendTravelsText("verticalAccuracyMeters", value: event.verticalAccuracy >= 0 ? String(event.verticalAccuracy) : nil, to: &eventExtension)
-        appendTravelsText("headingDegrees", value: event.course >= 0 ? String(event.course) : nil, to: &eventExtension)
-        appendTravelsText("speedMetersPerSecond", value: event.speed >= 0 ? String(event.speed) : nil, to: &eventExtension)
-        appendTravelsText("timeZoneIdentifier", value: geolocation?.timeZoneIdentifier, to: &eventExtension)
-        appendTravelsText("localizedDate", value: event.localizedDate, to: &eventExtension)
-        appendTravelsText("tags", value: event.tags, to: &eventExtension)
-        appendTravelsText("externalReference", value: event.externalReference, to: &eventExtension)
-        appendTravelsText("photoFilename", value: event.photoFilename, to: &eventExtension)
-        appendTravelsText("isDemo", value: event.isDemo ? "true" : nil, to: &eventExtension)
-        appendTravelsText("solarPeriod", value: event.solarPeriod.rawValue, to: &eventExtension)
-        appendTravelsText("solarPeriodPercent", value: event.solarPeriodPercent.map { String($0) }, to: &eventExtension)
-        appendTravelsText("solarPeriodCalculatedAt", value: event.solarPeriodCalculatedAt.map { formatter.string(from: $0) }, to: &eventExtension)
-
-        var placeExtension = ""
-        if let geolocation {
-            appendTravelsText("identifier", value: geolocation.identifier, to: &placeExtension)
-            appendTravelsText("latitude", value: String(geolocation.latitude), to: &placeExtension)
-            appendTravelsText("longitude", value: String(geolocation.longitude), to: &placeExtension)
-            appendTravelsText("radiusMeters", value: String(geolocation.radius), to: &placeExtension)
-            appendTravelsText("horizontalAccuracyMeters", value: geolocation.horizontalAccuracy >= 0 ? String(geolocation.horizontalAccuracy) : nil, to: &placeExtension)
-            appendTravelsText("verticalAccuracyMeters", value: geolocation.verticalAccuracy >= 0 ? String(geolocation.verticalAccuracy) : nil, to: &placeExtension)
-            appendTravelsText("altitudeMeters", value: String(geolocation.altitude), to: &placeExtension)
-            appendTravelsText("timestamp", value: geolocation.timestamp.map { formatter.string(from: $0) }, to: &placeExtension)
-            appendTravelsText("minLatitude", value: geolocation.minLatitude.map { String($0) }, to: &placeExtension)
-            appendTravelsText("maxLatitude", value: geolocation.maxLatitude.map { String($0) }, to: &placeExtension)
-            appendTravelsText("minLongitude", value: geolocation.minLongitude.map { String($0) }, to: &placeExtension)
-            appendTravelsText("maxLongitude", value: geolocation.maxLongitude.map { String($0) }, to: &placeExtension)
-            appendTravelsText("timeZoneIdentifier", value: geolocation.timeZoneIdentifier, to: &placeExtension)
-            appendTravelsText("name", value: geolocation.name, to: &placeExtension)
-            appendTravelsText("subThoroughfare", value: geolocation.subThoroughfare, to: &placeExtension)
-            appendTravelsText("thoroughfare", value: geolocation.thoroughfare, to: &placeExtension)
-            appendTravelsText("subLocality", value: geolocation.subLocality, to: &placeExtension)
-            appendTravelsText("locality", value: geolocation.locality, to: &placeExtension)
-            appendTravelsText("subAdministrativeArea", value: geolocation.subAdministrativeArea, to: &placeExtension)
-            appendTravelsText("administrativeArea", value: geolocation.administrativeArea, to: &placeExtension)
-            appendTravelsText("postalCode", value: geolocation.postalCode, to: &placeExtension)
-            appendTravelsText("isoCountryCode", value: geolocation.isoCountryCode, to: &placeExtension)
-            appendTravelsText("country", value: geolocation.country, to: &placeExtension)
-            appendTravelsText("inlandWater", value: geolocation.inlandWater, to: &placeExtension)
-            appendTravelsText("ocean", value: geolocation.ocean, to: &placeExtension)
-
-            if !geolocation.areasOfInterest.isEmpty {
-                placeExtension += "\n          <travels:areasOfInterest>"
-                for area in geolocation.areasOfInterest {
-                    placeExtension += "\n            <travels:areaOfInterest>\(escape(area))</travels:areaOfInterest>"
-                }
-                placeExtension += "\n          </travels:areasOfInterest>"
-            }
-        }
+        let eventExtension = eventExtensionXML(event: event, geolocation: geolocation, formatter: formatter)
+        let placeExtension = geolocation.map { placeExtensionXML($0, formatter: formatter) } ?? ""
 
         if !eventExtension.isEmpty || !placeExtension.isEmpty {
             xml += "\n        <extensions>"
             if !eventExtension.isEmpty {
-                xml += "\n          <travels:event>\(eventExtension)\n          </travels:event>"
+                xml += eventExtension
             }
             if !placeExtension.isEmpty {
                 xml += "\n          <travels:place>\(placeExtension)\n          </travels:place>"
@@ -163,6 +115,106 @@ public enum GPXExporter {
     private static func appendTravelsText(_ name: String, value: String?, to xml: inout String, indent: String = "          ") {
         guard let value, !value.isEmpty else { return }
         xml += "\n\(indent)<travels:\(name)>\(escape(value))</travels:\(name)>"
+    }
+
+    private static func eventExtensionXML(event: LocationEvent, geolocation: Geolocation?, formatter: ISO8601DateFormatter) -> String {
+        var xml = ""
+        appendTravelsText("horizontalAccuracyMeters", value: event.horizontalAccuracy >= 0 ? String(event.horizontalAccuracy) : nil, to: &xml)
+        appendTravelsText("verticalAccuracyMeters", value: event.verticalAccuracy >= 0 ? String(event.verticalAccuracy) : nil, to: &xml)
+        appendTravelsText("headingDegrees", value: event.course >= 0 ? String(event.course) : nil, to: &xml)
+        appendTravelsText("speedMetersPerSecond", value: event.speed >= 0 ? String(event.speed) : nil, to: &xml)
+        appendTravelsText("timeZone", value: geolocation?.timeZoneIdentifier, to: &xml)
+        appendTravelsText("localizedDateKey", value: event.localizedDate, to: &xml)
+        appendTravelsText("source", value: event.source.displayName, to: &xml)
+
+        if !event.tags.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let tags = tagTokens(from: event.tags)
+            xml += "\n          <travels:tags>"
+            for tag in tags {
+                xml += "\n            <travels:tag>\(escape(tag))</travels:tag>"
+            }
+            xml += "\n          </travels:tags>"
+        }
+
+        appendTravelsText("externalReference", value: event.externalReference, to: &xml)
+        appendTravelsText("photoFilename", value: event.photoFilename, to: &xml)
+        appendTravelsText("demoData", value: event.isDemo ? "true" : nil, to: &xml)
+
+        if event.solarPeriod != .unknown || event.solarPeriodPercent != nil || event.solarPeriodCalculatedAt != nil {
+            xml += "\n          <travels:solar>"
+            appendTravelsText("period", value: event.solarPeriod.rawValue, to: &xml, indent: "            ")
+            appendTravelsText("periodPercent", value: event.solarPeriodPercent.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("calculatedAt", value: event.solarPeriodCalculatedAt.map { formatter.string(from: $0) }, to: &xml, indent: "            ")
+            xml += "\n          </travels:solar>"
+        }
+
+        return xml
+    }
+
+    private static func placeExtensionXML(_ geolocation: Geolocation, formatter: ISO8601DateFormatter) -> String {
+        var xml = ""
+        appendTravelsText("identifier", value: geolocation.identifier, to: &xml)
+        appendTravelsText("latitude", value: String(geolocation.latitude), to: &xml)
+        appendTravelsText("longitude", value: String(geolocation.longitude), to: &xml)
+        appendTravelsText("radiusMeters", value: String(geolocation.radius), to: &xml)
+        appendTravelsText("horizontalAccuracyMeters", value: geolocation.horizontalAccuracy >= 0 ? String(geolocation.horizontalAccuracy) : nil, to: &xml)
+        appendTravelsText("verticalAccuracyMeters", value: geolocation.verticalAccuracy >= 0 ? String(geolocation.verticalAccuracy) : nil, to: &xml)
+        appendTravelsText("altitudeMeters", value: String(geolocation.altitude), to: &xml)
+        appendTravelsText("timestamp", value: geolocation.timestamp.map { formatter.string(from: $0) }, to: &xml)
+
+        if geolocation.minLatitude != nil || geolocation.maxLatitude != nil || geolocation.minLongitude != nil || geolocation.maxLongitude != nil {
+            xml += "\n          <travels:bounds>"
+            appendTravelsText("minLatitude", value: geolocation.minLatitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("maxLatitude", value: geolocation.maxLatitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("minLongitude", value: geolocation.minLongitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("maxLongitude", value: geolocation.maxLongitude.map { String($0) }, to: &xml, indent: "            ")
+            xml += "\n          </travels:bounds>"
+        }
+
+        appendTravelsText("name", value: geolocation.name, to: &xml)
+        appendTravelsText("subThoroughfare", value: geolocation.subThoroughfare, to: &xml)
+        appendTravelsText("thoroughfare", value: geolocation.thoroughfare, to: &xml)
+        appendTravelsText("subLocality", value: geolocation.subLocality, to: &xml)
+        appendTravelsText("locality", value: geolocation.locality, to: &xml)
+        appendTravelsText("subAdministrativeArea", value: geolocation.subAdministrativeArea, to: &xml)
+        appendTravelsText("administrativeArea", value: geolocation.administrativeArea, to: &xml)
+        appendTravelsText("postalCode", value: geolocation.postalCode, to: &xml)
+        appendTravelsText("isoCountryCode", value: geolocation.isoCountryCode, to: &xml)
+        appendTravelsText("country", value: geolocation.country, to: &xml)
+        appendTravelsText("inlandWater", value: geolocation.inlandWater, to: &xml)
+        appendTravelsText("ocean", value: geolocation.ocean, to: &xml)
+
+        if !geolocation.areasOfInterest.isEmpty {
+            xml += "\n          <travels:areasOfInterest>"
+            for area in geolocation.areasOfInterest {
+                xml += "\n            <travels:areaOfInterest>\(escape(area))</travels:areaOfInterest>"
+            }
+            xml += "\n          </travels:areasOfInterest>"
+        }
+
+        return xml
+    }
+
+    private static func tagTokens(from tags: String) -> [String] {
+        tags
+            .split(whereSeparator: \.isNewline)
+            .map(String.init)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private static func readablePlaceSummary(for geolocation: Geolocation?) -> String? {
+        guard let geolocation else { return nil }
+        let parts = [
+            geolocation.name,
+            geolocation.locality,
+            geolocation.administrativeArea,
+            geolocation.country
+        ]
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 
     private static func coordinateBounds(for events: [EventDetail]) -> (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
@@ -189,9 +241,14 @@ public enum GPXExporter {
     }
 }
 
+private struct GPXElementContext {
+    let localName: String
+    let isTravelsNamespace: Bool
+}
+
 private final class GPXTrackParser: NSObject, XMLParserDelegate {
     private let parser: XMLParser
-    private var elementStack: [String] = []
+    private var elementStack: [GPXElementContext] = []
     private var textStack: [String] = []
     private var currentPoint: GPXTrackPointBuilder?
     private var trackPoints: [GPXTrackPoint] = []
@@ -203,6 +260,8 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
         super.init()
         formatter.formatOptions = [.withInternetDateTime]
         parser.delegate = self
+        parser.shouldProcessNamespaces = true
+        parser.shouldReportNamespacePrefixes = true
     }
 
     func parse() throws -> GPXImportResult {
@@ -213,11 +272,12 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
-        let name = normalizedElementName(elementName, qualifiedName: qName)
-        elementStack.append(name)
+        let localName = normalizedElementName(elementName, qualifiedName: qName)
+        let isTravelsNamespace = (namespaceURI == GPXExporter.travelsNamespace) || (qName?.hasPrefix("travels:") == true)
+        elementStack.append(GPXElementContext(localName: localName, isTravelsNamespace: isTravelsNamespace))
         textStack.append("")
 
-        if name == "trkpt" {
+        if localName == "trkpt" {
             currentPoint = GPXTrackPointBuilder(attributes: attributeDict)
         }
     }
@@ -228,7 +288,7 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        let name = normalizedElementName(elementName, qualifiedName: qName)
+        let localName = normalizedElementName(elementName, qualifiedName: qName)
         let text = textStack.popLast()?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         defer {
             _ = elementStack.popLast()
@@ -238,7 +298,7 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
             currentPoint.consume(text: text, path: elementStack)
         }
 
-        if name == "trkpt" {
+        if localName == "trkpt" {
             if let trackPoint = currentPoint?.build(using: formatter) {
                 trackPoints.append(trackPoint)
             } else {
@@ -249,7 +309,7 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     }
 
     private func normalizedElementName(_ elementName: String, qualifiedName: String?) -> String {
-        qualifiedName ?? elementName
+        (qualifiedName ?? elementName).split(separator: ":").last.map(String.init) ?? elementName
     }
 }
 
@@ -259,165 +319,262 @@ private final class GPXTrackPointBuilder {
     private var timestampText: String?
     private var altitudeText: String?
     private var noteText: String?
-    private var placeNameText: String?
-    private var timeZoneIdentifierText: String?
-    private var horizontalAccuracyText: String?
-    private var verticalAccuracyText: String?
-    private var headingText: String?
-    private var speedText: String?
-    private var localizedDateText: String?
-    private var tagsText: String?
-    private var externalReferenceText: String?
-    private var photoFilenameText: String?
-    private var isDemoText: String?
-    private var solarPeriodText: String?
-    private var solarPeriodPercentText: String?
-    private var solarPeriodCalculatedAtText: String?
+    private var standardNameText: String?
+    private var standardSourceText: String?
+    private var eventSourceText: String?
+    private var eventHorizontalAccuracyText: String?
+    private var eventVerticalAccuracyText: String?
+    private var eventHeadingText: String?
+    private var eventSpeedText: String?
+    private var eventTimeZoneText: String?
+    private var eventLocalizedDateText: String?
+    private var eventExternalReferenceText: String?
+    private var eventPhotoFilenameText: String?
+    private var eventDemoDataText: String?
+    private var eventSolarPeriodText: String?
+    private var eventSolarPeriodPercentText: String?
+    private var eventSolarCalculatedAtText: String?
 
-    private var geolocationIdentifierText: String?
-    private var geolocationLatitudeText: String?
-    private var geolocationLongitudeText: String?
-    private var geolocationRadiusText: String?
-    private var geolocationHorizontalAccuracyText: String?
-    private var geolocationVerticalAccuracyText: String?
-    private var geolocationAltitudeText: String?
-    private var geolocationTimestampText: String?
-    private var geolocationMinLatitudeText: String?
-    private var geolocationMaxLatitudeText: String?
-    private var geolocationMinLongitudeText: String?
-    private var geolocationMaxLongitudeText: String?
-    private var geolocationTimeZoneIdentifierText: String?
-    private var geolocationNameText: String?
-    private var geolocationSubThoroughfareText: String?
-    private var geolocationThoroughfareText: String?
-    private var geolocationSubLocalityText: String?
-    private var geolocationLocalityText: String?
-    private var geolocationSubAdministrativeAreaText: String?
-    private var geolocationAdministrativeAreaText: String?
-    private var geolocationPostalCodeText: String?
-    private var geolocationIsoCountryCodeText: String?
-    private var geolocationCountryText: String?
-    private var geolocationInlandWaterText: String?
-    private var geolocationOceanText: String?
-    private var geolocationAreasOfInterest: [String] = []
+    private var placeIdentifierText: String?
+    private var placeLatitudeText: String?
+    private var placeLongitudeText: String?
+    private var placeRadiusText: String?
+    private var placeHorizontalAccuracyText: String?
+    private var placeVerticalAccuracyText: String?
+    private var placeAltitudeText: String?
+    private var placeTimestampText: String?
+    private var placeMinLatitudeText: String?
+    private var placeMaxLatitudeText: String?
+    private var placeMinLongitudeText: String?
+    private var placeMaxLongitudeText: String?
+    private var placeTimeZoneText: String?
+    private var placeNameText: String?
+    private var placeSubThoroughfareText: String?
+    private var placeThoroughfareText: String?
+    private var placeSubLocalityText: String?
+    private var placeLocalityText: String?
+    private var placeSubAdministrativeAreaText: String?
+    private var placeAdministrativeAreaText: String?
+    private var placePostalCodeText: String?
+    private var placeIsoCountryCodeText: String?
+    private var placeCountryText: String?
+    private var placeInlandWaterText: String?
+    private var placeOceanText: String?
+    private var placeSummaryText: String?
+    private var placeLegacyAreasOfInterestText: String?
+    private var placeCanonicalAreasOfInterest: [String] = []
+
+    private var legacyTagsText: String?
+    private var canonicalTags: [String] = []
 
     init(attributes: [String: String]) {
         self.attributes = attributes
     }
 
-    func consume(text: String, path: [String]) {
-        let names = path.map { Self.localName(from: $0) }
+    func consume(text: String, path: [GPXElementContext]) {
+        let names = path.map(\.localName)
         let last = names.last ?? ""
+        let isNamespaced = path.last?.isTravelsNamespace == true
         let containsPlace = names.contains("place")
+        let containsSolar = names.contains("solar")
+        let containsBounds = names.contains("bounds")
 
-        // Preserve legacy flat tags, but let namespaced Travels extensions win when both are present.
         switch last {
         case "time":
             timestampText = text
         case "ele":
             altitudeText = text
         case "name" where containsPlace:
-            geolocationNameText = text
+            store(text, in: &placeNameText, namespaced: isNamespaced)
         case "name":
-            placeNameText = text
-        case "cmt":
-            noteText = text
-        case "note":
-            noteText = text
+            store(text, in: &standardNameText, namespaced: isNamespaced)
+        case "desc":
+            placeSummaryText = text
+        case "cmt", "note":
+            store(text, in: &noteText, namespaced: isNamespaced)
         case "src":
-            break
+            store(text, in: &standardSourceText, namespaced: isNamespaced)
+        case "source":
+            store(text, in: &eventSourceText, namespaced: isNamespaced)
         case "heading", "course":
-            headingText = text
+            store(text, in: &eventHeadingText, namespaced: isNamespaced)
         case "speed":
-            speedText = text
+            store(text, in: &eventSpeedText, namespaced: isNamespaced)
+        case "horizontalAccuracyMeters":
+            if containsPlace {
+                store(text, in: &placeHorizontalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventHorizontalAccuracyText, namespaced: isNamespaced)
+            }
         case "horizontalAccuracy":
-            horizontalAccuracyText = text
+            if containsPlace {
+                store(text, in: &placeHorizontalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventHorizontalAccuracyText, namespaced: isNamespaced)
+            }
+        case "verticalAccuracyMeters":
+            if containsPlace {
+                store(text, in: &placeVerticalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventVerticalAccuracyText, namespaced: isNamespaced)
+            }
         case "verticalAccuracy":
-            verticalAccuracyText = text
+            if containsPlace {
+                store(text, in: &placeVerticalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventVerticalAccuracyText, namespaced: isNamespaced)
+            }
         case "timeZone":
             if containsPlace {
-                geolocationTimeZoneIdentifierText = text
+                store(text, in: &placeTimeZoneText, namespaced: isNamespaced)
             } else {
-                timeZoneIdentifierText = text
+                store(text, in: &eventTimeZoneText, namespaced: isNamespaced)
             }
         case "timeZoneIdentifier":
             if containsPlace {
-                geolocationTimeZoneIdentifierText = text
+                store(text, in: &placeTimeZoneText, namespaced: isNamespaced)
             } else {
-                timeZoneIdentifierText = text
+                store(text, in: &eventTimeZoneText, namespaced: isNamespaced)
             }
+        case "localizedDateKey":
+            store(text, in: &eventLocalizedDateText, namespaced: isNamespaced)
         case "localizedDate":
-            localizedDateText = text
+            store(text, in: &eventLocalizedDateText, namespaced: isNamespaced)
         case "tags":
-            tagsText = text
+            if isNamespaced {
+                // Wrapper element; child <travels:tag> values are captured separately.
+            } else {
+                // REGRESSION GUARD: legacy flat <tags> values remain accepted as a fallback alias.
+                legacyTagsText = text
+            }
+        case "tag":
+            if isNamespaced {
+                canonicalTags.append(text)
+            } else if legacyTagsText == nil {
+                legacyTagsText = text
+            } else {
+                legacyTagsText = (legacyTagsText ?? "") + "\n" + text
+            }
         case "externalReference":
-            externalReferenceText = text
+            store(text, in: &eventExternalReferenceText, namespaced: isNamespaced)
         case "photoFilename":
-            photoFilenameText = text
-        case "isDemo":
-            isDemoText = text
+            store(text, in: &eventPhotoFilenameText, namespaced: isNamespaced)
+        case "demoData", "isDemo":
+            store(text, in: &eventDemoDataText, namespaced: isNamespaced)
+        case "period":
+            if containsSolar {
+                store(text, in: &eventSolarPeriodText, namespaced: isNamespaced)
+            }
         case "solarPeriod":
-            solarPeriodText = text
+            store(text, in: &eventSolarPeriodText, namespaced: isNamespaced)
+        case "periodPercent":
+            if containsSolar {
+                store(text, in: &eventSolarPeriodPercentText, namespaced: isNamespaced)
+            }
         case "solarPeriodPercent":
-            solarPeriodPercentText = text
+            store(text, in: &eventSolarPeriodPercentText, namespaced: isNamespaced)
+        case "calculatedAt":
+            if containsSolar {
+                store(text, in: &eventSolarCalculatedAtText, namespaced: isNamespaced)
+            }
         case "solarPeriodCalculatedAt":
-            solarPeriodCalculatedAtText = text
-        case "twilightPhase":
-            solarPeriodText = SolarPeriod(twilightPhase: TwilightPhase(rawValue: text) ?? .none).rawValue
-        case "twilightPercent":
-            solarPeriodPercentText = text
-        case "twilightCalculatedAt":
-            solarPeriodCalculatedAtText = text
-        case "latitude" where containsPlace:
-            geolocationLatitudeText = text
-        case "longitude" where containsPlace:
-            geolocationLongitudeText = text
+            store(text, in: &eventSolarCalculatedAtText, namespaced: isNamespaced)
+        case "identifier":
+            if containsPlace {
+                store(text, in: &placeIdentifierText, namespaced: isNamespaced)
+            }
+        case "latitude":
+            if containsPlace {
+                store(text, in: &placeLatitudeText, namespaced: isNamespaced)
+            }
+        case "longitude":
+            if containsPlace {
+                store(text, in: &placeLongitudeText, namespaced: isNamespaced)
+            }
         case "radiusMeters", "radius":
-            geolocationRadiusText = text
-        case "identifier" where containsPlace:
-            geolocationIdentifierText = text
-        case "horizontalAccuracyMeters" where containsPlace:
-            geolocationHorizontalAccuracyText = text
-        case "verticalAccuracyMeters" where containsPlace:
-            geolocationVerticalAccuracyText = text
-        case "altitudeMeters" where containsPlace:
-            geolocationAltitudeText = text
-        case "timestamp" where containsPlace:
-            geolocationTimestampText = text
+            if containsPlace {
+                store(text, in: &placeRadiusText, namespaced: isNamespaced)
+            }
+        case "altitudeMeters":
+            if containsPlace {
+                store(text, in: &placeAltitudeText, namespaced: isNamespaced)
+            }
+        case "timestamp":
+            if containsPlace {
+                store(text, in: &placeTimestampText, namespaced: isNamespaced)
+            }
         case "minLatitude":
-            geolocationMinLatitudeText = text
+            if containsBounds || containsPlace {
+                store(text, in: &placeMinLatitudeText, namespaced: isNamespaced)
+            }
         case "maxLatitude":
-            geolocationMaxLatitudeText = text
+            if containsBounds || containsPlace {
+                store(text, in: &placeMaxLatitudeText, namespaced: isNamespaced)
+            }
         case "minLongitude":
-            geolocationMinLongitudeText = text
+            if containsBounds || containsPlace {
+                store(text, in: &placeMinLongitudeText, namespaced: isNamespaced)
+            }
         case "maxLongitude":
-            geolocationMaxLongitudeText = text
+            if containsBounds || containsPlace {
+                store(text, in: &placeMaxLongitudeText, namespaced: isNamespaced)
+            }
         case "subThoroughfare":
-            geolocationSubThoroughfareText = text
+            if containsPlace {
+                store(text, in: &placeSubThoroughfareText, namespaced: isNamespaced)
+            }
         case "thoroughfare":
-            geolocationThoroughfareText = text
+            if containsPlace {
+                store(text, in: &placeThoroughfareText, namespaced: isNamespaced)
+            }
         case "subLocality":
-            geolocationSubLocalityText = text
+            if containsPlace {
+                store(text, in: &placeSubLocalityText, namespaced: isNamespaced)
+            }
         case "locality":
-            geolocationLocalityText = text
+            if containsPlace {
+                store(text, in: &placeLocalityText, namespaced: isNamespaced)
+            }
         case "subAdministrativeArea":
-            geolocationSubAdministrativeAreaText = text
+            if containsPlace {
+                store(text, in: &placeSubAdministrativeAreaText, namespaced: isNamespaced)
+            }
         case "administrativeArea":
-            geolocationAdministrativeAreaText = text
+            if containsPlace {
+                store(text, in: &placeAdministrativeAreaText, namespaced: isNamespaced)
+            }
         case "postalCode":
-            geolocationPostalCodeText = text
+            if containsPlace {
+                store(text, in: &placePostalCodeText, namespaced: isNamespaced)
+            }
         case "isoCountryCode":
-            geolocationIsoCountryCodeText = text
+            if containsPlace {
+                store(text, in: &placeIsoCountryCodeText, namespaced: isNamespaced)
+            }
         case "country":
-            geolocationCountryText = text
+            if containsPlace {
+                store(text, in: &placeCountryText, namespaced: isNamespaced)
+            }
         case "inlandWater":
-            geolocationInlandWaterText = text
+            if containsPlace {
+                store(text, in: &placeInlandWaterText, namespaced: isNamespaced)
+            }
         case "ocean":
-            geolocationOceanText = text
+            if containsPlace {
+                store(text, in: &placeOceanText, namespaced: isNamespaced)
+            }
         case "areaOfInterest":
-            geolocationAreasOfInterest.append(text)
+            if isNamespaced {
+                placeCanonicalAreasOfInterest.append(text)
+            } else if placeLegacyAreasOfInterestText == nil {
+                placeLegacyAreasOfInterestText = text
+            } else {
+                placeLegacyAreasOfInterestText = (placeLegacyAreasOfInterestText ?? "") + "|||TRAVELS|||" + text
+            }
         case "areasOfInterest":
-            geolocationAreasOfInterest.append(contentsOf: text.components(separatedBy: "|||TRAVELS|||").filter { !$0.isEmpty })
+            if !isNamespaced {
+                placeLegacyAreasOfInterestText = text
+            }
         default:
             break
         }
@@ -435,99 +592,114 @@ private final class GPXTrackPointBuilder {
             return nil
         }
 
-        let timeZoneIdentifier = firstNonEmpty(timeZoneIdentifierText, geolocationTimeZoneIdentifierText)
-        let localizedDate = firstNonEmpty(localizedDateText, timeZoneIdentifier.map { TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: $0) })
+        let eventTimeZoneIdentifier = firstNonEmpty(eventTimeZoneText, placeTimeZoneText)
+        let localizedDate = firstNonEmpty(eventLocalizedDateText, eventTimeZoneIdentifier.map { TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: $0) })
+        let eventTags = canonicalTags.isEmpty ? legacyTagsText ?? "" : canonicalTags.joined(separator: "\n")
+        let solarPeriod = parseSolarPeriod(eventSolarPeriodText)
+        let source = parseEventSource(firstNonEmpty(eventSourceText, standardSourceText))
+        let solarCalculatedAt = parseDate(eventSolarCalculatedAtText, formatter: formatter)
 
         let event = LocationEvent(
             latitude: latitude,
             longitude: longitude,
-            horizontalAccuracy: parseDouble(firstNonEmpty(horizontalAccuracyText, geolocationHorizontalAccuracyText)),
-            verticalAccuracy: parseDouble(firstNonEmpty(verticalAccuracyText, geolocationVerticalAccuracyText)),
-            altitude: parseDouble(firstNonEmpty(altitudeText, geolocationAltitudeText), defaultValue: 0),
-            course: parseDouble(headingText),
-            speed: parseDouble(speedText),
+            horizontalAccuracy: parseDouble(firstNonEmpty(eventHorizontalAccuracyText, placeHorizontalAccuracyText)),
+            verticalAccuracy: parseDouble(firstNonEmpty(eventVerticalAccuracyText, placeVerticalAccuracyText)),
+            altitude: parseDouble(firstNonEmpty(altitudeText, placeAltitudeText), defaultValue: 0),
+            course: parseDouble(firstNonEmpty(eventHeadingText)),
+            speed: parseDouble(firstNonEmpty(eventSpeedText)),
             timestamp: timestamp,
             localizedDate: localizedDate,
-            source: .imported,
+            source: source,
             note: noteText ?? "",
-            tags: tagsText ?? "",
-            externalReference: externalReferenceText ?? "",
-            photoFilename: photoFilenameText ?? "",
-            isDemo: parseBool(isDemoText),
-            solarPeriod: parseSolarPeriod(solarPeriodText),
-            solarPeriodPercent: parseDouble(solarPeriodPercentText),
-            solarPeriodCalculatedAt: parseDate(solarPeriodCalculatedAtText, formatter: formatter)
+            tags: eventTags,
+            externalReference: eventExternalReferenceText ?? "",
+            photoFilename: eventPhotoFilenameText ?? "",
+            isDemo: parseBool(eventDemoDataText),
+            solarPeriod: solarPeriod,
+            solarPeriodPercent: parseDouble(eventSolarPeriodPercentText),
+            solarPeriodCalculatedAt: solarCalculatedAt
         )
 
-        return GPXTrackPoint(event: event, geolocation: geolocation(for: event, timeZoneIdentifier: timeZoneIdentifier))
+        return GPXTrackPoint(event: event, geolocation: geolocation(for: event, timeZoneIdentifier: eventTimeZoneIdentifier))
     }
 
     private func geolocation(for event: LocationEvent, timeZoneIdentifier: String?) -> Geolocation? {
-        let areas = Geolocation.normalizedAreasOfInterest(geolocationAreasOfInterest)
+        let areas = placeCanonicalAreasOfInterest.isEmpty
+            ? Geolocation.normalizedAreasOfInterest(placeLegacyAreasOfInterestText?.components(separatedBy: "|||TRAVELS|||") ?? [])
+            : Geolocation.normalizedAreasOfInterest(placeCanonicalAreasOfInterest)
+
         let hasMeaningfulMetadata =
-            !(geolocationIdentifierText ?? "").isEmpty ||
+            !(placeIdentifierText ?? "").isEmpty ||
             !(timeZoneIdentifier ?? "").isEmpty ||
             !(placeNameText ?? "").isEmpty ||
-            !(geolocationNameText ?? "").isEmpty ||
-            !(geolocationSubThoroughfareText ?? "").isEmpty ||
-            !(geolocationThoroughfareText ?? "").isEmpty ||
-            !(geolocationSubLocalityText ?? "").isEmpty ||
-            !(geolocationLocalityText ?? "").isEmpty ||
-            !(geolocationSubAdministrativeAreaText ?? "").isEmpty ||
-            !(geolocationAdministrativeAreaText ?? "").isEmpty ||
-            !(geolocationPostalCodeText ?? "").isEmpty ||
-            !(geolocationIsoCountryCodeText ?? "").isEmpty ||
-            !(geolocationCountryText ?? "").isEmpty ||
-            !(geolocationInlandWaterText ?? "").isEmpty ||
-            !(geolocationOceanText ?? "").isEmpty ||
+            !(standardNameText ?? "").isEmpty ||
+            !(placeSummaryText ?? "").isEmpty ||
+            !(placeSubThoroughfareText ?? "").isEmpty ||
+            !(placeThoroughfareText ?? "").isEmpty ||
+            !(placeSubLocalityText ?? "").isEmpty ||
+            !(placeLocalityText ?? "").isEmpty ||
+            !(placeSubAdministrativeAreaText ?? "").isEmpty ||
+            !(placeAdministrativeAreaText ?? "").isEmpty ||
+            !(placePostalCodeText ?? "").isEmpty ||
+            !(placeIsoCountryCodeText ?? "").isEmpty ||
+            !(placeCountryText ?? "").isEmpty ||
+            !(placeInlandWaterText ?? "").isEmpty ||
+            !(placeOceanText ?? "").isEmpty ||
             !areas.isEmpty ||
-            geolocationLatitudeText != nil ||
-            geolocationLongitudeText != nil ||
-            geolocationRadiusText != nil ||
-            geolocationHorizontalAccuracyText != nil ||
-            geolocationVerticalAccuracyText != nil ||
-            geolocationAltitudeText != nil ||
-            geolocationTimestampText != nil ||
-            geolocationMinLatitudeText != nil ||
-            geolocationMaxLatitudeText != nil ||
-            geolocationMinLongitudeText != nil ||
-            geolocationMaxLongitudeText != nil
+            placeLatitudeText != nil ||
+            placeLongitudeText != nil ||
+            placeRadiusText != nil ||
+            placeHorizontalAccuracyText != nil ||
+            placeVerticalAccuracyText != nil ||
+            placeAltitudeText != nil ||
+            placeTimestampText != nil ||
+            placeMinLatitudeText != nil ||
+            placeMaxLatitudeText != nil ||
+            placeMinLongitudeText != nil ||
+            placeMaxLongitudeText != nil
 
         guard hasMeaningfulMetadata else { return nil }
 
-        let latitude = parseDouble(geolocationLatitudeText, defaultValue: event.latitude)
-        let longitude = parseDouble(geolocationLongitudeText, defaultValue: event.longitude)
-        let radius = parseDouble(geolocationRadiusText, defaultValue: max(event.horizontalAccuracy, 0))
-        let geolocationTimestamp = parseDate(geolocationTimestampText)
+        let latitude = parseDouble(placeLatitudeText, defaultValue: event.latitude)
+        let longitude = parseDouble(placeLongitudeText, defaultValue: event.longitude)
+        let radius = parseDouble(placeRadiusText, defaultValue: max(event.horizontalAccuracy, 0))
+        let geolocationTimestamp = parseDate(placeTimestampText)
 
         return Geolocation(
             latitude: latitude,
             longitude: longitude,
             radius: radius,
-            identifier: geolocationIdentifierText ?? "\(event.timestamp.timeIntervalSinceReferenceDate)-\(event.latitude)-\(event.longitude)",
-            horizontalAccuracy: parseDouble(geolocationHorizontalAccuracyText, defaultValue: event.horizontalAccuracy),
-            verticalAccuracy: parseDouble(geolocationVerticalAccuracyText, defaultValue: event.verticalAccuracy),
-            altitude: parseDouble(geolocationAltitudeText, defaultValue: event.altitude),
+            identifier: placeIdentifierText ?? "\(event.timestamp.timeIntervalSinceReferenceDate)-\(event.latitude)-\(event.longitude)",
+            horizontalAccuracy: parseDouble(placeHorizontalAccuracyText, defaultValue: event.horizontalAccuracy),
+            verticalAccuracy: parseDouble(placeVerticalAccuracyText, defaultValue: event.verticalAccuracy),
+            altitude: parseDouble(placeAltitudeText, defaultValue: event.altitude),
             timestamp: geolocationTimestamp ?? event.timestamp,
-            minLatitude: parseOptionalDouble(geolocationMinLatitudeText),
-            maxLatitude: parseOptionalDouble(geolocationMaxLatitudeText),
-            minLongitude: parseOptionalDouble(geolocationMinLongitudeText),
-            maxLongitude: parseOptionalDouble(geolocationMaxLongitudeText),
+            minLatitude: parseOptionalDouble(placeMinLatitudeText),
+            maxLatitude: parseOptionalDouble(placeMaxLatitudeText),
+            minLongitude: parseOptionalDouble(placeMinLongitudeText),
+            maxLongitude: parseOptionalDouble(placeMaxLongitudeText),
             timeZoneIdentifier: timeZoneIdentifier ?? "",
-            name: geolocationNameText ?? placeNameText ?? "",
-            subThoroughfare: geolocationSubThoroughfareText ?? "",
-            thoroughfare: geolocationThoroughfareText ?? "",
-            subLocality: geolocationSubLocalityText ?? "",
-            locality: geolocationLocalityText ?? "",
-            subAdministrativeArea: geolocationSubAdministrativeAreaText ?? "",
-            administrativeArea: geolocationAdministrativeAreaText ?? "",
-            postalCode: geolocationPostalCodeText ?? "",
-            isoCountryCode: geolocationIsoCountryCodeText ?? "",
-            country: geolocationCountryText ?? "",
-            inlandWater: geolocationInlandWaterText ?? "",
-            ocean: geolocationOceanText ?? "",
+            name: firstNonEmpty(placeNameText, standardNameText, placeSummaryText) ?? "",
+            subThoroughfare: placeSubThoroughfareText ?? "",
+            thoroughfare: placeThoroughfareText ?? "",
+            subLocality: placeSubLocalityText ?? "",
+            locality: placeLocalityText ?? "",
+            subAdministrativeArea: placeSubAdministrativeAreaText ?? "",
+            administrativeArea: placeAdministrativeAreaText ?? "",
+            postalCode: placePostalCodeText ?? "",
+            isoCountryCode: placeIsoCountryCodeText ?? "",
+            country: placeCountryText ?? "",
+            inlandWater: placeInlandWaterText ?? "",
+            ocean: placeOceanText ?? "",
             areasOfInterest: areas
         )
+    }
+
+    private func store(_ text: String, in value: inout String?, namespaced: Bool) {
+        // BUGFIX: canonical Travels v1 values must win over legacy aliases when both are present.
+        if namespaced || value == nil {
+            value = text
+        }
     }
 
     private func firstNonEmpty(_ values: String?...) -> String? {
@@ -565,6 +737,33 @@ private final class GPXTrackPointBuilder {
         return .unknown
     }
 
+    private func parseEventSource(_ value: String?) -> EventSource {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return .imported
+        }
+
+        if let source = EventSource(rawValue: Int(value) ?? -1) {
+            return source
+        }
+
+        switch value.lowercased() {
+        case EventSource.locationServices.displayName.lowercased():
+            return .locationServices
+        case EventSource.imported.displayName.lowercased():
+            return .imported
+        case EventSource.photo.displayName.lowercased():
+            return .photo
+        case EventSource.manual.displayName.lowercased():
+            return .manual
+        case EventSource.invalid.displayName.lowercased():
+            return .invalid
+        case EventSource.simulated.displayName.lowercased():
+            return .simulated
+        default:
+            return .imported
+        }
+    }
+
     private func parseDate(_ value: String?, formatter: ISO8601DateFormatter? = nil) -> Date? {
         guard let value, !value.isEmpty else { return nil }
         if let formatter, let date = formatter.date(from: value) {
@@ -578,9 +777,5 @@ private final class GPXTrackPointBuilder {
             return date
         }
         return ISO8601DateFormatter().date(from: value)
-    }
-
-    private static func localName(from rawName: String) -> String {
-        rawName.split(separator: ":").last.map(String.init) ?? rawName
     }
 }

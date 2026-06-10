@@ -746,6 +746,10 @@ public final class TravelsStore: @unchecked Sendable {
         timeZoneOverride: TimeZone? = nil,
         calculatedAt: Date = Date()
     ) -> (period: SolarPeriod, percent: Double?, calculatedAt: Date) {
+        if event.solarPeriod != .unknown || event.solarPeriodPercent != nil || event.solarPeriodCalculatedAt != nil {
+            return (event.solarPeriod, event.solarPeriodPercent, event.solarPeriodCalculatedAt ?? calculatedAt)
+        }
+
         let timeZone: TimeZone?
         if let timeZoneOverride {
             timeZone = timeZoneOverride

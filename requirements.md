@@ -259,13 +259,14 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall import a user-selected `.gpx` file.
 - Import shall use security-scoped file access where iOS requires it.
 - Import shall parse GPX trackpoints with latitude, longitude, and timestamp.
-- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time-zone identifier, place metadata, area-of-interest metadata, notes, tags, demo flags, and cached solar values.
+- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time zone, place metadata, area-of-interest metadata, notes, tags, demo flags, and cached solar values.
 - Import shall skip malformed or incomplete trackpoints and report skipped counts when meaningful.
 - Imported events shall use the imported source.
 - Imported events shall avoid duplicates.
 - After import, the app shall focus or reload the relevant date when possible.
 - GPX import/export requirements shall name the interchange schema precisely so future or external importers/exporters can remain compatible without guessing at field names, nesting, or namespace usage.
-- GPX import shall accept both legacy flat Travels child elements and the namespaced Travels extension schema described below.
+- The normative Travels GPX extension v1 schema is documented in `docs/gpx-extension-v1.md`.
+- GPX import shall accept both the documented namespaced Travels extension schema and legacy flat Travels child elements used by earlier exports.
 
 ## GPX export requirements
 
@@ -274,21 +275,17 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Export filenames shall include the selected date.
 - Export shall produce GPX 1.1-compatible XML.
 - Export shall include metadata name, export time, and bounds when available.
+- Export shall use GPX 1.1 standard elements where their semantics match.
 - Export shall include GPX 1.1 standard trackpoint fields for latitude, longitude, timestamp, name, comments, and source where available, plus namespaced Travels extensions for course/heading, speed, horizontal accuracy, time zone, place metadata, areas of interest, notes, tags, demo flags, and cached solar values.
+- Travels-specific metadata shall be exported under the versioned namespace documented in `docs/gpx-extension-v1.md`.
+- Internal database IDs shall not be exported.
+- Areas of interest shall export as repeated Travels extension elements and legacy joined areas-of-interest values shall remain import-compatible.
 - Export shall escape XML content correctly.
 - Export shall remain import-compatible with legacy Travels GPX files where applicable.
 
 ### GPX schema details
 
-The GPX export format shall use:
-
-- Root element: `<gpx version="1.1" creator="Travels - life tracking">`
-- Namespace: the GPX 1.1 namespace shall be present, and Travels-specific fields shall live in a dedicated `travels:` namespace
-- Metadata: `<metadata>` shall include `<name>`, `<time>`, and `<bounds>` when values are available
-- Track structure: `<trk>` shall contain a `<trkseg>` with one `<trkpt>` per exported event
-- Standard trackpoint fields: latitude and longitude attributes, plus standard GPX child elements such as `<ele>`, `<time>`, `<name>`, `<cmt>`, and `<src>` where values are available
-- Travels extensions: app-specific fields shall be placed inside `<extensions>` using namespaced Travels child elements rather than overloading standard GPX elements
-- Legacy compatibility: the importer shall continue to recognize older flat Travels tags so existing files can still be read
+The canonical Travels GPX extension v1 schema is documented in `docs/gpx-extension-v1.md`. The implementation and tests shall treat that document as the source of truth for field names, nesting, and compatibility rules.
 
 These specifics are included because a vague "GPX-compatible" requirement is not enough for long-lived file interchange. A precise schema definition makes it much easier for other implementations, future app versions, and test fixtures to preserve data round-trips, avoid name collisions with standard GPX elements, and keep compatibility stable over time.
 

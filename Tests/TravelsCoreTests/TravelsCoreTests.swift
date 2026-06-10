@@ -38,6 +38,17 @@ final class TravelsCoreTests: XCTestCase {
         )
     }
 
+    private func repositoryRootURL() -> URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+    }
+
+    private func fixtureURL(_ relativePath: String) -> URL {
+        repositoryRootURL().appendingPathComponent("Fixtures").appendingPathComponent(relativePath)
+    }
+
     private func makeDetail(
         date: Date,
         latitude: Double = 33.8403,
@@ -1181,12 +1192,7 @@ final class TravelsCoreTests: XCTestCase {
     }
 
     func testGPXImportParsesTrackPoints() throws {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/sample.gpx")
-        let result = try GPXImporter.parse(url: url)
+        let result = try GPXImporter.parse(url: fixtureURL("sample.gpx"))
         XCTAssertEqual(result.events.count, 1)
         XCTAssertEqual(result.skippedInvalidPoints, 0)
         XCTAssertEqual(result.events[0].source, .imported)
@@ -1235,6 +1241,230 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(result.events[0].speed, 2.4, accuracy: 0.0001)
         XCTAssertEqual(result.trackPoints.first?.geolocation?.name, "Legacy Apple Park")
         XCTAssertEqual(result.trackPoints.first?.geolocation?.areasOfInterest, ["One", "Two"])
+    }
+
+    func testGPXExtensionSpecDocumentExists() {
+        XCTAssertTrue(FileManager.default.fileExists(atPath: repositoryRootURL().appendingPathComponent("docs/gpx-extension-v1.md").path))
+    }
+
+    func testGPXImportParsesCanonicalMinimalFixture() throws {
+        let result = try GPXImporter.parse(url: fixtureURL("gpx/travels-extension-v1-minimal.gpx"))
+        XCTAssertEqual(result.events.count, 1)
+        XCTAssertEqual(result.events.first?.source, .imported)
+        XCTAssertNil(result.trackPoints.first?.geolocation)
+    }
+
+    func testGPXImportParsesCanonicalFullFixture() throws {
+        let result = try GPXImporter.parse(url: fixtureURL("gpx/travels-extension-v1-full.gpx"))
+        XCTAssertEqual(result.events.count, 1)
+        let event = try XCTUnwrap(result.events.first)
+        let geolocation = try XCTUnwrap(result.trackPoints.first?.geolocation)
+
+        XCTAssertEqual(event.source, .imported)
+        XCTAssertEqual(event.note, "Note with <angle> brackets & ampersands")
+        XCTAssertEqual(event.horizontalAccuracy, 12)
+        XCTAssertEqual(event.verticalAccuracy, 8)
+        XCTAssertEqual(event.course, 90, accuracy: 0.0001)
+        XCTAssertEqual(event.speed, 1.2, accuracy: 0.0001)
+        XCTAssertEqual(event.localizedDate, "2026-05-31")
+        XCTAssertEqual(event.tags, "Museum & art\nFood <travel>")
+        XCTAssertEqual(event.externalReference, "sample-reference")
+        XCTAssertEqual(event.photoFilename, "sample-photo.jpg")
+        XCTAssertEqual(event.isDemo, true)
+        XCTAssertEqual(event.solarPeriod, .day)
+        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(geolocation.name, "Tom & Jerry Park")
+        XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
+        XCTAssertEqual(geolocation.areasOfInterest, ["Apple Park", "Visitor Center"])
+    }
+
+    func testGPXImportParsesLegacyDirectFieldFixture() throws {
+        let result = try GPXImporter.parse(url: fixtureURL("gpx/travels-legacy-direct-fields.gpx"))
+        XCTAssertEqual(result.events.count, 1)
+        let event = try XCTUnwrap(result.events.first)
+        let geolocation = try XCTUnwrap(result.trackPoints.first?.geolocation)
+
+        XCTAssertEqual(event.source, .imported)
+        XCTAssertEqual(event.note, "Legacy note")
+        XCTAssertEqual(event.horizontalAccuracy, 7)
+        XCTAssertEqual(event.course, 180, accuracy: 0.0001)
+        XCTAssertEqual(event.speed, 2.4, accuracy: 0.0001)
+        XCTAssertEqual(event.tags, "legacy tag")
+        XCTAssertEqual(event.solarPeriod, .day)
+        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(geolocation.name, "Legacy Apple Park")
+        XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
+        XCTAssertEqual(geolocation.areasOfInterest, ["One", "Two"])
+    }
+
+    func testGPXImportPrefersNamespacedValuesOverLegacyAliases() throws {
+        let xml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
+          <trk>
+            <trkseg>
+              <trkpt lat="37.3317" lon="-122.0301">
+                <time>2026-05-31T12:00:00Z</time>
+                <name>Legacy Name</name>
+                <src>Manual</src>
+                <horizontalAccuracy>99</horizontalAccuracy>
+                <timeZone>America/New_York</timeZone>
+                <tags>legacy tag</tags>
+                <solarPeriod>night_before_midnight</solarPeriod>
+                <extensions>
+                  <travels:source>Imported</travels:source>
+                  <travels:horizontalAccuracyMeters>12</travels:horizontalAccuracyMeters>
+                  <travels:timeZone>America/Los_Angeles</travels:timeZone>
+                  <travels:tags>
+                    <travels:tag>canonical tag</travels:tag>
+                  </travels:tags>
+                  <travels:solar>
+                    <travels:period>day</travels:period>
+                    <travels:periodPercent>0.5</travels:periodPercent>
+                  </travels:solar>
+                  <travels:place>
+                    <travels:name>Canonical Name</travels:name>
+                    <travels:areasOfInterest>
+                      <travels:areaOfInterest>Canonical AOI</travels:areaOfInterest>
+                    </travels:areasOfInterest>
+                  </travels:place>
+                </extensions>
+              </trkpt>
+            </trkseg>
+          </trk>
+        </gpx>
+        """
+
+        let result = try GPXImporter.parse(data: Data(xml.utf8))
+        let event = try XCTUnwrap(result.events.first)
+        let geolocation = try XCTUnwrap(result.trackPoints.first?.geolocation)
+
+        XCTAssertEqual(event.source, .imported)
+        XCTAssertEqual(event.horizontalAccuracy, 12)
+        XCTAssertEqual(event.solarPeriod, .day)
+        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(event.tags, "canonical tag")
+        XCTAssertEqual(geolocation.name, "Canonical Name")
+        XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
+        XCTAssertEqual(geolocation.areasOfInterest, ["Canonical AOI"])
+    }
+
+    func testGPXExportUsesCanonicalTravelsNamespaceAndStandardFields() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let geolocation = Geolocation(
+            latitude: 51.5007,
+            longitude: -0.1246,
+            radius: 25,
+            timeZoneIdentifier: "Europe/London",
+            name: "Westminster",
+            locality: "London",
+            administrativeArea: "England",
+            country: "United Kingdom",
+            areasOfInterest: ["Big Ben", "Westminster"]
+        )
+        let geolocationID = try store.saveGeolocation(geolocation)
+        let event = LocationEvent(
+            latitude: 51.5007,
+            longitude: -0.1246,
+            horizontalAccuracy: 12,
+            verticalAccuracy: 8,
+            altitude: 42,
+            course: 90,
+            speed: 1.2,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1_000),
+            localizedDate: "2001-01-01",
+            source: .manual,
+            geolocationID: geolocationID,
+            note: "Westminster",
+            tags: "museum\nart",
+            externalReference: "ref-1",
+            photoFilename: "photo-1.jpg",
+            isDemo: true,
+            solarPeriod: .day,
+            solarPeriodPercent: 0.5,
+            solarPeriodCalculatedAt: Date(timeIntervalSinceReferenceDate: 1_500)
+        )
+        _ = try store.saveEvent(event)
+
+        let xml = try GPXExporter.export(events: try store.allEvents(), title: "Sample & Track")
+        XCTAssertTrue(xml.contains("xmlns:travels=\"https://github.com/dkrnet/travels-ios/gpx/extensions/1\""))
+        XCTAssertTrue(xml.contains("<name>Sample &amp; Track</name>"))
+        XCTAssertTrue(xml.contains("<ele>42.0</ele>"))
+        XCTAssertTrue(xml.contains("<time>2001-01-01T00:16:40Z</time>"))
+        XCTAssertTrue(xml.contains("<name>Westminster</name>"))
+        XCTAssertTrue(xml.contains("<cmt>Westminster</cmt>"))
+        XCTAssertTrue(xml.contains("<desc>Westminster, London, England, United Kingdom</desc>"))
+        XCTAssertTrue(xml.contains("<src>Manual</src>"))
+        XCTAssertTrue(xml.contains("<travels:horizontalAccuracyMeters>12.0</travels:horizontalAccuracyMeters>"))
+        XCTAssertTrue(xml.contains("<travels:verticalAccuracyMeters>8.0</travels:verticalAccuracyMeters>"))
+        XCTAssertTrue(xml.contains("<travels:headingDegrees>90.0</travels:headingDegrees>"))
+        XCTAssertTrue(xml.contains("<travels:speedMetersPerSecond>1.2</travels:speedMetersPerSecond>"))
+        XCTAssertTrue(xml.contains("<travels:timeZone>Europe/London</travels:timeZone>"))
+        XCTAssertTrue(xml.contains("<travels:localizedDateKey>2001-01-01</travels:localizedDateKey>"))
+        XCTAssertTrue(xml.contains("<travels:source>Manual</travels:source>"))
+        XCTAssertTrue(xml.contains("<travels:tags>"))
+        XCTAssertTrue(xml.contains("<travels:tag>museum</travels:tag>"))
+        XCTAssertTrue(xml.contains("<travels:tag>art</travels:tag>"))
+        XCTAssertTrue(xml.contains("<travels:externalReference>ref-1</travels:externalReference>"))
+        XCTAssertTrue(xml.contains("<travels:photoFilename>photo-1.jpg</travels:photoFilename>"))
+        XCTAssertTrue(xml.contains("<travels:demoData>true</travels:demoData>"))
+        XCTAssertTrue(xml.contains("<travels:solar>"))
+        XCTAssertTrue(xml.contains("<travels:period>"))
+        XCTAssertTrue(xml.contains("<travels:calculatedAt>"))
+        XCTAssertTrue(xml.contains("<travels:place>"))
+        XCTAssertTrue(xml.contains("<travels:areasOfInterest>"))
+        XCTAssertTrue(xml.contains("<travels:areaOfInterest>Big Ben</travels:areaOfInterest>"))
+        XCTAssertFalse(xml.contains("<travels:id>"))
+        XCTAssertFalse(xml.contains("geolocationID"))
+    }
+
+    func testGPXExportRoundTripsEscapedText() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let geolocation = Geolocation(
+            latitude: 37.3317,
+            longitude: -122.0301,
+            timeZoneIdentifier: "America/Los_Angeles",
+            name: "Tom & Jerry Park",
+            locality: "Cupertino",
+            administrativeArea: "California",
+            country: "United States",
+            areasOfInterest: ["Apple & Park", "Visitor <Center>"]
+        )
+        let geolocationID = try store.saveGeolocation(geolocation)
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 37.3317,
+                longitude: -122.0301,
+                timestamp: Date(timeIntervalSinceReferenceDate: 2_000),
+                localizedDate: "2001-01-01",
+                source: .manual,
+                geolocationID: geolocationID,
+                note: "Note with <angle> & ampersands",
+                tags: "Museum & art\nFood <travel>"
+            )
+        )
+
+        let exported = try GPXExporter.export(events: try store.allEvents(), title: "Tom & Jerry <Trip>")
+        XCTAssertTrue(exported.contains("Tom &amp; Jerry &lt;Trip&gt;"))
+        XCTAssertTrue(exported.contains("Note with &lt;angle&gt; &amp; ampersands"))
+        XCTAssertTrue(exported.contains("<travels:tag>Museum &amp; art</travels:tag>"))
+        XCTAssertTrue(exported.contains("<travels:tag>Food &lt;travel&gt;</travels:tag>"))
+        XCTAssertTrue(exported.contains("<travels:areaOfInterest>Apple &amp; Park</travels:areaOfInterest>"))
+        XCTAssertTrue(exported.contains("<travels:areaOfInterest>Visitor &lt;Center&gt;</travels:areaOfInterest>"))
+
+        let imported = try GPXImporter.parse(data: Data(exported.utf8))
+        let importedEvent = try XCTUnwrap(imported.events.first)
+        let importedGeolocation = try XCTUnwrap(imported.trackPoints.first?.geolocation)
+        XCTAssertEqual(importedEvent.note, "Note with <angle> & ampersands")
+        XCTAssertEqual(importedEvent.tags, "Museum & art\nFood <travel>")
+        XCTAssertEqual(importedGeolocation.name, "Tom & Jerry Park")
+        XCTAssertEqual(importedGeolocation.areasOfInterest, ["Apple & Park", "Visitor <Center>"])
     }
 
     func testDemoDataSeedsThreeDaysBeforeLaunchAndCanBeHidden() throws {
@@ -1523,7 +1753,7 @@ final class TravelsCoreTests: XCTestCase {
             timestamp: Date(timeIntervalSinceReferenceDate: 1_000),
             localizedDate: "2001-01-01",
             source: .manual,
-            tags: "museum",
+            tags: "museum\nart",
             externalReference: "ref-1",
             photoFilename: "photo-1.jpg",
             isDemo: true,
@@ -1551,21 +1781,28 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertTrue(xml.contains("xmlns:travels=\"https://github.com/dkrnet/travels-ios/gpx/extensions/1\""))
         XCTAssertTrue(xml.contains("<name>Sample &amp; Track</name>"))
         XCTAssertTrue(xml.contains("<ele>42.0</ele>"))
+        XCTAssertTrue(xml.contains("<time>2001-01-01T00:16:40Z</time>"))
+        XCTAssertTrue(xml.contains("<desc>Westminster, London, England, United Kingdom</desc>"))
         XCTAssertTrue(xml.contains("<cmt>Westminster</cmt>"))
         XCTAssertTrue(xml.contains("<src>Manual</src>"))
-        XCTAssertTrue(xml.contains("<travels:event>"))
         XCTAssertTrue(xml.contains("<travels:horizontalAccuracyMeters>12.0</travels:horizontalAccuracyMeters>"))
-        XCTAssertTrue(xml.contains("<travels:timeZoneIdentifier>Europe/London</travels:timeZoneIdentifier>"))
-        XCTAssertTrue(xml.contains("<travels:localizedDate>2001-01-01</travels:localizedDate>"))
-        XCTAssertTrue(xml.contains("<travels:tags>museum</travels:tags>"))
+        XCTAssertTrue(xml.contains("<travels:timeZone>Europe/London</travels:timeZone>"))
+        XCTAssertTrue(xml.contains("<travels:localizedDateKey>2001-01-01</travels:localizedDateKey>"))
+        XCTAssertTrue(xml.contains("<travels:source>Manual</travels:source>"))
+        XCTAssertTrue(xml.contains("<travels:tags>"))
+        XCTAssertTrue(xml.contains("<travels:tag>museum</travels:tag>"))
+        XCTAssertTrue(xml.contains("<travels:tag>art</travels:tag>"))
         XCTAssertTrue(xml.contains("<travels:externalReference>ref-1</travels:externalReference>"))
         XCTAssertTrue(xml.contains("<travels:photoFilename>photo-1.jpg</travels:photoFilename>"))
-        XCTAssertTrue(xml.contains("<travels:isDemo>true</travels:isDemo>"))
-        XCTAssertTrue(xml.contains("<travels:solarPeriod>day</travels:solarPeriod>"))
-        XCTAssertTrue(xml.contains("<travels:solarPeriodPercent>0.5</travels:solarPeriodPercent>"))
-        XCTAssertTrue(xml.contains("<travels:solarPeriodCalculatedAt>"))
+        XCTAssertTrue(xml.contains("<travels:demoData>true</travels:demoData>"))
+        XCTAssertTrue(xml.contains("<travels:solar>"))
+        XCTAssertTrue(xml.contains("<travels:period>"))
+        XCTAssertTrue(xml.contains("<travels:calculatedAt>"))
         XCTAssertTrue(xml.contains("<travels:place>"))
+        XCTAssertTrue(xml.contains("<travels:areasOfInterest>"))
         XCTAssertTrue(xml.contains("<travels:areaOfInterest>Big Ben</travels:areaOfInterest>"))
+        XCTAssertFalse(xml.contains("<travels:id>"))
+        XCTAssertFalse(xml.contains("geolocationID"))
     }
 
     func testPhotoFilenameRoundTripsThroughStore() throws {

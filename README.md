@@ -8,6 +8,8 @@ The application is designed around a reusable Swift package core and a SwiftUI i
 
 Travels is intended for personal location journaling and lightweight life tracking on iOS. It records locations locally, displays them by day, allows browsing as a map or list, supports manual location capture, imports GPX tracks and geotagged photos, and exports GPX logs.
 
+Travels exports GPX 1.1 with a documented Travels extension namespace for app-specific metadata. The schema is documented in `docs/gpx-extension-v1.md`.
+
 The app is not intended to be a public tracking service, fleet-management platform, social network, remote monitoring tool, or cloud-first location service.
 
 ## Main features
@@ -19,7 +21,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Background-location option with separate powered and battery distance thresholds
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
-- GPX import and export with GPX 1.1 standard fields, namespaced Travels extensions, and legacy import compatibility
+- GPX import and export with GPX 1.1 standard fields, a documented Travels extension namespace, and legacy import compatibility
 - Legacy `travels.sqlite` migration with backup and duplicate skipping
 - Photo import from geotagged photo metadata with local attachment storage
 - Search by text, dates, notes, source, and place hierarchy
