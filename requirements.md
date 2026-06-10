@@ -30,6 +30,7 @@ A future developer should be able to regenerate the application from scratch wit
 - UI, permission prompts, platform services, map/list presentation, photo picker, LocalAuthentication, and Core Location service code shall reside in `iOSApp/TravelsApp`.
 - Command-line import/export helper behavior shall reside in `Sources/TravelsCLI`.
 - The repository shall contain `Package.swift`, `Sources/TravelsCore`, `Sources/TravelsCLI`, `iOSApp/TravelsApp`, `Tests/TravelsCoreTests`, `Fixtures`, `Travels.xcodeproj`, `README.md`, `requirements.md`, `AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`, and `LICENSE`.
+- The repository shall not contain a separate top-level `REQUIREMENTS.md`; requirements content shall be consolidated in lowercase `requirements.md`.
 
 ## Licensing requirements
 
@@ -53,6 +54,17 @@ A future developer should be able to regenerate the application from scratch wit
 - The intended in-place upgrade bundle identifier is `com.adigitalanalog.Travels` until the original app identity is verified.
 - The bundle identifier must not be changed casually because it affects upgrade, sandbox, data-container, and App Store behavior.
 - Before release, verify that the bundle identifier, signing identity, app group assumptions if any, and migration path match the legacy app identity.
+
+## Versioning requirements
+
+Travels uses semantic marketing versions for the App Store-facing version number and automatic development build metadata for the bundle version.
+
+- Marketing version: `2.0.0`
+- Development build version format for untagged commits: `2.0.0-dev.<build-count>+<git-short-sha>`
+- Tagged commit build version format: `2.0.0.<build-count>+<git-short-sha>` where `build-count` resets to `0`
+- The build count increments for each app build and is stored locally in a gitignored state file so the version updates automatically at build time.
+- The About screen should display the build version directly, for example: `Version 2.0.0-dev.0+8508546`
+- Future development builds should keep the same pattern so the visible version matches the build metadata scheme.
 
 ## Data storage requirements
 
@@ -234,7 +246,10 @@ Settings shall load sensible defaults when missing and shall preserve forward co
 - Ordinary source changes should not be committed directly to `main`.
 - Non-trivial changes shall update tests or explicitly document why no automated test is practical.
 - Documentation changes shall remain synchronized with implementation behavior.
-- AI/LLM-assisted changes shall follow `AGENTS.md`.
+- AI/LLM-assisted changes shall follow the delivery mode in `AGENTS.md` that matches the assistant's access level.
+- If an AI/LLM assistant is providing changes to a developer without direct repository access, it shall provide valid unified diffs suitable for `patch` or `git apply`, unless another format is explicitly requested.
+- If an AI/LLM assistant has direct repository access, it shall prefer a branch and pull-request workflow, with the repository branch, commits, and pull request serving as the primary review artifact.
+- In all AI/LLM delivery modes, generated changes shall be scoped to the requested work, shall avoid unrelated edits, shall update requirements and tests when behavior changes, and shall accurately report what validation was or was not performed.
 - Pull requests should be focused and reviewable.
 - Broad rewrites are discouraged unless required by an explicit requirement.
 
