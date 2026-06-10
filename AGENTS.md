@@ -60,6 +60,13 @@ When updating `requirements.md`, specify observable behavior and required compat
 
 Preserve parameterized SQL. Preserve XML escaping in GPX export. Preserve file-security handling for imported files and photos. Preserve application-support storage for the modern database and photo attachments. Preserve legacy migration backups before importing old databases.
 
+Embedded AI/LLM guardrail comment requirement:
+Project-owned source, build, test, package, script, and configuration files that are used to build, test, package, configure, or run Travels and that safely support comments should include a short near-top comment reminding AI/LLM assistants to read `requirements.md`, `README.md`, and `AGENTS.md` before non-trivial edits.
+
+These embedded comments are reminders, not replacements for this file. They should be placed after required shebangs, XML declarations, license notices, or tool-required file headers, and before substantive executable, declarative, or configuration content.
+
+Do not force embedded comments into files where comments are unsafe, likely to be removed by tooling, or likely to destabilize the file. Generated files, binary files, vendored files, third-party files, data fixtures, and Xcode-managed files such as `project.pbxproj` are exempt unless the file is confirmed to preserve comments safely.
+
 Bug-fix preservation rule:
 When fixing a bug, add a short nearby comment explaining the bug that was fixed and the reason for the fix when the bug is subtle, data-loss related, privacy/security related, or likely to regress. These comments are intentional regression guards. Do not remove bug-fix comments unless the user explicitly instructs you to remove them, or unless the associated code is replaced by an equivalent or better fix and the preservation comment is updated accordingly.
 
@@ -121,5 +128,6 @@ Maintenance checklist for AI/LLM edits:
 12. Use patch-only or repository-connected delivery mode as appropriate.
 13. Run or recommend the Swift Package test suite and the iOS app build/test commands after edits.
 14. Do not weaken location privacy, photo privacy, database safety, file-import safety, LocalAuthentication behavior, XML escaping, or SQL parameterization.
+15. When adding or editing comment-capable project-owned source/build files, preserve or add the short embedded AI/LLM guardrail comment when it is safe for that file type.
 
 =============================================================================
