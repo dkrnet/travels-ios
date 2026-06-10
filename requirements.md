@@ -234,7 +234,10 @@ Settings shall load sensible defaults when missing and shall preserve forward co
 - Ordinary source changes should not be committed directly to `main`.
 - Non-trivial changes shall update tests or explicitly document why no automated test is practical.
 - Documentation changes shall remain synchronized with implementation behavior.
-- AI/LLM-assisted changes shall follow `AGENTS.md`.
+- AI/LLM-assisted changes shall follow `AGENTS.md` and shall use the delivery mode that matches the assistant's access level.
+- If an AI/LLM provides changes to a developer without direct repository access, it shall provide valid unified diffs suitable for `git apply` or `patch -p1`, unless another format is explicitly requested.
+- If an AI/LLM has direct repository access, it shall prefer a branch and pull request workflow, with the branch, commits, and pull request serving as the primary review artifact unless a patch is explicitly requested.
+- In all modes, AI/LLM-assisted changes shall be scoped to the requested work, shall avoid unrelated edits, shall update requirements and tests when behavior changes, and shall accurately report what validation was or was not performed.
 - Pull requests should be focused and reviewable.
 - Broad rewrites are discouraged unless required by an explicit requirement.
 
