@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import Foundation
 
@@ -63,6 +64,8 @@ public enum GPXExporter {
         for detail in events {
             let event = detail.event
             let geolocation = detail.geolocation
+            // REQUIREMENTS: Keep standard GPX trackpoint fields separate from Travels-only metadata so other
+            // importers can consume the file without understanding our extension fields.
             xml += "\n      <trkpt lat=\"\(event.latitude)\" lon=\"\(event.longitude)\">"
             xml += "\n        <time>\(formatter.string(from: event.timestamp))</time>"
             xml += "\n        <heading>\(event.course)</heading>"
@@ -207,6 +210,8 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     }
 
     private func geolocation(from point: [String: String], event: LocationEvent) -> Geolocation? {
+        // REGRESSION GUARD: Legacy GPX files store multiple areas of interest in a single separator-delimited
+        // string; preserve that fallback so old exports still round-trip after newer extension-based exports.
         let areasOfInterest = point["areasOfInterest"].map { raw -> [String] in
             guard !raw.isEmpty else { return [] }
             return raw.components(separatedBy: "|||TRAVELS|||")

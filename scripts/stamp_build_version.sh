@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 set -euo pipefail
 
 project_dir="${PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"

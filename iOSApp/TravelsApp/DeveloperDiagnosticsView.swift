@@ -1,3 +1,4 @@
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 import Foundation
 import UniformTypeIdentifiers
 import SwiftUI
