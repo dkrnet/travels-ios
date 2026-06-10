@@ -69,19 +69,41 @@ Use consistent markers for bug-fix and regression-protection comments:
 - REGRESSION GUARD:
 - REQUIREMENTS:
 
-Patch output rule:
-Unless the user explicitly directs otherwise, AI/LLM assistants modifying this repository should produce valid unified diffs only. Do not include explanatory prose before or after the diff, and do not wrap the diff in Markdown fences.
+AI/LLM change delivery modes:
+AI/LLM-assisted changes must use the delivery mode that matches the assistant's access level.
 
-Requirements for AI/LLM patch output:
+Patch-only mode applies when an AI/LLM cannot directly update the repository and is providing changes to a developer. In patch-only mode, code changes must be delivered as valid unified diffs unless the developer explicitly requests another format.
+
+Patch-only responses must:
 
 - Use standard unified diff format.
 - Include `---` and `+++` file headers.
-- Include `@@` hunk headers.
+- Include valid `@@` hunk headers.
 - Include at least 3 lines of unchanged context around each change.
-- Do not include Markdown fences.
-- Do not include explanations.
-- Do not abbreviate unchanged code with `...`.
-- The output must be directly usable with `git apply` or `patch -p1`.
+- Avoid Markdown fences around the patch.
+- Avoid prose inside the patch.
+- Avoid unrelated edits.
+- Avoid whole-file rewrites unless explicitly requested.
+- Avoid abbreviating unchanged code with `...`.
+- Be directly usable with `git apply` or `patch -p1`.
+
+Any explanation, risk note, or test note must be separate from the patch.
+
+Repository-connected mode applies when an AI/LLM has direct repository access and can create branches, commits, or pull requests. In repository-connected mode, the repository branch, commits, and pull request are the primary review artifact; the assistant does not need to provide a unified diff as the primary output unless requested.
+
+Repository-connected AI/LLM changes must:
+
+- Use a dedicated branch unless explicitly instructed otherwise.
+- Avoid committing directly to `main` unless explicitly instructed.
+- Keep commits focused and reviewable.
+- Use clear commit messages.
+- Open or update a pull request unless explicitly instructed not to.
+- Summarize the change, affected files, validation performed, and any skipped validation.
+- Keep changes scoped to the request.
+- Avoid unrelated cleanup or formatting churn.
+- Update documentation, requirements, and tests when behavior changes.
+- Never claim that tests or builds passed unless they were actually run.
+- Clearly disclose failures, skipped checks, tool limitations, or incomplete validation.
 
 Maintenance checklist for AI/LLM edits:
 
@@ -96,7 +118,8 @@ Maintenance checklist for AI/LLM edits:
 9. Prefer minimal, reviewable changes.
 10. Update `requirements.md`, `README.md`, and tests when behavior changes.
 11. Keep requirements outcome-focused and avoid unnecessary implementation constraints.
-12. Run or recommend the Swift Package test suite and the iOS app build/test commands after edits.
-13. Do not weaken location privacy, photo privacy, database safety, file-import safety, LocalAuthentication behavior, XML escaping, or SQL parameterization.
+12. Use patch-only or repository-connected delivery mode as appropriate.
+13. Run or recommend the Swift Package test suite and the iOS app build/test commands after edits.
+14. Do not weaken location privacy, photo privacy, database safety, file-import safety, LocalAuthentication behavior, XML escaping, or SQL parameterization.
 
 =============================================================================
