@@ -172,7 +172,8 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(model.canAddCurrentLocation ? .primary : .tertiary)
+                            .opacity(model.canAddCurrentLocation ? 1.0 : 0.55)
                     } primaryAction: {
                         model.addCurrentLocation()
                     }

@@ -405,7 +405,14 @@ final class TravelsModel: ObservableObject {
     }
 
     var canAddCurrentLocation: Bool {
-        Calendar.current.isDateInToday(selectedDate)
+        CurrentLocationCaptureAvailability.canAddCurrentLocation(
+            selectedDate: selectedDate,
+            now: Date(),
+            calendar: Calendar.current,
+            locationServicesEnabled: locationService.isLocationServicesEnabled,
+            hasLocationPermission: locationService.hasCurrentLocationPermission,
+            isUnlocked: isUnlocked
+        )
     }
 
     var hasStoppedLocations: Bool {

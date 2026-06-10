@@ -5,6 +5,8 @@ project_dir="${PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 marketing_version="${MARKETING_VERSION:-2.0.0}"
 state_dir="${project_dir}/.build"
 state_file="${state_dir}/travels-version-state"
+source_plist="${project_dir}/iOSApp/TravelsApp/Info.plist"
+generated_plist="${DERIVED_FILE_DIR:-${state_dir}}/TravelsStampedInfo.plist"
 
 if ! command -v git >/dev/null 2>&1; then
   exit 0
@@ -47,11 +49,12 @@ else
   printf '%s\n' "$((stored_counter + 1))" > "$state_file"
 fi
 
-plist_path="${TARGET_BUILD_DIR:-}/${INFOPLIST_PATH:-}"
-if [[ -n "$plist_path" && -f "$plist_path" ]]; then
-  /usr/bin/plutil -replace CFBundleVersion -string "$build_version" "$plist_path" 2>/dev/null || \
-    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${build_version}" "$plist_path" 2>/dev/null || \
-    /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${build_version}" "$plist_path"
+if [[ -f "$source_plist" ]]; then
+  mkdir -p "$(dirname "$generated_plist")"
+  /bin/cp "$source_plist" "$generated_plist"
+  /usr/bin/plutil -replace CFBundleVersion -string "$build_version" "$generated_plist" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${build_version}" "$generated_plist" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${build_version}" "$generated_plist"
 fi
 
 echo "Stamped CFBundleVersion ${build_version}"
