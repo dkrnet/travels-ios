@@ -19,7 +19,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Background-location option with separate powered and battery distance thresholds
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
-- GPX import and export with legacy Travels child elements
+- GPX import and export with GPX 1.1 standard fields, namespaced Travels extensions, and legacy import compatibility
 - Legacy `travels.sqlite` migration with backup and duplicate skipping
 - Photo import from geotagged photo metadata with local attachment storage
 - Search by text, dates, notes, source, and place hierarchy

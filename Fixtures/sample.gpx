@@ -1,25 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
   <metadata>
     <name>Sample Travels GPX</name>
     <time>2026-05-31T12:00:00Z</time>
+    <bounds minlat="37.331700" maxlat="37.331700" minlon="-122.030100" maxlon="-122.030100"/>
   </metadata>
   <trk>
+    <name>Sample Travels GPX</name>
     <trkseg>
       <trkpt lat="37.331700" lon="-122.030100">
+        <ele>12</ele>
         <time>2026-05-31T12:00:00Z</time>
-        <heading>90</heading>
-        <speed>1.2</speed>
-        <horizontalAccuracy>12</horizontalAccuracy>
-        <timeZone>America/Los_Angeles</timeZone>
         <name>Apple Park</name>
-        <locality>Cupertino</locality>
-        <administrativeArea>California</administrativeArea>
-        <country>United States</country>
-        <areasOfInterest>Apple Park|||TRAVELS|||Apple Park</areasOfInterest>
-        <note>Sample import</note>
+        <cmt>Sample import</cmt>
+        <src>Imported</src>
+        <extensions>
+          <travels:event>
+            <travels:horizontalAccuracyMeters>12</travels:horizontalAccuracyMeters>
+            <travels:verticalAccuracyMeters>8</travels:verticalAccuracyMeters>
+            <travels:headingDegrees>90</travels:headingDegrees>
+            <travels:speedMetersPerSecond>1.2</travels:speedMetersPerSecond>
+            <travels:timeZoneIdentifier>America/Los_Angeles</travels:timeZoneIdentifier>
+            <travels:localizedDate>2026-05-31</travels:localizedDate>
+            <travels:tags>sample</travels:tags>
+            <travels:externalReference>sample-reference</travels:externalReference>
+            <travels:photoFilename>sample-photo.jpg</travels:photoFilename>
+            <travels:isDemo>true</travels:isDemo>
+            <travels:solarPeriod>day</travels:solarPeriod>
+            <travels:solarPeriodPercent>0.5</travels:solarPeriodPercent>
+          </travels:event>
+          <travels:place>
+            <travels:latitude>37.331700</travels:latitude>
+            <travels:longitude>-122.030100</travels:longitude>
+            <travels:radiusMeters>25</travels:radiusMeters>
+            <travels:timeZoneIdentifier>America/Los_Angeles</travels:timeZoneIdentifier>
+            <travels:name>Apple Park</travels:name>
+            <travels:locality>Cupertino</travels:locality>
+            <travels:administrativeArea>California</travels:administrativeArea>
+            <travels:country>United States</travels:country>
+            <travels:areasOfInterest>
+              <travels:areaOfInterest>Apple Park</travels:areaOfInterest>
+            </travels:areasOfInterest>
+          </travels:place>
+        </extensions>
       </trkpt>
     </trkseg>
   </trk>
 </gpx>
-
