@@ -15,12 +15,19 @@
 		1D2A3B4C5D6E7F810001000D /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */; };
 		1D2A3B4C5D6E7F810001000E /* SQLiteDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */; };
 		1D2A3B4C5D6E7F810001000F /* TravelsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */; };
+		1D2A3B4C5D6E7F810001001A /* SolarTwilight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */; };
+		1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */; };
+		1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004D /* TripDetection.swift */; };
 		1D2A3B4C5D6E7F8100010018 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010029 /* ShareSheet.swift */; };
 		1D2A3B4C5D6E7F8100010019 /* LocationTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010035 /* LocationTrackingService.swift */; };
 		1D2A3B4C5D6E7F810001002A /* PhotoImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010036 /* PhotoImportView.swift */; };
 		1D2A3B4C5D6E7F810001002B /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010037 /* DemoData.swift */; };
 		1D2A3B4C5D6E7F810001002C /* ReverseGeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010038 /* ReverseGeocodingService.swift */; };
 		1D2A3B4C5D6E7F810001002D /* DeveloperDiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010039 /* DeveloperDiagnosticsView.swift */; };
+		1D2A3B4C5D6E7F810001003D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010049 /* Assets.xcassets */; };
+		1D2A3B4C5D6E7F810001003A /* demo-2017-06-30.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010046 /* demo-2017-06-30.gpx */; };
+		1D2A3B4C5D6E7F810001003B /* demo-2018-01-05.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010047 /* demo-2018-01-05.gpx */; };
+		1D2A3B4C5D6E7F810001003C /* demo-2018-07-06.gpx in Resources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010048 /* demo-2018-07-06.gpx */; };
 		1D2A3B4C5D6E7F8100010001 /* TravelsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010011 /* TravelsApp.swift */; };
 		1D2A3B4C5D6E7F8100010002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010012 /* ContentView.swift */; };
 		1D2A3B4C5D6E7F8100010003 /* EventViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010013 /* EventViews.swift */; };
@@ -44,6 +51,10 @@
 		1D2A3B4C5D6E7F8100010037 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/DemoData.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010038 /* ReverseGeocodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp/TravelsApp/ReverseGeocodingService.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010039 /* DeveloperDiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp/TravelsApp/DeveloperDiagnosticsView.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010049 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = iOSApp/TravelsApp/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010046 /* demo-2017-06-30.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Fixtures/demo-2017-06-30.gpx; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010047 /* demo-2018-01-05.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Fixtures/demo-2018-01-05.gpx; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010048 /* demo-2018-07-06.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Fixtures/demo-2018-07-06.gpx; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010020 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = text; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010021 /* DateTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/DateTools.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010022 /* GPXCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/GPXCodec.swift; sourceTree = SOURCE_ROOT; };
@@ -53,6 +64,9 @@
 		1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SettingsStore.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SQLiteDatabase.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TravelsStore.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SolarTwilight.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TimeOfDayColorResolver.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001004D /* TripDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TripDetection.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +98,24 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ -n \"${TARGET_BUILD_DIR:-}\" ] && [ -n \"${FULL_PRODUCT_NAME:-}\" ]; then\n  xattr -cr \"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\nfi\nmkdir -p \"${DERIVED_FILE_DIR}\"\ntouch \"${DERIVED_FILE_DIR}/TravelsStripBundleMetadata.stamp\"\n";
 		};
+		1D2A3B4C5D6E7F810001003E /* Stamp Build Version */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/TravelsStampBuildVersion.stamp",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash \"${PROJECT_DIR}/scripts/stamp_build_version.sh\"\nmkdir -p \"${DERIVED_FILE_DIR}\"\ntouch \"${DERIVED_FILE_DIR}/TravelsStampBuildVersion.stamp\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -91,11 +123,22 @@
 			isa = PBXGroup;
 			children = (
 				1D2A3B4C5D6E7F8100010041 /* Products */,
+				1D2A3B4C5D6E7F8100010045 /* Fixtures */,
 				1D2A3B4C5D6E7F8100010044 /* Sources */,
 				1D2A3B4C5D6E7F8100010042 /* iOSApp */,
 				1D2A3B4C5D6E7F8100010043 /* Package.swift */,
 			);
 			sourceTree = "<group>";
+		};
+		1D2A3B4C5D6E7F8100010045 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				1D2A3B4C5D6E7F8100010046 /* demo-2017-06-30.gpx */,
+				1D2A3B4C5D6E7F8100010047 /* demo-2018-01-05.gpx */,
+				1D2A3B4C5D6E7F8100010048 /* demo-2018-07-06.gpx */,
+			);
+			path = Fixtures;
+			sourceTree = SOURCE_ROOT;
 		};
 		1D2A3B4C5D6E7F8100010041 /* Products */ = {
 			isa = PBXGroup;
@@ -119,6 +162,7 @@
 				1D2A3B4C5D6E7F8100010036 /* PhotoImportView.swift */,
 				1D2A3B4C5D6E7F8100010038 /* ReverseGeocodingService.swift */,
 				1D2A3B4C5D6E7F8100010039 /* DeveloperDiagnosticsView.swift */,
+				1D2A3B4C5D6E7F8100010049 /* Assets.xcassets */,
 				1D2A3B4C5D6E7F8100010017 /* Info.plist */,
 			);
 			path = iOSApp;
@@ -143,6 +187,9 @@
 				1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */,
 				1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */,
 				1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */,
+				1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */,
+				1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */,
+				1D2A3B4C5D6E7F810001004D /* TripDetection.swift */,
 				1D2A3B4C5D6E7F8100010037 /* DemoData.swift */,
 			);
 			name = Sources;
@@ -159,6 +206,7 @@
 				1D2A3B4C5D6E7F8100010030 /* Frameworks */,
 				1D2A3B4C5D6E7F8100010032 /* Resources */,
 				1D2A3B4C5D6E7F8100010034 /* Strip Bundle Metadata */,
+				1D2A3B4C5D6E7F810001003E /* Stamp Build Version */,
 			);
 			buildRules = (
 			);
@@ -209,6 +257,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D2A3B4C5D6E7F810001003A /* demo-2017-06-30.gpx in Resources */,
+				1D2A3B4C5D6E7F810001003B /* demo-2018-01-05.gpx in Resources */,
+				1D2A3B4C5D6E7F810001003C /* demo-2018-07-06.gpx in Resources */,
+				1D2A3B4C5D6E7F810001003D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,6 +279,9 @@
 				1D2A3B4C5D6E7F810001000D /* SettingsStore.swift in Sources */,
 				1D2A3B4C5D6E7F810001000E /* SQLiteDatabase.swift in Sources */,
 				1D2A3B4C5D6E7F810001000F /* TravelsStore.swift in Sources */,
+				1D2A3B4C5D6E7F810001001A /* SolarTwilight.swift in Sources */,
+				1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */,
+				1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */,
 				1D2A3B4C5D6E7F810001002B /* DemoData.swift in Sources */,
 				1D2A3B4C5D6E7F8100010001 /* TravelsApp.swift in Sources */,
 				1D2A3B4C5D6E7F8100010002 /* ContentView.swift in Sources */,
@@ -250,15 +305,16 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "2.0.0-dev.0+8508546";
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = TA68L2V5PJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
@@ -268,11 +324,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = "2.0.0";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidredmond.travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -287,15 +343,16 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGNING_REQUIRED = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = "2.0.0-dev.0+8508546";
 				DEBUG_INFORMATION_FORMAT = dwarf-with-dsym;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = TA68L2V5PJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
@@ -305,11 +362,11 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = "2.0.0";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidredmond.travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -366,7 +423,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
-				SYMROOT = "$(PROJECT_DIR)/.build/xcode";
+				SYMROOT = "/tmp/TravelsBuild";
 			};
 			name = Debug;
 		};
@@ -411,7 +468,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
-				SYMROOT = "$(PROJECT_DIR)/.build/xcode";
+				SYMROOT = "/tmp/TravelsBuild";
 			};
 			name = Release;
 		};

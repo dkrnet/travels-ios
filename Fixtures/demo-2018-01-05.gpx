@@ -1,0 +1,3909 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<gpx version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/1" creator="Travels - life tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<metadata>
+		<name>Travels life tracker log</name>
+		<time>2018-09-29T17:21:36-07:00</time>
+		<bounds minlon="-117.04277195457564" maxlon="-116.41239002277008" minlat="33.914701306158385" maxlat="34.44250346202284" />
+	</metadata>
+	<trk>
+		<trkseg>
+			<trkpt lon="-116.87862269223695" lat="34.25730860257201">
+				<time>536875581.990286</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>65.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42324</subThoroughfare>
+				<thoroughfare>Eagle Ridge Dr</thoroughfare>
+				<locality>Big Bear Lake</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92315</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.87140771915317" lat="34.259412746489794">
+				<time>536876111.9986527</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42771–42779</subThoroughfare>
+				<thoroughfare>Big Bear Blvd</thoroughfare>
+				<locality>Big Bear Lake</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92315</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.86378260947592" lat="34.26046748914263">
+				<time>536876216.9999851</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>1037</subThoroughfare>
+				<thoroughfare>W Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.85618726490631" lat="34.259543845870844">
+				<time>536876264.9998937</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>624</subThoroughfare>
+				<thoroughfare>W Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.84872865377962" lat="34.26109168090903">
+				<time>536876308.999821</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>226</subThoroughfare>
+				<thoroughfare>W Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.84093645082798" lat="34.261182335188366">
+				<time>536876380.9997028</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>329</subThoroughfare>
+				<thoroughfare>E Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8333188727127" lat="34.26121091611347">
+				<time>536876419.9996397</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>704</subThoroughfare>
+				<thoroughfare>E Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.82554519608293" lat="34.26147682172927">
+				<time>536876462.9995687</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>1100</subThoroughfare>
+				<thoroughfare>E Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81858669078865" lat="34.25877222370476">
+				<time>536876523.9994687</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>272</subThoroughfare>
+				<thoroughfare>Greenspot Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8169664350424" lat="34.25256521533698">
+				<time>536876579.9993774</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>463–515</subThoroughfare>
+				<thoroughfare>Greenspot Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81242414648547" lat="34.247322733353386">
+				<time>536876616.0000591</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>696–736</subThoroughfare>
+				<thoroughfare>Greenspot Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.80748655355119" lat="34.24230227220724">
+				<time>536876652.9999639</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>931–953</subThoroughfare>
+				<thoroughfare>Greenspot Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.80660162615412" lat="34.235868907819054">
+				<time>536876678.9999111</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>1156–1164</subThoroughfare>
+				<thoroughfare>Greenspot Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.80541432892561" lat="34.2295731411507">
+				<time>536876704.9998595</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>44939–45189</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.79784904188827" lat="34.22852152983804">
+				<time>536876732.9998039</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>45645–45869</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.79069438052781" lat="34.231216590623326">
+				<time>536876758.9997531</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>46203–46541</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.73462559871192" lat="34.20489977523211">
+				<time>536877002.143203</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>52214–53536</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.74403716843901" lat="34.17586921030178">
+				<time>536877302.169803</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>48128–48168</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81612873418494" lat="34.169119894830615">
+				<time>536877602.9985127</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>45678–45898</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.82388441048656" lat="34.17006228963713">
+				<time>536877631.9984738</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>45658–45676</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.83157604274005" lat="34.170972731751796">
+				<time>536877661.998445</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>45416–45444</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.88561691605055" lat="34.17077908079881">
+				<time>536877903.175796</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42394–43598</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.89301741010014" lat="34.16900530102453">
+				<time>536877935.9998447</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>41800–41832</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.90062977832473" lat="34.169846392274955">
+				<time>536877966.9998261</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>41700</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.90695078134814" lat="34.166277700250035">
+				<time>536878001.9998037</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>41700</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.9114385041319" lat="34.16108849959225">
+				<time>536878043.999777</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>40850–40860</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.91873484194845" lat="34.15934812726878">
+				<time>536878084.9997512</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>40361–40717</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.92607312136246" lat="34.15762778974268">
+				<time>536878139.9999241</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>40338–40358</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.93382432736915" lat="34.15746423553313">
+				<time>536878193.9999707</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>39900–40090</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.94142287408319" lat="34.15832339215331">
+				<time>536878245.999994</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>39670–39688</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.94900816235604" lat="34.158837635274864">
+				<time>536878291.0000137</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>39318–39650</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.95658042919902" lat="34.158378850389255">
+				<time>536878348.0000391</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38900–39274</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.96248201388248" lat="34.15439290931783">
+				<time>536878400.0000619</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38642–38650</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.96925905734325" lat="34.15142457686164">
+				<time>536878478.0000968</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>37800–38170</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.97679885244618" lat="34.150047323466566">
+				<time>536878538.9997951</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>37770–37774</subThoroughfare>
+				<thoroughfare>Frontage Rd</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.98292513292944" lat="34.1461021547307">
+				<time>536878577.0000784</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92339</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.98525782114523" lat="34.14009533809494">
+				<time>536878613.9991609</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.98329433958575" lat="34.133839090599274">
+				<time>536878652.9992156</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.9848406113127" lat="34.12582658520396">
+				<time>536878711.9992927</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<subLocality>Angelus Oaks</subLocality>
+				<locality>Angelus Oaks</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.98041098948362" lat="34.1194728042053">
+				<time>536878763.9994053</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Forest Falls</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92305</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.9788188049647" lat="34.1166251246099">
+				<time>536878806.165289</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>5–23</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Forest Falls</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92359</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.97722648236477" lat="34.11255375388772">
+				<time>536878847.9995447</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>5–23</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Forest Falls</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92359</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.97332731018238" lat="34.10706443488887">
+				<time>536878886.999612</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>25–51</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Forest Falls</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92359</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.96652912693321" lat="34.10197746730408">
+				<time>536878925.9996758</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>25–51</subThoroughfare>
+				<thoroughfare>State Highway 38</thoroughfare>
+				<locality>Forest Falls</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92359</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.99629143205566" lat="34.1025239874568">
+				<time>536879106.167499</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>36411–36799</subThoroughfare>
+				<thoroughfare>Mill Creek Rd</thoroughfare>
+				<locality>Mentone</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92359</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-117.04277195457564" lat="34.075357161700175">
+				<time>536879407.16414</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>9726–9816 Bryant St</name>
+				<subThoroughfare>9726–9816</subThoroughfare>
+				<thoroughfare>Bryant St</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.03795710584865" lat="34.070419230896626">
+				<time>536879438.0002724</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10080–10116 Bryant St</name>
+				<subThoroughfare>10080–10116</subThoroughfare>
+				<thoroughfare>Bryant St</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.03492250916086" lat="34.06458224792934">
+				<time>536879466.0003445</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10436–10490 Bryant St</name>
+				<subThoroughfare>10436–10490</subThoroughfare>
+				<thoroughfare>Bryant St</thoroughfare>
+				<subLocality>Rolling Hills</subLocality>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.03445642856774" lat="34.05809666484018">
+				<time>536879495.00039</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10800 Bryant St</name>
+				<subThoroughfare>10800</subThoroughfare>
+				<thoroughfare>Bryant St</thoroughfare>
+				<subLocality>Rolling Hills</subLocality>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.03451100966818" lat="34.05172749981006">
+				<time>536879526.0004548</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>11050–11090 Bryant St</name>
+				<subThoroughfare>11050–11090</subThoroughfare>
+				<thoroughfare>Bryant St</thoroughfare>
+				<subLocality>Rolling Hills</subLocality>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.02784545287295" lat="34.04842658518108">
+				<time>536879640.0007011</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>35301–35629 Oak Glen Rd</name>
+				<subThoroughfare>35301–35629</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<subLocality>Upper Yucaipa</subLocality>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.02004534066785" lat="34.048428813844026">
+				<time>536879672.0007704</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>35901–35949 Oak Glen Rd</name>
+				<subThoroughfare>35901–35949</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<subLocality>Upper Yucaipa</subLocality>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.012372936097" lat="34.04842289451239">
+				<time>536879704.0008397</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>36417–36581 Oak Glen Rd</name>
+				<subThoroughfare>36417–36581</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-117.00462711097157" lat="34.048549007333264">
+				<time>536879735.0009074</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>36601–36773 Oak Glen Rd</name>
+				<subThoroughfare>36601–36773</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.99711627452456" lat="34.049978038451556">
+				<time>536879765.0009718</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>36942–37050 Oak Glen Rd</name>
+				<subThoroughfare>36942–37050</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.99020253849274" lat="34.052972584380534">
+				<time>536879793.0012369</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37300–37598 Oak Glen Rd</name>
+				<subThoroughfare>37300–37598</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.98282944189003" lat="34.0550390010569">
+				<time>536879821.0004072</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37671 Oak Glen Rd</name>
+				<subThoroughfare>37671</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97523031664588" lat="34.054455567760904">
+				<time>536879862.0001413</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37854–38198 Potato Canyon Rd</name>
+				<subThoroughfare>37854–38198</subThoroughfare>
+				<thoroughfare>Potato Canyon Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96761263971979" lat="34.05397022142382">
+				<time>536879914.0002277</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>38354–38570 Potato Canyon Rd</name>
+				<subThoroughfare>38354–38570</subThoroughfare>
+				<thoroughfare>Potato Canyon Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.95975808022762" lat="34.053606004167996">
+				<time>536880008.0002794</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>38660–38954 Oak Glen Rd</name>
+				<subThoroughfare>38660–38954</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.95274397048244" lat="34.051460557799714">
+				<time>536880313.286828</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>65.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38480</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.94758077093637" lat="34.04975646001931">
+				<time>536884716.156159</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39249–39299 Oak Glen Rd</name>
+				<subThoroughfare>39249–39299</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96396598247273" lat="34.01599813743839">
+				<time>536885016.166213</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>13026–13172 Oak Glen Rd</name>
+				<subThoroughfare>13026–13172</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96562992327183" lat="34.009154179837644">
+				<time>536885058.9998468</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>13400–13498 Oak Glen Rd</name>
+				<subThoroughfare>13400–13498</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Yucaipa</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92399</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96258579456888" lat="34.00325818416657">
+				<time>536885092.9997205</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8299–8305 Oak Glen Rd</name>
+				<subThoroughfare>8299–8305</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96273467652179" lat="33.99690231887712">
+				<time>536885140.9995798</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8553 Oak Glen Rd</name>
+				<subThoroughfare>8553</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96450137932585" lat="33.99068156222294">
+				<time>536885181.9994116</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8901–9179 Oak Glen Rd</name>
+				<subThoroughfare>8901–9179</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.9693134151159" lat="33.98562935069271">
+				<time>536885216.9992908</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>9350 Oak Glen Rd</name>
+				<subThoroughfare>9350</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97475449783252" lat="33.981207050297044">
+				<time>536885250.9981738</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>9595–9665 Oak Glen Rd</name>
+				<subThoroughfare>9595–9665</subThoroughfare>
+				<thoroughfare>Oak Glen Rd</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97735832365775" lat="33.97525196850215">
+				<time>536885292.9980283</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10043 Beaumont Ave</name>
+				<subThoroughfare>10043</subThoroughfare>
+				<thoroughfare>Beaumont Ave</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.9773435966855" lat="33.96889702034177">
+				<time>536885348.9978353</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10501 Beaumont Ave</name>
+				<subThoroughfare>10501</subThoroughfare>
+				<thoroughfare>Beaumont Ave</thoroughfare>
+				<locality>Cherry Valley</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97734361725726" lat="33.962490191097686">
+				<time>536885392.9976828</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10911–10957 Beaumont Ave</name>
+				<subThoroughfare>10911–10957</subThoroughfare>
+				<thoroughfare>Beaumont Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97729091291819" lat="33.956130726892745">
+				<time>536885427.9984237</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>11309–11425 Beaumont Ave</name>
+				<subThoroughfare>11309–11425</subThoroughfare>
+				<thoroughfare>Beaumont Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97731453972594" lat="33.94965751284014">
+				<time>536885473.9988415</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>11815–11823 Beaumont Ave</name>
+				<subThoroughfare>11815–11823</subThoroughfare>
+				<thoroughfare>Beaumont Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.97045105140042" lat="33.94697027285062">
+				<time>536885623.9985323</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>847–893 Oak Valley Pkwy</name>
+				<subThoroughfare>847–893</subThoroughfare>
+				<thoroughfare>Oak Valley Pkwy</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96609233781916" lat="33.94178070996468">
+				<time>536885690.9983801</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1254 Pennsylvania Ave</name>
+				<subThoroughfare>1254</subThoroughfare>
+				<thoroughfare>Pennsylvania Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96607550622855" lat="33.935412402378425">
+				<time>536885741.9982653</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>999 Pennsylvania Ave</name>
+				<subThoroughfare>999</subThoroughfare>
+				<thoroughfare>Pennsylvania Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.96610161250622" lat="33.92908603819167">
+				<time>536885829.9980667</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>517–537 Pennsylvania Ave</name>
+				<subThoroughfare>517–537</subThoroughfare>
+				<thoroughfare>Pennsylvania Ave</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.95873368810454" lat="33.927023820833845">
+				<time>536885927.9988472</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.95097883877023" lat="33.92687905980273">
+				<time>536885951.9988111</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Beaumont</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92223</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.94340889554972" lat="33.92662968377897">
+				<time>536885973.9987772</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.93560660188622" lat="33.926337685410545">
+				<time>536885997.9987408</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.92785752845147" lat="33.926032617737135">
+				<time>536886020.9997044</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.9200406737856" lat="33.92570415210772">
+				<time>536886042.9996703</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.91233415912312" lat="33.9245092177006">
+				<time>536886064.9996363</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.90470564809685" lat="33.92414672296973">
+				<time>536886086.9996018</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.89709494388325" lat="33.92411117267199">
+				<time>536886108.9995681</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.88922964333764" lat="33.92410647959798">
+				<time>536886131.9995327</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.88149577943757" lat="33.924127461205416">
+				<time>536886153.9994986</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.87377976839932" lat="33.92413298881875">
+				<time>536886175.9994646</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.86599369897506" lat="33.92415506653356">
+				<time>536886198.999429</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.8583406056505" lat="33.9246309727889">
+				<time>536886220.999394</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85110001997327" lat="33.92681817836358">
+				<time>536886243.9993591</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.84346739210301" lat="33.92839929979537">
+				<time>536886266.999324</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92220</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.83588144351769" lat="33.93021610832046">
+				<time>536886289.9999776</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>Interstate 10</name>
+				<thoroughfare>Interstate 10</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.82819089254103" lat="33.931412270551924">
+				<time>536886313.0000291</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Banning</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.82047127227925" lat="33.930433823791624">
+				<time>536886336.000018</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.81442755129618" lat="33.92626509032509">
+				<time>536886358.9999936</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.80844888248062" lat="33.922045186301794">
+				<time>536886381.9999673</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.80165386296862" lat="33.91925739209035">
+				<time>536886403.9999402</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.79384996851174" lat="33.918607980226525">
+				<time>536886426.9999115</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.78612630434603" lat="33.918608191699725">
+				<time>536886448.9998847</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.77824070983166" lat="33.91860946618601">
+				<time>536886470.9998578</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.77035203898201" lat="33.91878473895857">
+				<time>536886492.9998307</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.76262691922172" lat="33.91999954120975">
+				<time>536886514.9998034</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.75481493880407" lat="33.92076677085702">
+				<time>536886536.9997766</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.7469716360953" lat="33.92139325708016">
+				<time>536886558.9997487</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.73975394313916" lat="33.923973446945126">
+				<time>536886580.9997224</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.7320777789533" lat="33.92407445445085">
+				<time>536886602.9996952</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.7243239975232" lat="33.9227672282157">
+				<time>536886624.999668</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Cabazon</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92230</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.71658187479645" lat="33.92147579081633">
+				<time>536886646.9996417</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.70874995235354" lat="33.92103752502492">
+				<time>536886668.9996141</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.7012580255059" lat="33.922958530156976">
+				<time>536886690.999587</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.69379491875279" lat="33.92441014513322">
+				<time>536886713.0000324</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.68608782142134" lat="33.923039584772575">
+				<time>536886735.9999743</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.67839710812659" lat="33.92239723267489">
+				<time>536886758.9999369</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.67070730851786" lat="33.922609071846736">
+				<time>536886780.9999084</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Palm Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.66284802227615" lat="33.922129803859974">
+				<time>536886802.9988832</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>Whitewater Adobe Park</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Palm Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Whitewater Adobe Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.65521246082254" lat="33.92183942638236">
+				<time>536886825.9988575</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Palm Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.64767582369848" lat="33.92295757641396">
+				<time>536886849.99883</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Palm Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.63997017170811" lat="33.92348081912475">
+				<time>536886872.9988037</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Palm Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.63251126263665" lat="33.92154908639697">
+				<time>536886894.9987787</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.62574424402807" lat="33.9186512454499">
+				<time>536886916.9987539</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.61812344820437" lat="33.91703481043655">
+				<time>536886941.9987265</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 E</name>
+				<thoroughfare>I-10 E</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.61086588019953" lat="33.91517655870729">
+				<time>536886966.9986981</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>Garnet Rd</name>
+				<thoroughfare>Garnet Rd</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.6032921968709" lat="33.914701306158385">
+				<time>536886995.9986651</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>I-10 W</name>
+				<thoroughfare>I-10 W</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.60104494453601" lat="33.920939588240834">
+				<time>536887022.998635</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5995549175577" lat="33.92720936603442">
+				<time>536887048.9986056</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59801515922757" lat="33.933530763575355">
+				<time>536887073.9985775</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59645322937027" lat="33.939886439974245">
+				<time>536887098.9985493</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59490599720203" lat="33.946248928986066">
+				<time>536887123.999204</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5932985791287" lat="33.95260134557322">
+				<time>536887148.9991193</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59126896475975" lat="33.9588636412369">
+				<time>536887173.9990643</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58923512961482" lat="33.96513481329053">
+				<time>536887198.9990232</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58719575069448" lat="33.971409617068886">
+				<time>536887223.998987</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58515929899116" lat="33.97767504171572">
+				<time>536887248.9989496</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58312254373217" lat="33.983941610682486">
+				<time>536887273.998913</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58109961821147" lat="33.99020687061319">
+				<time>536887298.998876</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57906138240587" lat="33.99647921673054">
+				<time>536887323.9988402</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57702316066592" lat="34.002751186759326">
+				<time>536887352.998798</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57500356775019" lat="34.00903963662905">
+				<time>536887381.9987546</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57796336383849" lat="34.01486548076465">
+				<time>536887412.9987092</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58295845909045" lat="34.01987126806477">
+				<time>536887443.9986647</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.585161901806" lat="34.026082643177645">
+				<time>536887472.9986213</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Whitewater</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92282</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59042621468892" lat="34.03072065009396">
+				<time>536887501.9986123</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>State Highway 62</name>
+				<thoroughfare>State Highway 62</thoroughfare>
+				<locality>Desert Hot Springs</locality>
+				<subAdministrativeArea>Riverside</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92240</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58863416104636" lat="34.037864971182266">
+				<time>536887538.9985318</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>49515–49545 29 Palms Hwy</name>
+				<subThoroughfare>49515–49545</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58448160691833" lat="34.043293805227684">
+				<time>536887566.0001055</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49549 29 Palms Hwy</name>
+				<subThoroughfare>49549</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57943095431887" lat="34.04804967605663">
+				<time>536887596.9999572</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49769 29 Palms Hwy</name>
+				<subThoroughfare>49769</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57421832648562" lat="34.05291375995384">
+				<time>536887625.999894</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49997 29 Palms Hwy</name>
+				<subThoroughfare>49997</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.56865813095746" lat="34.057440442116246">
+				<time>536887652.9998462</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>50151–50299 29 Palms Hwy</name>
+				<subThoroughfare>50151–50299</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5628261058832" lat="34.061498352304035">
+				<time>536887677.9998051</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>50549 29 Palms Hwy</name>
+				<subThoroughfare>50549</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.55689127281855" lat="34.06564734318084">
+				<time>536887702.9997629</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>50827 29 Palms Hwy</name>
+				<subThoroughfare>50827</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.55080989238431" lat="34.06984459937861">
+				<time>536887727.9998254</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>51019–51041 29 Palms Hwy</name>
+				<subThoroughfare>51019–51041</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.54474576518223" lat="34.07400039473731">
+				<time>536887752.9998039</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>51301–51493 29 Palms Hwy</name>
+				<subThoroughfare>51301–51493</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.53897350415194" lat="34.078098946181505">
+				<time>536887776.9997679</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>51613 29 Palms Hwy</name>
+				<subThoroughfare>51613</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5327345689004" lat="34.08190764745072">
+				<time>536887800.9997296</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>51719–51937 29 Palms Hwy</name>
+				<subThoroughfare>51719–51937</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5262567283635" lat="34.08560342865445">
+				<time>536887825.9996873</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>52217–52323 29 Palms Hwy</name>
+				<subThoroughfare>52217–52323</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5198724779792" lat="34.08925914209979">
+				<time>536887849.9996482</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>52461–52505 29 Palms Hwy</name>
+				<subThoroughfare>52461–52505</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.51355141508478" lat="34.09287297373314">
+				<time>536887873.9996084</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>52667–52973 29 Palms Hwy</name>
+				<subThoroughfare>52667–52973</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.50708003834379" lat="34.09628431442637">
+				<time>536887897.9995687</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>53065 29 Palms Hwy</name>
+				<subThoroughfare>53065</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.50055015592179" lat="34.09957081351047">
+				<time>536887921.9995286</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>53291 29 Palms Hwy</name>
+				<subThoroughfare>53291</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Morongo Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92256</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.49401047097845" lat="34.10286604609343">
+				<time>536887945.9994892</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>53555–53845 29 Palms Hwy</name>
+				<subThoroughfare>53555–53845</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.48741257913039" lat="34.106070527199165">
+				<time>536887969.9994495</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>54011–54167 29 Palms Hwy</name>
+				<subThoroughfare>54011–54167</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.48081062003295" lat="34.10922948813999">
+				<time>536887994.0000443</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>54341–54463 29 Palms Hwy</name>
+				<subThoroughfare>54341–54463</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Country Club</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.47383497903338" lat="34.111927318118546">
+				<time>536888019.0000229</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>54501–54683 29 Palms Hwy</name>
+				<subThoroughfare>54501–54683</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Country Club</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.46655749227286" lat="34.11417323615362">
+				<time>536888045.9999835</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>54952–54972 Camino del Cielo Ct</name>
+				<subThoroughfare>54952–54972</subThoroughfare>
+				<thoroughfare>Camino del Cielo Ct</thoroughfare>
+				<subLocality>Country Club</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.45928885383265" lat="34.11598747468214">
+				<time>536888077.9999346</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>56091 29 Palms Hwy</name>
+				<subThoroughfare>56091</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Country Club</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4519554549358" lat="34.11784163337263">
+				<time>536888131.9998487</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>55569 29 Palms Hwy</name>
+				<subThoroughfare>55569</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Old Town</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44465202758703" lat="34.11973875597583">
+				<time>536888196.9997457</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>55883–55889 29 Palms Hwy</name>
+				<subThoroughfare>55883–55889</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Old Town</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43706317213751" lat="34.12057666260968">
+				<time>536888254.9996531</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>56275 29 Palms Hwy</name>
+				<subThoroughfare>56275</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Storey Park</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42935076390904" lat="34.12057822655354">
+				<time>536888297.9995855</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>56501–56685 29 Palms Hwy</name>
+				<subThoroughfare>56501–56685</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Storey Park</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42168525975873" lat="34.12104272388346">
+				<time>536888370.9984695</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>56945 29 Palms Hwy</name>
+				<subThoroughfare>56945</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Storey Park</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4145845869694" lat="34.123284900817644">
+				<time>536888556.9987965</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>4.0</horizontalAccuracy>
+				<name>57260–57298 29 Palms Hwy</name>
+				<subThoroughfare>57260–57298</subThoroughfare>
+				<thoroughfare>29 Palms Hwy</thoroughfare>
+				<subLocality>Western Hills Ranchos</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4136683603972" lat="34.12957027427552">
+				<time>536888602.9987457</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>6824–6844 Old Woman Springs Rd</name>
+				<subThoroughfare>6824–6844</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Airport Community</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.41239002277008" lat="34.13587583973536">
+				<time>536888634.9987117</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>6473–6549 Old Woman Springs Rd</name>
+				<subThoroughfare>6473–6549</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Airport Community</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.41401380736058" lat="34.14220600570608">
+				<time>536888665.9986775</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>6050–6168 Old Woman Springs Rd</name>
+				<subThoroughfare>6050–6168</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Airport Community</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.41863041651061" lat="34.14735679795381">
+				<time>536888696.9986446</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>5821–6001 Old Woman Springs Rd</name>
+				<subThoroughfare>5821–6001</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.41915851074894" lat="34.153821432401166">
+				<time>536888725.9986132</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>5428 Old Woman Springs Rd</name>
+				<subThoroughfare>5428</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42122024372821" lat="34.16002259802313">
+				<time>536888751.9985846</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>5132 Old Woman Springs Rd</name>
+				<subThoroughfare>5132</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42317567913584" lat="34.166212580294335">
+				<time>536888778.9985552</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>4785 Old Woman Springs Rd</name>
+				<subThoroughfare>4785</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42493079980838" lat="34.17258931767967">
+				<time>536888804.9985276</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>4417–4447 Old Woman Springs Rd</name>
+				<subThoroughfare>4417–4447</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.42766321703931" lat="34.17866829917906">
+				<time>536888831.9993696</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>4151–4187 Old Woman Springs Rd</name>
+				<subThoroughfare>4151–4187</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<subLocality>Western Hills Estates</subLocality>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43078725417008" lat="34.18469164636439">
+				<time>536888857.99913</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>3771–3927 Old Woman Springs Rd</name>
+				<subThoroughfare>3771–3927</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43528572382166" lat="34.189795557130054">
+				<time>536888882.9990234</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>3229–3409 Old Woman Springs Rd</name>
+				<subThoroughfare>3229–3409</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4404671840252" lat="34.194501595633604">
+				<time>536888907.9989662</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2977–3031 Old Woman Springs Rd</name>
+				<subThoroughfare>2977–3031</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44580328933996" lat="34.19922536446515">
+				<time>536888935.9989519</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2680–3058 Old Woman Springs Rd</name>
+				<subThoroughfare>2680–3058</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44167821102867" lat="34.20459882496547">
+				<time>536888962.9989041</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2487–2737 Old Woman Springs Rd</name>
+				<subThoroughfare>2487–2737</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43959496152242" lat="34.210889376848215">
+				<time>536888988.9988608</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2281–2307 Old Woman Springs Rd</name>
+				<subThoroughfare>2281–2307</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43961035139239" lat="34.21722352124687">
+				<time>536889013.9988161</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1919–2023 Old Woman Springs Rd</name>
+				<subThoroughfare>1919–2023</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43961674274328" lat="34.223593133365775">
+				<time>536889039.99877</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1627–1673 Old Woman Springs Rd</name>
+				<subThoroughfare>1627–1673</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43961355520119" lat="34.22991252227231">
+				<time>536889064.9987242</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1300 Old Woman Springs Rd</name>
+				<subThoroughfare>1300</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43962640957697" lat="34.23625009218244">
+				<time>536889091.9986768</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>925–981 Old Woman Springs Rd</name>
+				<subThoroughfare>925–981</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4396386972122" lat="34.24279867319472">
+				<time>536889117.99963</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>529–585 Old Woman Springs Rd</name>
+				<subThoroughfare>529–585</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43967200911794" lat="34.24918188587693">
+				<time>536889142.9995844</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>151–239 Old Woman Springs Rd</name>
+				<subThoroughfare>151–239</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.43873328003846" lat="34.25558359949504">
+				<time>536889167.9995399</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>300–338 Old Woman Springs Rd N</name>
+				<subThoroughfare>300–338</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Yucca Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92284</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44188522465477" lat="34.2614116135212">
+				<time>536889195.999489</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>626–690 Old Woman Springs Rd N</name>
+				<subThoroughfare>626–690</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44612232703757" lat="34.266788872651325">
+				<time>536889223.9994545</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>941–999 Old Woman Springs Rd N</name>
+				<subThoroughfare>941–999</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.44882022716611" lat="34.27272896155683">
+				<time>536889250.99941</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1201–1299 Old Woman Springs Rd N</name>
+				<subThoroughfare>1201–1299</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.45068266694109" lat="34.278994265695346">
+				<time>536889277.0000548</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>1601 Old Woman Springs Rd N</name>
+				<subThoroughfare>1601</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.45444857620305" lat="34.28461916751311">
+				<time>536889302.9999971</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2089 Old Woman Springs Rd N</name>
+				<subThoroughfare>2089</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.45825298570894" lat="34.29017001208689">
+				<time>536889328.9999406</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2201–2299 Old Woman Springs Rd N</name>
+				<subThoroughfare>2201–2299</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.46208634033913" lat="34.295736368182695">
+				<time>536889354.999889</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2401–2499 Old Woman Springs Rd N</name>
+				<subThoroughfare>2401–2499</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.46596599938839" lat="34.301315188723876">
+				<time>536889379.9998394</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>2823–2875 Old Woman Springs Rd N</name>
+				<subThoroughfare>2823–2875</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.46989206718136" lat="34.30694573162072">
+				<time>536889404.9997722</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>12001–12999 Old Woman Springs Rd N</name>
+				<subThoroughfare>12001–12999</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.47381616762183" lat="34.31258131882255">
+				<time>536889429.9997201</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>13651–14299 Old Woman Springs Rd N</name>
+				<subThoroughfare>13651–14299</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.4777397840576" lat="34.318210197212586">
+				<time>536889454.9996699</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>15131–15521 Old Woman Springs Rd N</name>
+				<subThoroughfare>15131–15521</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.48166787862819" lat="34.323843383739685">
+				<time>536889479.9996201</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>16119–16971 Old Woman Springs Rd N</name>
+				<subThoroughfare>16119–16971</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.48559749524303" lat="34.32947067000025">
+				<time>536889504.9995714</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>17201–18215 Old Woman Springs Rd N</name>
+				<subThoroughfare>17201–18215</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.49009909557348" lat="34.33473989887753">
+				<time>536889529.9995229</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>19079–19309 Old Woman Springs Rd N</name>
+				<subThoroughfare>19079–19309</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.49676872786881" lat="34.33813308796599">
+				<time>536889554.9994732</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>20271–20659 Old Woman Springs Rd N</name>
+				<subThoroughfare>20271–20659</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5034924123172" lat="34.34146628407608">
+				<time>536889579.9994249</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>21751–22443 Old Woman Springs Rd N</name>
+				<subThoroughfare>21751–22443</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.51023056095036" lat="34.34478526136622">
+				<time>536889604.9993759</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>5190 Old Woman Springs Rd N</name>
+				<subThoroughfare>5190</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd N</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.51764299965367" lat="34.34673033090219">
+				<time>536889629.9993265</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>52513–52571 Old Woman Springs Rd</name>
+				<subThoroughfare>52513–52571</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.52493186611167" lat="34.34893189686501">
+				<time>536889654.9992778</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>52331–52373 Old Woman Springs Rd</name>
+				<subThoroughfare>52331–52373</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5291950381499" lat="34.35436780685737">
+				<time>536889679.9997802</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>52085–52145 Old Woman Springs Rd</name>
+				<subThoroughfare>52085–52145</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.53275741543892" lat="34.36018146218908">
+				<time>536889704.999962</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>51899–51955 Old Woman Springs Rd</name>
+				<subThoroughfare>51899–51955</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.53660317585401" lat="34.36587922058219">
+				<time>536889729.9999833</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>51579–51755 Old Woman Springs Rd</name>
+				<subThoroughfare>51579–51755</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.54348020099154" lat="34.36864817447029">
+				<time>536889754.9999586</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>51524–51554 Old Woman Springs Rd</name>
+				<subThoroughfare>51524–51554</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.55137443080962" lat="34.36874347494414">
+				<time>536889779.9999243</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>51279–51465 Old Woman Springs Rd</name>
+				<subThoroughfare>51279–51465</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.5591923772178" lat="34.36884100595318">
+				<time>536889803.99989</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>51044–51146 Old Woman Springs Rd</name>
+				<subThoroughfare>51044–51146</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.56686923995645" lat="34.36891837272728">
+				<time>536889827.9998555</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>50538–50874 Old Woman Springs Rd</name>
+				<subThoroughfare>50538–50874</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.57455336982247" lat="34.369011022039565">
+				<time>536889852.9998183</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>50538–50874 Old Woman Springs Rd</name>
+				<subThoroughfare>50538–50874</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58221939800563" lat="34.36909325838028">
+				<time>536889877.9997797</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>50398–50496 Old Woman Springs Rd</name>
+				<subThoroughfare>50398–50496</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.58992092227939" lat="34.36915626879521">
+				<time>536889902.9987352</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>50026–50268 Old Woman Springs Rd</name>
+				<subThoroughfare>50026–50268</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.59762043994532" lat="34.369246240677626">
+				<time>536889927.9986964</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49854–50024 Old Woman Springs Rd</name>
+				<subThoroughfare>49854–50024</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.60531618543955" lat="34.369437437362556">
+				<time>536889952.9986596</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49714–49776 Old Woman Springs Rd</name>
+				<subThoroughfare>49714–49776</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.61300945079573" lat="34.369599042532286">
+				<time>536889977.9986241</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>6445 Pony Rd</name>
+				<subThoroughfare>6445</subThoroughfare>
+				<thoroughfare>Pony Rd</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.62067693118085" lat="34.369715871968076">
+				<time>536890002.9985875</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49266–49526 Old Woman Springs Rd</name>
+				<subThoroughfare>49266–49526</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.62835619872673" lat="34.36978833790233">
+				<time>536890027.9985508</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>49040–49158 Old Woman Springs Rd</name>
+				<subThoroughfare>49040–49158</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.63603270793797" lat="34.36988651504814">
+				<time>536890052.9985145</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>48558–49038 Old Woman Springs Rd</name>
+				<subThoroughfare>48558–49038</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.64371874809758" lat="34.36997449744587">
+				<time>536890077.9984776</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>48558–49038 Old Woman Springs Rd</name>
+				<subThoroughfare>48558–49038</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.65139552175674" lat="34.370157363406236">
+				<time>536890102.9988713</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>48462–48474 Old Woman Springs Rd</name>
+				<subThoroughfare>48462–48474</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.65794397295993" lat="34.37342550134457">
+				<time>536890129.998971</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>48147–48255 Old Woman Springs Rd</name>
+				<subThoroughfare>48147–48255</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Johnson Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.66318274075861" lat="34.37824144038425">
+				<time>536890151.9989785</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>45170–45554 Old Woman Springs Rd</name>
+				<subThoroughfare>45170–45554</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Landers</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92285</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.66835894068541" lat="34.38296318601486">
+				<time>536890176.9989597</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>44064–44858 Old Woman Springs Rd</name>
+				<subThoroughfare>44064–44858</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.67367411700516" lat="34.387806619730725">
+				<time>536890201.9989337</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>44064–44858 Old Woman Springs Rd</name>
+				<subThoroughfare>44064–44858</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.67899599979245" lat="34.392634332291905">
+				<time>536890226.9989063</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>44000–44062 Old Woman Springs Rd</name>
+				<subThoroughfare>44000–44062</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.68439580641629" lat="34.39737747220831">
+				<time>536890251.9988798</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>43958–43980 Old Woman Springs Rd</name>
+				<subThoroughfare>43958–43980</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.69181809280823" lat="34.39908115466999">
+				<time>536890276.9988526</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>43926–43946 Old Woman Springs Rd</name>
+				<subThoroughfare>43926–43946</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.69972660670282" lat="34.39899079212441">
+				<time>536890301.9988253</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>43880–43888 Old Woman Springs Rd</name>
+				<subThoroughfare>43880–43888</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.70734698731127" lat="34.400133345921674">
+				<time>536890326.9987985</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>43838 Old Woman Springs Rd</name>
+				<subThoroughfare>43838</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.71377942115765" lat="34.40387836367628">
+				<time>536890351.9987708</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>41860–42086 Old Woman Springs Rd</name>
+				<subThoroughfare>41860–42086</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.71984425361718" lat="34.407959549118225">
+				<time>536890376.9987439</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>41532–41692 Old Woman Springs Rd</name>
+				<subThoroughfare>41532–41692</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.72513213672062" lat="34.412732904054614">
+				<time>536890401.998717</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>41200–41330 Old Woman Springs Rd</name>
+				<subThoroughfare>41200–41330</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.73190995274156" lat="34.415871401061516">
+				<time>536890426.9986899</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>40997–41049 Old Woman Springs Rd</name>
+				<subThoroughfare>40997–41049</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.73955068159984" lat="34.417460853419385">
+				<time>536890451.9986625</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>40715–40861 Old Woman Springs Rd</name>
+				<subThoroughfare>40715–40861</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.74734735712234" lat="34.41845488291845">
+				<time>536890476.998635</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>40632–40642 Old Woman Springs Rd</name>
+				<subThoroughfare>40632–40642</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.75515923363831" lat="34.41929148467949">
+				<time>536890501.9986079</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>40352–40496 Old Woman Springs Rd</name>
+				<subThoroughfare>40352–40496</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.76284170389049" lat="34.42073838966938">
+				<time>536890526.9985812</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>40247–40351 Old Woman Springs Rd</name>
+				<subThoroughfare>40247–40351</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.77038394477415" lat="34.42268363741816">
+				<time>536890551.9989765</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>40111 Old Woman Springs Rd</name>
+				<subThoroughfare>40111</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.77790874986165" lat="34.424632786354">
+				<time>536890576.9990364</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39786–40092 Old Woman Springs Rd</name>
+				<subThoroughfare>39786–40092</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.78545054795275" lat="34.426482801047754">
+				<time>536890601.9990317</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39720–39784 Old Woman Springs Rd</name>
+				<subThoroughfare>39720–39784</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.79299130988325" lat="34.42841506822209">
+				<time>536890626.9990134</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39508–39618 Old Woman Springs Rd</name>
+				<subThoroughfare>39508–39618</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.80043216843319" lat="34.43056789004672">
+				<time>536890651.998993</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39300–39414 Old Woman Springs Rd</name>
+				<subThoroughfare>39300–39414</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.80787025812499" lat="34.43276528214838">
+				<time>536890676.9999713</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>39051–39191 Old Woman Springs Rd</name>
+				<subThoroughfare>39051–39191</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.81546299814015" lat="34.434565257925115">
+				<time>536890701.9999506</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>38828–38968 Old Woman Springs Rd</name>
+				<subThoroughfare>38828–38968</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.82302683515549" lat="34.436174502028344">
+				<time>536890726.9999251</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10317–10335 Donaldson Rd</name>
+				<subThoroughfare>10317–10335</subThoroughfare>
+				<thoroughfare>Donaldson Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.8304595218779" lat="34.43772134187102">
+				<time>536890750.9998958</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>38131 Old Woman Springs Rd</name>
+				<subThoroughfare>38131</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.83810342827125" lat="34.439326155791804">
+				<time>536890775.999872</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>38080–38088 Old Woman Springs Rd</name>
+				<subThoroughfare>38080–38088</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.8457638190281" lat="34.440921447822625">
+				<time>536890800.9998509</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37586–37822 Old Woman Springs Rd</name>
+				<subThoroughfare>37586–37822</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85316312376027" lat="34.44250346202284">
+				<time>536890825.999829</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37147–37585 Old Woman Springs Rd</name>
+				<subThoroughfare>37147–37585</subThoroughfare>
+				<thoroughfare>Old Woman Springs Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85812755412842" lat="34.43750863357017">
+				<time>536890889.9997953</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>10052–10498 Camp Rock Rd</name>
+				<subThoroughfare>10052–10498</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85815746308708" lat="34.43105446467766">
+				<time>536890917.9997734</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>9687–10051 Camp Rock Rd</name>
+				<subThoroughfare>9687–10051</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85817600308656" lat="34.424570849820135">
+				<time>536890945.9997494</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>9188–9314 Camp Rock Rd</name>
+				<subThoroughfare>9188–9314</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85820248908495" lat="34.418108238829184">
+				<time>536890974.0000856</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8678–8904 Camp Rock Rd</name>
+				<subThoroughfare>8678–8904</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85823396581135" lat="34.41163840976533">
+				<time>536891002.000056</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8186–8676 Camp Rock Rd</name>
+				<subThoroughfare>8186–8676</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85828660573391" lat="34.40523223049655">
+				<time>536891029.0000306</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>8004–8184 Camp Rock Rd</name>
+				<subThoroughfare>8004–8184</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85836871845562" lat="34.3988642381279">
+				<time>536891056.000006</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>7707–7711 Camp Rock Rd</name>
+				<subThoroughfare>7707–7711</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85839987477104" lat="34.39244783945251">
+				<time>536891082.999981</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>7386–7698 Camp Rock Rd</name>
+				<subThoroughfare>7386–7698</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85849357871426" lat="34.38606565010981">
+				<time>536891109.9999554</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>7307–7385 Camp Rock Rd</name>
+				<subThoroughfare>7307–7385</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.8589837634674" lat="34.37975282561064">
+				<time>536891140.9999264</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>7077 Camp Rock Rd</name>
+				<subThoroughfare>7077</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85964264171695" lat="34.37340763852154">
+				<time>536891176.9998934</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>6841–6895 Camp Rock Rd</name>
+				<subThoroughfare>6841–6895</subThoroughfare>
+				<thoroughfare>Camp Rock Rd</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.8586245811967" lat="34.36702665069069">
+				<time>536891221.9998524</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>36619–36669 State Highway 18</name>
+				<subThoroughfare>36619–36669</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85546353682066" lat="34.36109911038539">
+				<time>536891253.9997783</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>36733–36899 State Highway 18</name>
+				<subThoroughfare>36733–36899</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85097296929023" lat="34.3558184686955">
+				<time>536891295.9997232</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>37019–37101 State Highway 18</name>
+				<subThoroughfare>37019–37101</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Lucerne Valley</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92356</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.84628692485438" lat="34.35069194791771">
+				<time>536891327.9996922</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>37213–37403</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.84225937279251" lat="34.345279230234624">
+				<time>536891378.9996959</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>37405–37655</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8396959811106" lat="34.33926133971254">
+				<time>536891415.0001005</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>37657–38101</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8338544212245" lat="34.335141782245">
+				<time>536891467.9990426</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38328–38668</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8282345774647" lat="34.32928932992209">
+				<time>536891588.9988543</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38329–38669</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.82199777338953" lat="34.3255196833763">
+				<time>536891635.998799</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38410</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81757157539543" lat="34.320366058292876">
+				<time>536891669.998763</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>38775–39903</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.8034994939647" lat="34.29346856488227">
+				<time>536891927.158106</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>41293–41441</subThoroughfare>
+				<thoroughfare>State Highway 18</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81080472927825" lat="34.291500861926224">
+				<time>536891999.9988596</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>41853–41887</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81824077756886" lat="34.29288144736249">
+				<time>536892034.9988103</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42279–42397</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81964367116194" lat="34.28659133871372">
+				<time>536892077.9987627</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42531–42763</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81531771572162" lat="34.28130036470039">
+				<time>536892110.9987288</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>42851–43257</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.81705055678134" lat="34.27513845431178">
+				<time>536892155.9986802</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>43259–43645</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.82409197921345" lat="34.272410301509154">
+				<time>536892199.9986349</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>43657–44399</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.83155522441939" lat="34.27375828929244">
+				<time>536892232.9993395</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>43656–44398</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.83921154427483" lat="34.27290400515014">
+				<time>536892271.9998686</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>431</subThoroughfare>
+				<thoroughfare>E North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.84635318135736" lat="34.270578359468665">
+				<time>536892312.999927</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>100–148</subThoroughfare>
+				<thoroughfare>W North Shore Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.84603526338998" lat="34.26409964002733">
+				<time>536892355.9999366</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>470–554 Greenway Dr</name>
+				<subThoroughfare>470–554</subThoroughfare>
+				<thoroughfare>Greenway Dr</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-116.85262328297632" lat="34.260771913493805">
+				<time>536892416.9999461</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>439</subThoroughfare>
+				<thoroughfare>W Big Bear Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.86028014613686" lat="34.261133703047435">
+				<time>536892481.999934</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>821</subThoroughfare>
+				<thoroughfare>W Aeroplane Blvd</thoroughfare>
+				<locality>Big Bear City</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92314</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.86620063518346" lat="34.25715094339087">
+				<time>536892636.0000806</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>6.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<thoroughfare>Division Dr</thoroughfare>
+				<locality>Big Bear Lake</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92315</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-116.87159246296154" lat="34.25506668751092">
+				<time>536895030.357341</time>
+				<timeZone>America/Los_Angeles</timeZone>
+				<horizontalAccuracy>65.0</horizontalAccuracy>
+				<name>San Bernardino National Forest</name>
+				<subThoroughfare>374</subThoroughfare>
+				<thoroughfare>Starlight Cir</thoroughfare>
+				<locality>Big Bear Lake</locality>
+				<subAdministrativeArea>San Bernardino</subAdministrativeArea>
+				<administrativeArea>CA</administrativeArea>
+				<postalCode>92315</postalCode>
+				<country>United States</country>
+				<areasOfInterest>San Bernardino National Forest</areasOfInterest>
+			</trkpt>
+		</trkseg>
+	</trk>
+</gpx>

@@ -5,66 +5,145 @@
 import Foundation
 
 public enum DemoData {
-    public static func seed(into store: TravelsStore, anchoredTo referenceDate: Date) throws {
-        let calendar = Calendar.current
-        let launchDay = calendar.startOfDay(for: referenceDate)
+    public static let seedVersion = "gpx-demo-metadata-v2"
 
-        let demoEvents = [
-            DemoEvent(dayOffset: -3, minuteOffset: 7 * 60 + 5, latitude: 37.8044, longitude: -122.2711, note: "Leaving home.", speed: 0.0, horizontalAccuracy: 18, course: -1),
-            DemoEvent(dayOffset: -3, minuteOffset: 7 * 60 + 12, latitude: 37.8053, longitude: -122.2701, note: "", speed: 11.2, horizontalAccuracy: 14, course: 95),
-            DemoEvent(dayOffset: -3, minuteOffset: 7 * 60 + 20, latitude: 37.8068, longitude: -122.2686, note: "Quick coffee stop.", speed: 0.0, horizontalAccuracy: 12, course: -1),
-            DemoEvent(dayOffset: -3, minuteOffset: 7 * 60 + 31, latitude: 37.8087, longitude: -122.2662, note: "", speed: 10.4, horizontalAccuracy: 13, course: 98),
-            DemoEvent(dayOffset: -3, minuteOffset: 7 * 60 + 44, latitude: 37.8119, longitude: -122.2625, note: "At work.", speed: 0.0, horizontalAccuracy: 11, course: -1),
-            DemoEvent(dayOffset: -3, minuteOffset: 12 * 60 + 8, latitude: 37.8138, longitude: -122.2609, note: "", speed: 0.0, horizontalAccuracy: 15, course: -1),
-            DemoEvent(dayOffset: -3, minuteOffset: 12 * 60 + 16, latitude: 37.8157, longitude: -122.2580, note: "", speed: 0.0, horizontalAccuracy: 15, course: -1),
-            DemoEvent(dayOffset: -3, minuteOffset: 17 * 60 + 20, latitude: 37.8128, longitude: -122.2612, note: "", speed: 11.0, horizontalAccuracy: 14, course: 260),
-            DemoEvent(dayOffset: -3, minuteOffset: 17 * 60 + 35, latitude: 37.8069, longitude: -122.2684, note: "", speed: 10.8, horizontalAccuracy: 14, course: 255),
-            DemoEvent(dayOffset: -3, minuteOffset: 17 * 60 + 48, latitude: 37.8044, longitude: -122.2711, note: "Back home.", speed: 0.0, horizontalAccuracy: 17, course: -1),
+    private static let resourceNames = [
+        "demo-2017-06-30",
+        "demo-2018-01-05",
+        "demo-2018-07-06"
+    ]
 
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60, latitude: 37.8044, longitude: -122.2711, note: "Morning bike ride.", speed: 0.0, horizontalAccuracy: 18, course: -1),
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60 + 10, latitude: 37.8057, longitude: -122.2700, note: "", speed: 5.8, horizontalAccuracy: 12, course: 87),
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60 + 20, latitude: 37.8078, longitude: -122.2681, note: "", speed: 5.7, horizontalAccuracy: 12, course: 89),
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60 + 30, latitude: 37.8100, longitude: -122.2660, note: "", speed: 0.0, horizontalAccuracy: 10, course: -1),
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60 + 41, latitude: 37.8210, longitude: -122.2504, note: "", speed: 5.9, horizontalAccuracy: 13, course: 54),
-            DemoEvent(dayOffset: -2, minuteOffset: 8 * 60 + 55, latitude: 37.8044, longitude: -122.2711, note: "Done for now.", speed: 0.0, horizontalAccuracy: 17, course: -1),
+    public static func seed(into store: TravelsStore, anchoredTo referenceDate: Date, bundle: Bundle = .main) throws {
+        let urls = try demoTrackURLs(bundle: bundle)
+        try seed(into: store, anchoredTo: referenceDate, trackURLs: urls)
+    }
 
-            DemoEvent(dayOffset: -1, minuteOffset: 9 * 60 + 10, latitude: 37.8044, longitude: -122.2711, note: "Morning walk.", speed: 0.0, horizontalAccuracy: 18, course: -1),
-            DemoEvent(dayOffset: -1, minuteOffset: 9 * 60 + 20, latitude: 37.8060, longitude: -122.2697, note: "", speed: 1.5, horizontalAccuracy: 10, course: 45),
-            DemoEvent(dayOffset: -1, minuteOffset: 9 * 60 + 31, latitude: 37.8220, longitude: -122.2500, note: "", speed: 0.0, horizontalAccuracy: 12, course: -1),
-            DemoEvent(dayOffset: -1, minuteOffset: 9 * 60 + 40, latitude: 37.8230, longitude: -122.2489, note: "", speed: 1.4, horizontalAccuracy: 11, course: 60),
-            DemoEvent(dayOffset: -1, minuteOffset: 9 * 60 + 52, latitude: 37.8245, longitude: -122.2475, note: "", speed: 0.0, horizontalAccuracy: 12, course: -1),
-            DemoEvent(dayOffset: -1, minuteOffset: 10 * 60 + 8, latitude: 37.8044, longitude: -122.2711, note: "Back home.", speed: 0.0, horizontalAccuracy: 18, course: -1)
-        ]
-
-        for demoEvent in demoEvents {
-            guard let timestamp = calendar.date(byAdding: .day, value: demoEvent.dayOffset, to: launchDay)?
-                .addingTimeInterval(TimeInterval(demoEvent.minuteOffset * 60)) else {
-                continue
-            }
-
+    public static func seed(into store: TravelsStore, anchoredTo referenceDate: Date, trackURLs: [URL]) throws {
+        let points = try trackPoints(anchoredTo: referenceDate, trackURLs: trackURLs)
+        for point in points {
+            let geolocationID = try point.geolocation.map { try store.saveGeolocation($0) }
             let event = LocationEvent(
-                latitude: demoEvent.latitude,
-                longitude: demoEvent.longitude,
-                horizontalAccuracy: demoEvent.horizontalAccuracy,
-                course: demoEvent.course,
-                speed: demoEvent.speed,
-                timestamp: timestamp,
-                localizedDate: TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: nil),
+                latitude: point.event.latitude,
+                longitude: point.event.longitude,
+                horizontalAccuracy: point.event.horizontalAccuracy,
+                verticalAccuracy: point.event.verticalAccuracy,
+                altitude: point.event.altitude,
+                course: point.event.course,
+                speed: point.event.speed,
+                timestamp: point.event.timestamp,
+                localizedDate: point.event.localizedDate,
                 source: .simulated,
-                note: demoEvent.note
+                geolocationID: geolocationID
             )
             _ = try store.saveEvent(event, isDemo: true)
         }
     }
-}
 
-private struct DemoEvent {
-    let dayOffset: Int
-    let minuteOffset: Int
-    let latitude: Double
-    let longitude: Double
-    let note: String
-    let speed: Double
-    let horizontalAccuracy: Double
-    let course: Double
+    public static func trackPoints(anchoredTo referenceDate: Date, bundle: Bundle = .main) throws -> [GPXTrackPoint] {
+        let urls = try demoTrackURLs(bundle: bundle)
+        return try trackPoints(anchoredTo: referenceDate, trackURLs: urls)
+    }
+
+    public static func trackPoints(anchoredTo referenceDate: Date, trackURLs: [URL]) throws -> [GPXTrackPoint] {
+        let calendar = Calendar.current
+        let launchDay = calendar.startOfDay(for: referenceDate)
+        let targetOffsets = [-3, -2, -1]
+        var points: [GPXTrackPoint] = []
+        for (index, trackURL) in trackURLs.prefix(targetOffsets.count).enumerated() {
+            let imported = try GPXImporter.parse(url: trackURL)
+            let eventsWithMotion = synthesizeMotionMetadata(for: imported.trackPoints.map(\.event))
+            guard let firstTimestamp = eventsWithMotion.first?.timestamp else { continue }
+            let sourceDay = calendar.startOfDay(for: firstTimestamp)
+            let targetDay = calendar.date(byAdding: .day, value: targetOffsets[index], to: launchDay) ?? launchDay
+            let shift = targetDay.timeIntervalSince(sourceDay)
+
+            for (importedTrackPoint, importedEvent) in zip(imported.trackPoints, eventsWithMotion) {
+                let timestamp = importedEvent.timestamp.addingTimeInterval(shift)
+                let event = LocationEvent(
+                    latitude: importedEvent.latitude,
+                    longitude: importedEvent.longitude,
+                    horizontalAccuracy: importedEvent.horizontalAccuracy,
+                    verticalAccuracy: importedEvent.verticalAccuracy,
+                    altitude: importedEvent.altitude,
+                    course: importedEvent.course,
+                    speed: importedEvent.speed,
+                    timestamp: timestamp,
+                    localizedDate: TravelsDateTools.localizedDayString(
+                        for: timestamp,
+                        timeZoneIdentifier: importedTrackPoint.geolocation?.timeZoneIdentifier
+                    ),
+                    source: .simulated
+                )
+                let geolocation = importedTrackPoint.geolocation.map { shiftedGeolocation($0, timestamp: timestamp) }
+                points.append(GPXTrackPoint(event: event, geolocation: geolocation))
+            }
+        }
+        return points
+    }
+
+    private static func synthesizeMotionMetadata(for events: [LocationEvent]) -> [LocationEvent] {
+        guard !events.isEmpty else { return [] }
+        var synthesized = events
+        for index in synthesized.indices {
+            let previous = index > 0 ? synthesized[index - 1] : nil
+            let next = index < synthesized.count - 1 ? synthesized[index + 1] : nil
+            let motion = motionMetadata(previous: previous, current: synthesized[index], next: next)
+            synthesized[index].course = motion.course
+            synthesized[index].speed = motion.speed
+        }
+        return synthesized
+    }
+
+    private static func motionMetadata(previous: LocationEvent?, current: LocationEvent, next: LocationEvent?) -> (course: Double, speed: Double) {
+        if let next {
+            let seconds = max(next.timestamp.timeIntervalSince(current.timestamp), 1)
+            let distance = distanceMeters(from: current, to: next)
+            let speed = max(distance / seconds, 0.1)
+            return (bearingDegrees(from: current, to: next), speed)
+        }
+        if let previous {
+            let seconds = max(current.timestamp.timeIntervalSince(previous.timestamp), 1)
+            let distance = distanceMeters(from: previous, to: current)
+            let speed = max(distance / seconds, 0.1)
+            return (bearingDegrees(from: previous, to: current), speed)
+        }
+        return (course: 0, speed: 0.1)
+    }
+
+    private static func shiftedGeolocation(_ geolocation: Geolocation, timestamp: Date) -> Geolocation {
+        var shifted = geolocation
+        shifted.timestamp = timestamp
+        return shifted
+    }
+
+    private static func distanceMeters(from lhs: LocationEvent, to rhs: LocationEvent) -> Double {
+        let earthRadius = 6_371_000.0
+        let lat1 = lhs.latitude * .pi / 180
+        let lat2 = rhs.latitude * .pi / 180
+        let deltaLat = (rhs.latitude - lhs.latitude) * .pi / 180
+        let deltaLon = (rhs.longitude - lhs.longitude) * .pi / 180
+        let a = sin(deltaLat / 2) * sin(deltaLat / 2)
+            + cos(lat1) * cos(lat2) * sin(deltaLon / 2) * sin(deltaLon / 2)
+        let c = 2 * atan2(sqrt(a), sqrt(max(0, 1 - a)))
+        return earthRadius * c
+    }
+
+    private static func bearingDegrees(from lhs: LocationEvent, to rhs: LocationEvent) -> Double {
+        let lat1 = lhs.latitude * .pi / 180
+        let lat2 = rhs.latitude * .pi / 180
+        let deltaLon = (rhs.longitude - lhs.longitude) * .pi / 180
+        let y = sin(deltaLon) * cos(lat2)
+        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(deltaLon)
+        let bearing = atan2(y, x) * 180 / .pi
+        return bearing < 0 ? bearing + 360 : bearing
+    }
+
+    private static func demoTrackURLs(bundle: Bundle) throws -> [URL] {
+        try resourceNames.map { name in
+            guard let url = bundle.url(forResource: name, withExtension: "gpx") else {
+                throw TravelsError.invalidGPX("Missing bundled demo track: \(name).gpx")
+            }
+            return url
+        }
+    }
 }

@@ -24,106 +24,130 @@ struct SearchView: View {
     @State private var subAdministrativeArea: String?
     @State private var locality: String?
     @State private var bodyOfWater: String?
+    @State private var searchResultsScrollCommandID = UUID()
 
     var body: some View {
         NavigationStack {
-            List {
-                Section("Filters") {
-                    TextField("Search text", text: $term)
-                    Toggle("Has Note", isOn: $hasNote)
-                    Picker("Source", selection: $source) {
-                        Text("Any").tag(EventSource?.none)
-                        ForEach(EventSource.allCases.filter { $0 != .invalid }, id: \.self) { source in
-                            Text(source.displayName).tag(EventSource?.some(source))
+            ScrollViewReader { proxy in
+                List {
+                    Section("Filters") {
+                        TextField("Search text", text: $term)
+                        Toggle("Has Note", isOn: $hasNote)
+                        Picker("Source", selection: $source) {
+                            Text("Any").tag(EventSource?.none)
+                            ForEach(EventSource.allCases.filter { $0 != .invalid }, id: \.self) { source in
+                                Text(source.displayName).tag(EventSource?.some(source))
+                            }
                         }
                     }
-                }
 
-                Section("Date Range") {
-                    Toggle("From Date", isOn: $useStartDate)
-                    if useStartDate {
-                        DatePicker("After", selection: $startDate, displayedComponents: .date)
+                    Section("Date Range") {
+                        Toggle("From Date", isOn: $useStartDate)
+                        if useStartDate {
+                            DatePicker("After", selection: $startDate, displayedComponents: .date)
+                        }
+                        Toggle("Before Date", isOn: $useEndDate)
+                        if useEndDate {
+                            DatePicker("Before", selection: $endDate, displayedComponents: .date)
+                        }
                     }
-                    Toggle("Before Date", isOn: $useEndDate)
-                    if useEndDate {
-                        DatePicker("Before", selection: $endDate, displayedComponents: .date)
-                    }
-                }
 
-                Section("Place Filters") {
-                    Picker("Country", selection: $country) {
-                        Text("Any").tag(String?.none)
-                        ForEach(placeOptions.countries, id: \.self) { value in
-                            Text(value).tag(String?.some(value))
+                    Section("Place Filters") {
+                        Picker("Country", selection: $country) {
+                            Text("Any").tag(String?.none)
+                            ForEach(placeOptions.countries, id: \.self) { value in
+                                Text(value).tag(String?.some(value))
+                            }
                         }
-                    }
-                    Picker("Administrative Area", selection: $administrativeArea) {
-                        Text("Any").tag(String?.none)
-                        ForEach(placeOptions.administrativeAreas, id: \.self) { value in
-                            Text(value).tag(String?.some(value))
+                        Picker("Administrative Area", selection: $administrativeArea) {
+                            Text("Any").tag(String?.none)
+                            ForEach(placeOptions.administrativeAreas, id: \.self) { value in
+                                Text(value).tag(String?.some(value))
+                            }
                         }
-                    }
-                    Picker("Sub-Administrative Area", selection: $subAdministrativeArea) {
-                        Text("Any").tag(String?.none)
-                        ForEach(placeOptions.subAdministrativeAreas, id: \.self) { value in
-                            Text(value).tag(String?.some(value))
+                        Picker("Sub-Administrative Area", selection: $subAdministrativeArea) {
+                            Text("Any").tag(String?.none)
+                            ForEach(placeOptions.subAdministrativeAreas, id: \.self) { value in
+                                Text(value).tag(String?.some(value))
+                            }
                         }
-                    }
-                    Picker("Locality", selection: $locality) {
-                        Text("Any").tag(String?.none)
-                        ForEach(placeOptions.localities, id: \.self) { value in
-                            Text(value).tag(String?.some(value))
+                        Picker("Locality", selection: $locality) {
+                            Text("Any").tag(String?.none)
+                            ForEach(placeOptions.localities, id: \.self) { value in
+                                Text(value).tag(String?.some(value))
+                            }
                         }
-                    }
-                    Picker("Body of Water", selection: $bodyOfWater) {
-                        Text("Any").tag(String?.none)
-                        ForEach(placeOptions.bodyOfWaters, id: \.self) { value in
-                            Text(value).tag(String?.some(value))
+                        Picker("Body of Water", selection: $bodyOfWater) {
+                            Text("Any").tag(String?.none)
+                            ForEach(placeOptions.bodyOfWaters, id: \.self) { value in
+                                Text(value).tag(String?.some(value))
+                            }
                         }
-                    }
-                    Text("Place filters use exact matches from saved locations.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Results") {
-                    if model.searchResults.isEmpty {
-                        Text("Run a search to see matching events.")
+                        Text("Place filters use exact matches from saved locations.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(model.searchResults) { detail in
-                            EventRow(detail: detail)
-                                .onTapGesture {
-                                    model.selectedDate = detail.event.timestamp
-                                    model.selectedEvent = detail
-                                    dismiss()
-                                }
+                    }
+
+                    Section("Results") {
+                        Color.clear
+                            .frame(height: 1)
+                            .id(resultsAnchorID)
+                        if model.searchResults.isEmpty {
+                            Text("Run a search to see matching events.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(model.searchResults) { detail in
+                                EventRow(detail: detail)
+                                    .onTapGesture {
+                                        if let id = detail.id {
+                                            model.focusAfterCapture(eventID: id, timestamp: detail.event.timestamp)
+                                            model.selectedEvent = detail
+                                        }
+                                        dismiss()
+                                    }
+                            }
                         }
                     }
                 }
-            }
-            .navigationTitle("Search")
-            .task {
-                placeOptions = model.searchPlaceOptions()
-            }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
+                .listStyle(.plain)
+                .navigationTitle("Search")
+                .task(id: filterSignature) {
+                    refreshPlaceOptions()
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Search") {
-                        model.search(searchCriteria)
+                .task(id: searchResultsScrollCommandID) {
+                    guard !model.searchResults.isEmpty else { return }
+                    await Task.yield()
+                    await MainActor.run {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            proxy.scrollTo(resultsAnchorID, anchor: .top)
+                        }
                     }
                 }
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Reset") {
-                        clearFilters()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") { dismiss() }
                     }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Search") {
+                            model.search(searchCriteria)
+                            searchResultsScrollCommandID = UUID()
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Reset") {
+                            clearFilters()
+                        }
+                    }
+                }
+                .onAppear {
+                    refreshPlaceOptions()
                 }
             }
         }
     }
+
+    private let resultsAnchorID = "search-results-anchor"
 
     private var searchCriteria: SearchCriteria {
         SearchCriteria(
@@ -138,6 +162,61 @@ struct SearchView: View {
             bodyOfWater: bodyOfWater,
             source: source
         )
+    }
+
+    private var filterSignature: String {
+        [
+            term,
+            hasNote ? "1" : "0",
+            source.map { String($0.rawValue) } ?? "",
+            useStartDate ? "1" : "0",
+            startDate.formatted(.dateTime.year().month().day()),
+            useEndDate ? "1" : "0",
+            endDate.formatted(.dateTime.year().month().day()),
+            country ?? "",
+            administrativeArea ?? "",
+            subAdministrativeArea ?? "",
+            locality ?? "",
+            bodyOfWater ?? ""
+        ].joined(separator: "|")
+    }
+
+    private func refreshPlaceOptions() {
+        let options = model.searchPlaceOptions(matching: searchCriteria)
+        placeOptions = options
+
+        var needsRefresh = false
+
+        if let selected = country, !options.countries.contains(selected) {
+            country = nil
+            administrativeArea = nil
+            subAdministrativeArea = nil
+            locality = nil
+            bodyOfWater = nil
+            needsRefresh = true
+        } else if let selected = administrativeArea, !options.administrativeAreas.contains(selected) {
+            administrativeArea = nil
+            subAdministrativeArea = nil
+            locality = nil
+            bodyOfWater = nil
+            needsRefresh = true
+        } else if let selected = subAdministrativeArea, !options.subAdministrativeAreas.contains(selected) {
+            subAdministrativeArea = nil
+            locality = nil
+            bodyOfWater = nil
+            needsRefresh = true
+        } else if let selected = locality, !options.localities.contains(selected) {
+            locality = nil
+            bodyOfWater = nil
+            needsRefresh = true
+        } else if let selected = bodyOfWater, !options.bodyOfWaters.contains(selected) {
+            bodyOfWater = nil
+            needsRefresh = true
+        }
+
+        if needsRefresh {
+            refreshPlaceOptions()
+        }
     }
 
     private func clearFilters() {

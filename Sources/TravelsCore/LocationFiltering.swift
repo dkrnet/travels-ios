@@ -59,7 +59,12 @@ public enum LocationFiltering {
         )
 
         if distance <= previous.horizontalAccuracy {
-            if elapsed < improvementWindowSeconds && candidate.horizontalAccuracy < previous.horizontalAccuracy {
+            let isMoreAccurate = candidate.horizontalAccuracy < previous.horizontalAccuracy
+            let isAtLeastAsAccurateAndSlower = candidate.horizontalAccuracy <= previous.horizontalAccuracy
+                && candidate.speed >= 0
+                && previous.speed >= 0
+                && candidate.speed < previous.speed
+            if elapsed < improvementWindowSeconds && (isMoreAccurate || isAtLeastAsAccurateAndSlower) {
                 return .acceptAndReplacePrevious
             }
             return .reject
@@ -69,8 +74,8 @@ public enum LocationFiltering {
             return .reject
         }
 
-        let distanceThreshold = isPausing ? pausedMinimumDistanceMeters : minimumDistanceMeters
-        let distanceOK = distance >= distanceThreshold
+        let threshold = isPausing ? pausedMinimumDistanceMeters : minimumDistanceMeters
+        let distanceOK = distance >= threshold
         let accuracyOK = candidate.horizontalAccuracy <= maximumHorizontalAccuracyMeters
         return distanceOK && accuracyOK ? .accept : .reject
     }

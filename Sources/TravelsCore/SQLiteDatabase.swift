@@ -7,6 +7,7 @@ import Foundation
 
 final class SQLiteDatabase: @unchecked Sendable {
     private var handle: OpaquePointer?
+    private let lock = NSRecursiveLock()
 
     init(path: String) throws {
         if sqlite3_open(path, &handle) != SQLITE_OK {
@@ -22,54 +23,76 @@ final class SQLiteDatabase: @unchecked Sendable {
         sqlite3_close(handle)
     }
 
+    func close() {
+        lock.withLock {
+            guard let handle else { return }
+            sqlite3_close_v2(handle)
+            self.handle = nil
+        }
+    }
+
     func execute(_ sql: String, parameters: [SQLiteValue] = []) throws {
-        let statement = try prepare(sql)
-        defer { sqlite3_finalize(statement) }
-        try bind(parameters, to: statement)
-        let result = sqlite3_step(statement)
-        guard result == SQLITE_DONE else {
-            throw TravelsError.databaseExecutionFailed(Self.message(from: handle))
+        try lock.withLock {
+            let statement = try prepare(sql)
+            defer { sqlite3_finalize(statement) }
+            try bind(parameters, to: statement)
+            let result = sqlite3_step(statement)
+            guard result == SQLITE_DONE else {
+                throw TravelsError.databaseExecutionFailed(Self.message(from: handle))
+            }
         }
     }
 
     func query(_ sql: String, parameters: [SQLiteValue] = []) throws -> [[String: SQLiteValue]] {
-        let statement = try prepare(sql)
-        defer { sqlite3_finalize(statement) }
-        try bind(parameters, to: statement)
+        try lock.withLock {
+            let statement = try prepare(sql)
+            defer { sqlite3_finalize(statement) }
+            try bind(parameters, to: statement)
 
-        var rows: [[String: SQLiteValue]] = []
-        while true {
-            let result = sqlite3_step(statement)
-            if result == SQLITE_DONE {
-                break
-            }
-            guard result == SQLITE_ROW else {
-                throw TravelsError.databaseExecutionFailed(Self.message(from: handle))
-            }
+            var rows: [[String: SQLiteValue]] = []
+            while true {
+                let result = sqlite3_step(statement)
+                if result == SQLITE_DONE {
+                    break
+                }
+                guard result == SQLITE_ROW else {
+                    throw TravelsError.databaseExecutionFailed(Self.message(from: handle))
+                }
 
-            var row: [String: SQLiteValue] = [:]
-            for index in 0..<sqlite3_column_count(statement) {
-                let name = String(cString: sqlite3_column_name(statement, index))
-                row[name] = SQLiteValue(statement: statement, index: index)
+                var row: [String: SQLiteValue] = [:]
+                for index in 0..<sqlite3_column_count(statement) {
+                    let name = String(cString: sqlite3_column_name(statement, index))
+                    row[name] = SQLiteValue(statement: statement, index: index)
+                }
+                rows.append(row)
             }
-            rows.append(row)
+            return rows
         }
-        return rows
+    }
+
+    func integrityCheck() throws -> [String] {
+        try query("PRAGMA integrity_check").compactMap { row in
+            row["integrity_check"]?.string ?? row.values.first?.string
+        }
     }
 
     func lastInsertRowID() -> Int64 {
-        sqlite3_last_insert_rowid(handle)
+        lock.withLock {
+            sqlite3_last_insert_rowid(handle)
+        }
     }
 
     func transaction<T>(_ work: () throws -> T) throws -> T {
-        try execute("BEGIN IMMEDIATE TRANSACTION")
-        do {
-            let value = try work()
-            try execute("COMMIT")
-            return value
-        } catch {
-            try? execute("ROLLBACK")
-            throw error
+        try lock.withLock {
+            try execute("BEGIN IMMEDIATE TRANSACTION")
+            do {
+                let value = try work()
+                try execute("COMMIT")
+                return value
+            } catch {
+                try? execute("ROLLBACK")
+                throw error
+            }
         }
     }
 
@@ -104,6 +127,15 @@ final class SQLiteDatabase: @unchecked Sendable {
     private static func message(from handle: OpaquePointer?) -> String {
         guard let pointer = sqlite3_errmsg(handle) else { return "unknown SQLite error" }
         return String(cString: pointer)
+    }
+}
+
+private extension NSRecursiveLock {
+    @discardableResult
+    func withLock<T>(_ work: () throws -> T) rethrows -> T {
+        lock()
+        defer { unlock() }
+        return try work()
     }
 }
 

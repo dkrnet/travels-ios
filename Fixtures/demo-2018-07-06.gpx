@@ -1,0 +1,3135 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<gpx version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/1" creator="Travels - life tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<metadata>
+		<name>Travels life tracker log</name>
+		<time>2018-09-29T17:29:06-07:00</time>
+		<bounds minlon="-149.8564370481873" maxlon="-148.97657550772217" minlat="60.107798836033346" maxlat="61.11669198217594" />
+	</metadata>
+	<trk>
+		<trkseg>
+			<trkpt lon="-149.8564370481873" lat="61.11669198217594">
+				<time>552681180.9974245</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Bayshore-Klatt</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.85305645527094" lat="61.11054991139868">
+				<time>552681206.9972364</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.84702919495987" lat="61.10497740339831">
+				<time>552681233.9970423</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.84090887369607" lat="61.09932712410054">
+				<time>552681260.9968472</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.83587213401927" lat="61.09351846980236">
+				<time>552681287.9966527</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.83482732064905" lat="61.08721252983844">
+				<time>552681315.9964504</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>AK-1 S</name>
+				<thoroughfare>AK-1 S</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99515</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.83165578007655" lat="61.08096797122356">
+				<time>552681344.9972414</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>15400 Seward Hwy</name>
+				<subThoroughfare>15400</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward-Oceanview</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.82912733944357" lat="61.07475311221875">
+				<time>552681374.9999661</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>17202–17996 Seward Hwy</name>
+				<subThoroughfare>17202–17996</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.82361860318937" lat="61.0689135078693">
+				<time>552681404.9997939</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>17202–17996 Seward Hwy</name>
+				<subThoroughfare>17202–17996</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.81459334354278" lat="61.064308605723774">
+				<time>552681434.999589</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>17202–17996 Seward Hwy</name>
+				<subThoroughfare>17202–17996</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.80536252388566" lat="61.05979841502487">
+				<time>552681464.99938</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>18002–18498 Seward Hwy</name>
+				<subThoroughfare>18002–18498</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.7989375053562" lat="61.05428548213761">
+				<time>552681494.9991705</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>18500 Seward Hwy</name>
+				<subThoroughfare>18500</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Old Seward</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.79354964557112" lat="61.048542732919984">
+				<time>552681524.9989618</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>18682–18790</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Rabbit Creek</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.78701822585455" lat="61.043107866750674">
+				<time>552681556.9987378</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>19006–19126</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Rabbit Creek</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.78115357958194" lat="61.037468317579034">
+				<time>552681587.9985089</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>19128–19480</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.7703529220647" lat="61.03394566251997">
+				<time>552681619.998278</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>19395–20419</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.76024606537595" lat="61.02987378260191">
+				<time>552681651.9980501</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>19395–20419</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.75141934729243" lat="61.02520403320783">
+				<time>552681683.9978361</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>19482–20450</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.74386086491324" lat="61.01998224388227">
+				<time>552681717.9976381</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>20452–20998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.73312438445285" lat="61.016284068031624">
+				<time>552681749.9974093</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>20452–20998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.72060081522912" lat="61.01459933591821">
+				<time>552681781.0002048</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>21400–21998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.70856149821932" lat="61.012110461887815">
+				<time>552681812.9999448</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>21400–21998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.69678895255709" lat="61.009322581361715">
+				<time>552681845.9996865</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>21400–21998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.6861142556683" lat="61.00560725003773">
+				<time>552682362.9980996</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>22246–23158</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.67328056446019" lat="61.0041905732851">
+				<time>552682396.9978862</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>22246–23158</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.66042183180235" lat="61.002715424050876">
+				<time>552682428.9976856</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>23159–23833</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<subLocality>Turnagain Arm</subLocality>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99516</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.64900755667406" lat="60.99961492410739">
+				<time>552682463.9974649</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>23835–24079</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.63641020355345" lat="60.99795723093502">
+				<time>552682498.9972456</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>24194–24344</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.6269403155481" lat="60.99353983681653">
+				<time>552682531.9970382</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>24345–25027</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.61690039105338" lat="60.989449907774365">
+				<time>552682573.9967747</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>24346–25028</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.6080531967148" lat="60.98469529950674">
+				<time>552682609.997548</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>25030–25442</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.59547942481757" lat="60.983208005630445">
+				<time>552682642.9995412</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>25444–25732</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.58233606171015" lat="60.982797330414535">
+				<time>552682678.99974</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>25734–26212</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.56972663461391" lat="60.9845170622444">
+				<time>552682721.9995776</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>26215–26429</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.55686928046117" lat="60.98329947921541">
+				<time>552682754.9994382</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>26638–26860</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.54375602304455" lat="60.98329178615108">
+				<time>552682787.9992862</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>26987–27119</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.53092778977364" lat="60.98452250057557">
+				<time>552682821.9991273</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>27298–27310</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.5190963867983" lat="60.98737676070041">
+				<time>552682853.9989775</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>27629–27781 Seward Hwy</name>
+				<subThoroughfare>27629–27781</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.50639179857183" lat="60.986004085908846">
+				<time>552682883.9988372</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>27782–27948 Seward Hwy</name>
+				<subThoroughfare>27782–27948</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.49405680748936" lat="60.984108169444696">
+				<time>552682913.9986966</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>28033–29135</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.48361928435494" lat="60.98014592179908">
+				<time>552682944.9985453</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29160–29236</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.47628192669234" lat="60.97492797453188">
+				<time>552682976.9983956</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29238–29296</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.46400251404535" lat="60.972679359029556">
+				<time>552683007.9982513</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29310–29330</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4517138040857" lat="60.97019676933081">
+				<time>552683038.9981066</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>29382–29398 Seward Hwy</name>
+				<subThoroughfare>29382–29398</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.44193621115588" lat="60.966080968399105">
+				<time>552683072.0000782</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29600–29698</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4321170912359" lat="60.96198695815921">
+				<time>552683102.9999241</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>8.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29700–29858</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.42332204632152" lat="60.957192395890445">
+				<time>552683131.9997908</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29872–29928</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.41310882948872" lat="60.95321126151808">
+				<time>552683161.9996543</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29873–29929</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.40091321839262" lat="60.95073039263344">
+				<time>552683191.9995321</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29952–29998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.3887013213023" lat="60.948281990649626">
+				<time>552683222.99941</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>29952–29998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.37681001828463" lat="60.94575355827149">
+				<time>552683254.9982672</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>30001–32005</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.36992675808983" lat="60.94036717528498">
+				<time>552683284.9981323</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>30000–32004</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.36291818814811" lat="60.93483857627135">
+				<time>552683312.9980059</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>30001–32005</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.3543040800949" lat="60.929969683853585">
+				<time>552683341.9978735</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>32300–32464</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.34103195405407" lat="60.92986123468626">
+				<time>552683371.9977367</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>32301–32465</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.32864874480455" lat="60.93193044561303">
+				<time>552683401.9976003</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>32466–32804 Seward Hwy</name>
+				<subThoroughfare>32466–32804</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3160996984367" lat="60.933830441464686">
+				<time>552684096.9990618</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>32466–32804 Seward Hwy</name>
+				<subThoroughfare>32466–32804</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.30314670177432" lat="60.93491300301269">
+				<time>552684125.99891</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>32467–32805 Seward Hwy</name>
+				<subThoroughfare>32467–32805</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99540</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.2904016194543" lat="60.93617412489117">
+				<time>552684156.9987463</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>32806–33050 Seward Hwy</name>
+				<subThoroughfare>32806–33050</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.27743930386976" lat="60.93692749803896">
+				<time>552684185.9985932</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>32806–33050 Seward Hwy</name>
+				<subThoroughfare>32806–33050</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.26430046153985" lat="60.93693369172246">
+				<time>552684215.9984359</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>33052–33150 Seward Hwy</name>
+				<subThoroughfare>33052–33150</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.25107943926616" lat="60.93791527429736">
+				<time>552684243.9982884</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>33052–33150</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.23842387545827" lat="60.939165516576864">
+				<time>552684272.9981352</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>33052–33150 Seward Hwy</name>
+				<subThoroughfare>33052–33150</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.22553688133905" lat="60.94000725221079">
+				<time>552684302.9979779</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>33152–34000 Seward Hwy</name>
+				<subThoroughfare>33152–34000</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.21297437870402" lat="60.9421698976218">
+				<time>552684332.9996814</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>33152–34000 Seward Hwy</name>
+				<subThoroughfare>33152–34000</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.20038862219832" lat="60.94414199348351">
+				<time>552684362.9999162</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>33152–34000 Seward Hwy</name>
+				<subThoroughfare>33152–34000</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.18707324564443" lat="60.94430196486549">
+				<time>552684392.9998354</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach State Park</name>
+				<subThoroughfare>35003–36001</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach State Park</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.1760138366377" lat="60.94079668404372">
+				<time>552684425.9996926</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>36250–36496 Seward Hwy</name>
+				<subThoroughfare>36250–36496</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.1645979605842" lat="60.93750375803453">
+				<time>552684462.9995239</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>37208–37998 Seward Hwy</name>
+				<subThoroughfare>37208–37998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.15580884790378" lat="60.93275965565412">
+				<time>552684494.9993774</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>37208–37998 Seward Hwy</name>
+				<subThoroughfare>37208–37998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.1481297264855" lat="60.92753264125207">
+				<time>552684524.9982404</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>38502–39506 Seward Hwy</name>
+				<subThoroughfare>38502–39506</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.1403727209802" lat="60.922488939107055">
+				<time>552684554.9981024</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>38502–39506 Seward Hwy</name>
+				<subThoroughfare>38502–39506</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.11789921938438" lat="60.91636738822622">
+				<time>552684620.9978004</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>38502–39506 Seward Hwy</name>
+				<subThoroughfare>38502–39506</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.10548012758446" lat="60.914164466289705">
+				<time>552684649.9976643</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>38502–39506 Seward Hwy</name>
+				<subThoroughfare>38502–39506</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.09328581680148" lat="60.91199076909867">
+				<time>552684679.9975384</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40102–40298</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.0842285538613" lat="60.907473743200065">
+				<time>552684708.9974064</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40300–40310</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.07630506159322" lat="60.90250064660227">
+				<time>552684737.9972584</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40312–40402</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.07002442054156" lat="60.8969562702549">
+				<time>552684768.9991472</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40312–40402</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.06265667307872" lat="60.89157847086458">
+				<time>552684798.9989713</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40404–40494</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.05336658560313" lat="60.88705423861222">
+				<time>552684832.9988023</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40404–40494</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.0476714704575" lat="60.88136259737549">
+				<time>552684865.9986436</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>64.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.03353404900173" lat="60.86724043000272">
+				<time>552684935.9983114</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40500–40998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.02455031816936" lat="60.86188854082723">
+				<time>552684967.9981585</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>41000–42466 Seward Hwy</name>
+				<subThoroughfare>41000–42466</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.01509273448758" lat="60.85737670296123">
+				<time>552684995.998025</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>41000–42466 Seward Hwy</name>
+				<subThoroughfare>41000–42466</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>00198</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.0056022851906" lat="60.852919148198666">
+				<time>552685024.9978865</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>41000–42466 Seward Hwy</name>
+				<subThoroughfare>41000–42466</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.9961178897683" lat="60.8485227109431">
+				<time>552685052.9977536</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>42468–42710 Seward Hwy</name>
+				<subThoroughfare>42468–42710</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.98733711300147" lat="60.843781610643696">
+				<time>552685080.9976201</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>42790–42794 Seward Hwy</name>
+				<subThoroughfare>42790–42794</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.98222021995386" lat="60.83799622367055">
+				<time>552685110.9974779</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>42796–42848 Seward Hwy</name>
+				<subThoroughfare>42796–42848</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.98027157240597" lat="60.83170382812721">
+				<time>552685139.9973389</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>42850–43052 Seward Hwy</name>
+				<subThoroughfare>42850–43052</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.97814975984463" lat="60.82529779837326">
+				<time>552685169.998197</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>43064–43184 Seward Hwy</name>
+				<subThoroughfare>43064–43184</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.97657550772217" lat="60.818942515935184">
+				<time>552685201.0002226</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>43640 Seward Hwy</name>
+				<subThoroughfare>43640</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99507</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-148.99120533533255" lat="60.816277376955746">
+				<time>552685239.9999014</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>43799–43897 Seward Hwy</name>
+				<subThoroughfare>43799–43897</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.00224904095916" lat="60.819567322029236">
+				<time>552685267.9997417</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>44351 Seward Hwy</name>
+				<subThoroughfare>44351</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.011873102901" lat="60.82404770200472">
+				<time>552685293.9996006</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>44329–44387 Seward Hwy</name>
+				<subThoroughfare>44329–44387</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.0217816748041" lat="60.82843520512302">
+				<time>552685318.9994645</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>44329–44387 Seward Hwy</name>
+				<subThoroughfare>44329–44387</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.03140085314632" lat="60.83264078351731">
+				<time>552685343.9993305</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>44501–44699 Seward Hwy</name>
+				<subThoroughfare>44501–44699</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Anchorage</locality>
+				<subAdministrativeArea>Anchorage</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99587</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.04078324882747" lat="60.83729524874004">
+				<time>552685371.9991795</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>61446–61898 Seward Hwy</name>
+				<subThoroughfare>61446–61898</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.0487789662312" lat="60.842298693618744">
+				<time>552685395.9990503</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Seward Hwy</name>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<ocean>Turnagain Arm</ocean>
+			</trkpt>
+			<trkpt lon="-149.0584891426049" lat="60.84668892960174">
+				<time>552685424.9988931</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>61316–61358</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.0705844023326" lat="60.844056278978485">
+				<time>552685458.9987097</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>64.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>60861–61219</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.08094506306827" lat="60.839923473573705">
+				<time>552685485.9985641</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>60233–60859</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.09090336920713" lat="60.83567020587102">
+				<time>552685509.9984344</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>64.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>60233–60859</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.10541832674537" lat="60.83121450074581">
+				<time>552685543.9982522</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>59750–60230</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.13661606572185" lat="60.8225766171158">
+				<time>552685615.0003399</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>58961–59325</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.1596276138437" lat="60.81623103053185">
+				<time>552685667.9998561</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>58025–58851</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.17866846388935" lat="60.80731226466233">
+				<time>552685722.9995251</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>58025–58851</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.1877753022387" lat="60.802818496491284">
+				<time>552685747.999379</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>57450–58022</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.19743244229295" lat="60.79837917950792">
+				<time>552685772.9982339</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>57451–58023</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.20342815156664" lat="60.79272932801186">
+				<time>552685798.9980818</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>64.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>57388–57442</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.21179351253738" lat="60.78793908987945">
+				<time>552685823.9979371</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>56889–57391</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.21818625525333" lat="60.78223464776764">
+				<time>552685851.9977741</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>56889–57391</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.2233240488416" lat="60.77631218912869">
+				<time>552685877.9976225</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>56337–56739</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.2284751015577" lat="60.77044461809344">
+				<time>552685903.9974709</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>56336–56796</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.23343379952624" lat="60.7644837894878">
+				<time>552685927.9973316</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>56175–56335</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.23928559097783" lat="60.75882142355565">
+				<time>552685953.9971805</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>55808–56172</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.2472646829496" lat="60.75365527317275">
+				<time>552685976.9970472</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>55808–56172</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.25367891610625" lat="60.74815949925864">
+				<time>552686002.996895</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>55531–55807</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.25914941861046" lat="60.74225380238252">
+				<time>552686029.9967382</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>55221–55529</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.26460938141477" lat="60.736307635659514">
+				<time>552686055.9991374</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>55221–55529</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.2710892941886" lat="60.730822303204896">
+				<time>552686082.9989387</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>54865–55121</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.28062676981136" lat="60.72656939901935">
+				<time>552686106.9987873</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>54516–54862</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.29954821621664" lat="60.72695536357887">
+				<time>552686144.9985539</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53336–54242</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.31194657382756" lat="60.72879767219568">
+				<time>552686170.9983953</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53337–54243</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.32493560505637" lat="60.73006688791444">
+				<time>552686196.9982365</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53337–54243</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.33766728745056" lat="60.73130947266256">
+				<time>552686222.9980788</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>48.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53337–54243</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.34935968229698" lat="60.73421741645069">
+				<time>552686250.9979081</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53088–53314</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.357861700531" lat="60.739056475760506">
+				<time>552686274.9977627</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>52662–52960</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4228893065869" lat="60.778393763621494">
+				<time>552686499.9999136</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>64.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>50908–51126</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.43299129095428" lat="60.78232716616966">
+				<time>552686559.9995801</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<thoroughfare>NFD Road FH14</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99605</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.43112039416204" lat="60.782185254775115">
+				<time>552687559.9980352</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<thoroughfare>NFD Road FH14</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99605</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4370888955244" lat="60.77855970405272">
+				<time>552688050.155667</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>50481–50701</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99605</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.44225329158186" lat="60.771292866899024">
+				<time>552688086.9986889</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>50181–50479</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99605</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.45063702514457" lat="60.7646100040321">
+				<time>552688123.9985284</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>50138–50178</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4602885611877" lat="60.7585337058705">
+				<time>552688157.9983796</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>49676–50012</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4667943016586" lat="60.75160327163439">
+				<time>552688192.9998401</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48948–49212</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4602048867226" lat="60.74436547141444">
+				<time>552688229.9998615</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48949–49213</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99605</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.45810557174036" lat="60.73657496494849">
+				<time>552688265.9997531</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48948–49212</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4597248514033" lat="60.72884585218885">
+				<time>552688301.9996337</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48723–48941</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.46128531213017" lat="60.72113642056181">
+				<time>552688336.9985163</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48531–48721</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.46198481082524" lat="60.718242593020385">
+				<time>552688350.161441</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48531–48721</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.46779318768267" lat="60.710997024412315">
+				<time>552688382.9983608</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>48220–48528</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.46929497668137" lat="60.70332487852802">
+				<time>552688419.9982365</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47883–48219</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4738177775976" lat="60.695842283297964">
+				<time>552688453.9981287</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47883–48219</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.47952838748265" lat="60.6883880689463">
+				<time>552688487.9980193</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47661–47881</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Hope</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4806541436709" lat="60.6806086213581">
+				<time>552688521.9978898</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47293–47659</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.47782756460978" lat="60.673126629753675">
+				<time>552688556.997716</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47292–47658</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4806279690631" lat="60.66564013076889">
+				<time>552688590.9976163</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>47110–47126</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.48515372190647" lat="60.65812704186932">
+				<time>552688625.9990352</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>53085</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.48959120823758" lat="60.653013322679534">
+				<time>552688650.162786</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>46435–47109</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.49547295733555" lat="60.645938759001226">
+				<time>552688683.9988711</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>46435–47109</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.50230004527515" lat="60.63893048038512">
+				<time>552688717.9987614</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>46076–46376</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.51154694720748" lat="60.63278454699828">
+				<time>552688749.9986575</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<inlandWater>Summit Lake</inlandWater>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.52014028421343" lat="60.62640369873702">
+				<time>552688781.9985534</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<inlandWater>Summit Lake</inlandWater>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.52752595577178" lat="60.619580150158804">
+				<time>552688814.998447</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>45275–45611</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99572</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.53348888226736" lat="60.61238951766293">
+				<time>552688848.9983363</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>45141–45273</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99572</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.53768101506932" lat="60.604881902621685">
+				<time>552688881.99823</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>44901–45139</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99572</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.54272717703674" lat="60.59770526972919">
+				<time>552688914.998111</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>44678–44898</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.55129431615745" lat="60.59124968517087">
+				<time>552688946.9990046</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43827–44677</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.55219521557265" lat="60.59035933385204">
+				<time>552688951.157706</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43827–44677</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.55923016013932" lat="60.58349271775725">
+				<time>552688981.998891</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43826–44676</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.56774415079528" lat="60.57698665415368">
+				<time>552689012.99879</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43826–44676</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.57407017941213" lat="60.56989283818203">
+				<time>552689046.0000217</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43575–43825</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Cooper Landing</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.57863700294467" lat="60.562622016135805">
+				<time>552689077.9999446</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43323–43573</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Cooper Landing</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.5842624167592" lat="60.55526129997983">
+				<time>552689111.9998435</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>43083–43273</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.57885440888992" lat="60.548097245764694">
+				<time>552689150.9997412</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>42797–43081</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Cooper Landing</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.5668684236103" lat="60.5415485845164">
+				<time>552689190.999628</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>42551–42795</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Cooper Landing</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.55709877503082" lat="60.535642565566846">
+				<time>552689223.9994925</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>42198–42344</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.53978770100565" lat="60.53354571728475">
+				<time>552689263.9993168</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>42057–42277</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.52435080416467" lat="60.5291142136888">
+				<time>552689301.999199</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40985–41427</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.50852702411512" lat="60.52467932545281">
+				<time>552689340.999081</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>41411</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.4931552056187" lat="60.520241779115956">
+				<time>552689376.9989733</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>40985–41427</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.47884428494473" lat="60.51505096668377">
+				<time>552689412.9988633</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>39969–40179</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.463318944152" lat="60.51084050687948">
+				<time>552689450.9999865</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>39689–39967</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.44641125931497" lat="60.507923103245474">
+				<time>552689490.9999977</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<subThoroughfare>39295–39591</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.43215238025508" lat="60.50279482634229">
+				<time>552689532.9998837</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>38515–38899 Seward Hwy</name>
+				<subThoroughfare>38515–38899</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.41487229276098" lat="60.50060464335819">
+				<time>552689568.9997891</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.39734955262045" lat="60.49999131086642">
+				<time>552689608.9986591</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.38093436349368" lat="60.50367439820068">
+				<time>552689653.9985217</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>36593–36917 Seward Hwy</name>
+				<subThoroughfare>36593–36917</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37059731201302" lat="60.49642578793782">
+				<time>552689709.9983584</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>35773 Seward Hwy</name>
+				<subThoroughfare>35773</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3708687798743" lat="60.48759264115265">
+				<time>552689767.9981892</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>35197 Seward Hwy</name>
+				<subThoroughfare>35197</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37071645009408" lat="60.47881724331079">
+				<time>552689823.998024</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>34042–34592 Seward Hwy</name>
+				<subThoroughfare>34042–34592</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36957115969065" lat="60.470086835781274">
+				<time>552689870.9989797</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>33563–34041 Seward Hwy</name>
+				<subThoroughfare>33563–34041</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36875694905538" lat="60.46126038873212">
+				<time>552689916.9988899</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>32681–32999 Seward Hwy</name>
+				<subThoroughfare>32681–32999</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37060709343532" lat="60.45248859929197">
+				<time>552689961.9988213</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>32001–32431 Seward Hwy</name>
+				<subThoroughfare>32001–32431</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3722105744206" lat="60.44357043302827">
+				<time>552690006.9987512</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>31325–31895 Seward Hwy</name>
+				<subThoroughfare>31325–31895</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Moose Pass</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37295072817395" lat="60.43461538841507">
+				<time>552690050.9986302</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>31201–31323 Seward Hwy</name>
+				<subThoroughfare>31201–31323</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3710083944019" lat="60.426009018902555">
+				<time>552690089.9985056</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>30847 Seward Hwy</name>
+				<subThoroughfare>30847</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3719342791376" lat="60.41726533370415">
+				<time>552690131.9983857</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>30285 Seward Hwy</name>
+				<subThoroughfare>30285</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3717015230509" lat="60.40947626427528">
+				<time>552690167.9982865</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>29865–30281 Seward Hwy</name>
+				<subThoroughfare>29865–30281</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36332331714345" lat="60.40310417787316">
+				<time>552690204.9981846</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>29793 Seward Hwy</name>
+				<subThoroughfare>29793</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35603443125183" lat="60.39642560493348">
+				<time>552690240.9990845</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>29338–29510 Seward Hwy</name>
+				<subThoroughfare>29338–29510</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35319869269162" lat="60.38857464419533">
+				<time>552690279.9989763</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>29000–29232 Seward Hwy</name>
+				<subThoroughfare>29000–29232</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35196161433134" lat="60.379865001163495">
+				<time>552690320.000014</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>28723–28999 Seward Hwy</name>
+				<subThoroughfare>28723–28999</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34706339571497" lat="60.37137220587451">
+				<time>552690365.9998835</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>28019–28105 Seward Hwy</name>
+				<subThoroughfare>28019–28105</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3476512442314" lat="60.362676225131025">
+				<time>552690406.9997723</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>27506–28016 Seward Hwy</name>
+				<subThoroughfare>27506–28016</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35100304109963" lat="60.35395531136963">
+				<time>552690453.9996451</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>27021 Seward Hwy</name>
+				<subThoroughfare>27021</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3462729144025" lat="60.345569207140926">
+				<time>552690499.9995217</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>25134–25998 Seward Hwy</name>
+				<subThoroughfare>25134–25998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34488428669258" lat="60.33676779676086">
+				<time>552690537.9994189</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>24690–25132 Seward Hwy</name>
+				<subThoroughfare>24690–25132</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99631</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35807932357798" lat="60.330917257587465">
+				<time>552690578.9993085</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>24229–24411 Seward Hwy</name>
+				<subThoroughfare>24229–24411</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36035770653288" lat="60.32230284341469">
+				<time>552690617.9992042</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>23533–23999 Seward Hwy</name>
+				<subThoroughfare>23533–23999</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36166792672321" lat="60.313633212960774">
+				<time>552690655.9991015</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>Chugach National Forest</name>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+				<areasOfInterest>Chugach National Forest</areasOfInterest>
+			</trkpt>
+			<trkpt lon="-149.35618759351814" lat="60.30514260630336">
+				<time>552690695.9989935</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>22372–22832 Seward Hwy</name>
+				<subThoroughfare>22372–22832</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3566438673475" lat="60.3038224352922">
+				<time>552690703.156528</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>22372–22832 Seward Hwy</name>
+				<subThoroughfare>22372–22832</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3524112945312" lat="60.296107410268725">
+				<time>552690745.9999411</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>22875–23157 Seward Hwy</name>
+				<subThoroughfare>22875–23157</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34487852989182" lat="60.28922825689945">
+				<time>552690781.9999675</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>21572–21820 Seward Hwy</name>
+				<subThoroughfare>21572–21820</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34299836517584" lat="60.2814621818033">
+				<time>552690819.9998962</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>20000–21484 Seward Hwy</name>
+				<subThoroughfare>20000–21484</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34611811043177" lat="60.27391727687382">
+				<time>552690857.9988155</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>20000–21484 Seward Hwy</name>
+				<subThoroughfare>20000–21484</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.34535961355044" lat="60.266270852818685">
+				<time>552690897.9987315</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>20001–22699 Seward Hwy</name>
+				<subThoroughfare>20001–22699</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3496309374838" lat="60.258971906833914">
+				<time>552690939.9986409</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>19944–19998 Seward Hwy</name>
+				<subThoroughfare>19944–19998</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35342558647685" lat="60.25158580099775">
+				<time>552690976.9985616</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>19799–19943 Seward Hwy</name>
+				<subThoroughfare>19799–19943</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.35586370707512" lat="60.24679767844281">
+				<time>552691004.146332</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>19736–19796 Seward Hwy</name>
+				<subThoroughfare>19736–19796</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3658544786158" lat="60.240933358871814">
+				<time>552691040.9984256</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>19567–19671 Seward Hwy</name>
+				<subThoroughfare>19567–19671</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36704599654" lat="60.23322495592783">
+				<time>552691074.9983528</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>19122–19564 Seward Hwy</name>
+				<subThoroughfare>19122–19564</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36815635426737" lat="60.224314960935004">
+				<time>552691113.9982513</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>19122–19564 Seward Hwy</name>
+				<subThoroughfare>19122–19564</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.36986977227244" lat="60.216130836288905">
+				<time>552691150.9988993</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>24.0</horizontalAccuracy>
+				<name>19123–19565 Seward Hwy</name>
+				<subThoroughfare>19123–19565</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3717313538049" lat="60.20746622202611">
+				<time>552691191.9989818</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>19123–19565 Seward Hwy</name>
+				<subThoroughfare>19123–19565</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37200315537163" lat="60.19849255894076">
+				<time>552691233.9989208</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>19001–19117 Seward Hwy</name>
+				<subThoroughfare>19001–19117</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.37698769444546" lat="60.19010743775822">
+				<time>552691273.9988499</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>14860–15024 Seward Hwy</name>
+				<subThoroughfare>14860–15024</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.38805423034438" lat="60.18307385306301">
+				<time>552691314.9987758</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>14247–14363 Seward Hwy</name>
+				<subThoroughfare>14247–14363</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.3988784742876" lat="60.17601791831555">
+				<time>552691354.9987031</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>32.0</horizontalAccuracy>
+				<name>13629–13699 Seward Hwy</name>
+				<subThoroughfare>13629–13699</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.40173233679457" lat="60.168635875772">
+				<time>552691390.158476</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>13101 Seward Hwy</name>
+				<subThoroughfare>13101</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.41150985727566" lat="60.1623587329796">
+				<time>552691427.9985731</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>12601–12983 Seward Hwy</name>
+				<subThoroughfare>12601–12983</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.41828362327797" lat="60.15555744402841">
+				<time>552691463.9985073</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>12101–12499 Seward Hwy</name>
+				<subThoroughfare>12101–12499</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.4179825368173" lat="60.14765682468948">
+				<time>552691507.9994278</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>11783–12273 Hummingbird Ln</name>
+				<subThoroughfare>11783–12273</subThoroughfare>
+				<thoroughfare>Hummingbird Ln</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.4201607567642" lat="60.13987188021773">
+				<time>552691553.999345</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>2583–2599 Seward Hwy</name>
+				<subThoroughfare>2583–2599</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.4277400416249" lat="60.13313765999995">
+				<time>552691601.9999955</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>2153–2321 Seward Hwy</name>
+				<subThoroughfare>2153–2321</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.43528171578575" lat="60.12634656190722">
+				<time>552691657.9998926</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>1907 Seward Hwy</name>
+				<subThoroughfare>1907</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99603</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.43915187505618" lat="60.122889249894264">
+				<time>552691691.147784</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>1631–1667 Seward Hwy</name>
+				<subThoroughfare>1631–1667</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.442182898223" lat="60.115300024110134">
+				<time>552691752.999729</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>16.0</horizontalAccuracy>
+				<name>1121 Seward Hwy</name>
+				<subThoroughfare>1121</subThoroughfare>
+				<thoroughfare>Seward Hwy</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+			<trkpt lon="-149.44220142589376" lat="60.107798836033346">
+				<time>552691820.9996125</time>
+				<timeZone>America/Anchorage</timeZone>
+				<horizontalAccuracy>12.0</horizontalAccuracy>
+				<name>529 3rd Ave</name>
+				<subThoroughfare>529</subThoroughfare>
+				<thoroughfare>3rd Ave</thoroughfare>
+				<locality>Seward</locality>
+				<subAdministrativeArea>Kenai Peninsula</subAdministrativeArea>
+				<administrativeArea>AK</administrativeArea>
+				<postalCode>99664</postalCode>
+				<country>United States</country>
+			</trkpt>
+		</trkseg>
+	</trk>
+</gpx>

@@ -1,4 +1,6 @@
 #if DEBUG
+import Foundation
+import UniformTypeIdentifiers
 import SwiftUI
 
 #if canImport(TravelsCore)
@@ -8,6 +10,9 @@ import TravelsCore
 struct DeveloperDiagnosticsView: View {
     @EnvironmentObject private var model: TravelsModel
     @Environment(\.dismiss) private var dismiss
+    @State private var showingRestoreImporter = false
+    @State private var backupShareItem: ShareItem?
+    @State private var solarPeriodRebuildTimeZoneIdentifier = TimeZone.current.identifier
 
     var body: some View {
         NavigationStack {
@@ -42,8 +47,27 @@ struct DeveloperDiagnosticsView: View {
                     Button("Run Resolution Queue Now") {
                         model.rerunAddressResolutionQueue()
                     }
+                    TextField("Time Zone Identifier", text: $solarPeriodRebuildTimeZoneIdentifier)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button("Recalculate Solar Periods") {
+                        model.rebuildSolarPeriodCalculations(timeZoneIdentifier: solarPeriodRebuildTimeZoneIdentifier)
+                    }
                     Button("Clear Log", role: .destructive) {
                         model.clearAddressResolutionLog()
+                    }
+                }
+
+                Section("Database") {
+                    Button("Backup Database") {
+                        do {
+                            backupShareItem = ShareItem(url: try model.createDatabaseBackup())
+                        } catch {
+                            model.statusMessage = error.localizedDescription
+                        }
+                    }
+                    Button("Restore Database") {
+                        showingRestoreImporter = true
                     }
                 }
 
@@ -66,6 +90,26 @@ struct DeveloperDiagnosticsView: View {
                     Button("Close") {
                         dismiss()
                     }
+                }
+            }
+            .sheet(item: $backupShareItem) { item in
+                ShareSheet(items: [item.url])
+            }
+            .fileImporter(
+                isPresented: $showingRestoreImporter,
+                allowedContentTypes: [UTType(filenameExtension: "sqlite") ?? .data],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    do {
+                        try model.restoreDatabase(from: url)
+                    } catch {
+                        model.statusMessage = error.localizedDescription
+                    }
+                case .failure(let error):
+                    model.statusMessage = error.localizedDescription
                 }
             }
         }

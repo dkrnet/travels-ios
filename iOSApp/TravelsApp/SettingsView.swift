@@ -54,6 +54,15 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Units") {
+                    Picker("Preferred Units", selection: $model.settings.preferredMeasurementSystem) {
+                        ForEach(MeasurementSystemPreference.allCases, id: \.self) { system in
+                            Text(system.displayName).tag(system)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
                 Section("Display") {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
@@ -64,12 +73,6 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Demo Data", isOn: $model.settings.includeDemoData)
                         Text("Shows sample locations that ship with the app.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Prefer List View", isOn: $model.isListView)
-                        Text("Opens the day view as a list instead of a map.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -102,9 +105,6 @@ struct SettingsView: View {
     }
 
     private func formatted(_ meters: Int) -> String {
-        let formatter = MeasurementFormatter()
-        formatter.unitOptions = .providedUnit
-        formatter.numberFormatter.numberStyle = .decimal
-        return formatter.string(from: Measurement(value: Double(meters), unit: UnitLength.meters))
+        formattedLengthText(Double(meters), measurementSystem: model.settings.preferredMeasurementSystem)
     }
 }

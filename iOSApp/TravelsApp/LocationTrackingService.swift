@@ -19,9 +19,16 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var isConfigured = false
     private var pendingAlwaysAuthorization = false
     private var didScheduleAlwaysAuthorizationUpgrade = false
+    private var isPausing = false
+    private var pendingManualCapture = false
+    private var pendingForcedStoppedCapture = false
+    private var pendingLocation: CLLocation?
+    private var locationProcessingTask: Task<Void, Never>?
 
     var onStatusMessage: ((String) -> Void)?
     var onTrackedEvent: (() -> Void)?
+    var onManualTrackedEvent: ((Int64, Date) -> Void)?
+    var onAuthorizationStateChanged: ((String?) -> Void)?
 
     var authorizationStatus: CLAuthorizationStatus {
         locationManager.authorizationStatus
@@ -43,8 +50,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         self.latestAcceptedEvent = latestEvent
         locationManager.allowsBackgroundLocationUpdates = settings.backgroundLocationEnabled
         locationManager.showsBackgroundLocationIndicator = settings.backgroundLocationEnabled
+        locationManager.activityType = .other
         UIDevice.current.isBatteryMonitoringEnabled = true
         updateDistanceFilter()
+        updatePauseBehavior()
         if !isConfigured {
             NotificationCenter.default.addObserver(
                 self,
@@ -62,16 +71,33 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         locationManager.allowsBackgroundLocationUpdates = settings.backgroundLocationEnabled
         locationManager.showsBackgroundLocationIndicator = settings.backgroundLocationEnabled
         updateDistanceFilter()
+        updatePauseBehavior()
         refreshAuthorization()
     }
 
     func stop() {
+        pendingManualCapture = false
+        pendingForcedStoppedCapture = false
+        isPausing = false
+        locationManager.stopMonitoringSignificantLocationChanges()
         locationManager.stopUpdatingLocation()
+    }
+
+    func requestCurrentLocation(forceStopped: Bool = false) {
+        pendingManualCapture = true
+        pendingForcedStoppedCapture = forceStopped
+        if let location = locationManager.location {
+            enqueue(location: location)
+            return
+        }
+        locationManager.requestLocation()
     }
 
     private func refreshAuthorization() {
         guard settings.autoAddLocations else {
+            locationManager.stopMonitoringSignificantLocationChanges()
             locationManager.stopUpdatingLocation()
+            onAuthorizationStateChanged?(nil)
             return
         }
 
@@ -79,19 +105,28 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         case .authorizedAlways:
             pendingAlwaysAuthorization = false
             didScheduleAlwaysAuthorizationUpgrade = false
+            onAuthorizationStateChanged?(nil)
+            startTrackingIfNeeded()
             locationManager.startUpdatingLocation()
         case .authorizedWhenInUse:
-            locationManager.startUpdatingLocation()
+            onAuthorizationStateChanged?(settings.backgroundLocationEnabled
+                                         ? "Waiting for Always Location permission..."
+                                         : nil)
             if settings.backgroundLocationEnabled {
                 pendingAlwaysAuthorization = true
                 scheduleAlwaysAuthorizationUpgrade()
             } else {
                 pendingAlwaysAuthorization = false
                 didScheduleAlwaysAuthorizationUpgrade = false
+                startTrackingIfNeeded()
+                locationManager.startUpdatingLocation()
             }
         case .notDetermined:
             pendingAlwaysAuthorization = settings.backgroundLocationEnabled
             didScheduleAlwaysAuthorizationUpgrade = false
+            onAuthorizationStateChanged?(settings.backgroundLocationEnabled
+                                         ? "Waiting for Always Location permission..."
+                                         : "Waiting for Location permission...")
             if settings.backgroundLocationEnabled {
                 locationManager.requestAlwaysAuthorization()
             } else {
@@ -100,6 +135,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         case .denied, .restricted:
             pendingAlwaysAuthorization = false
             didScheduleAlwaysAuthorizationUpgrade = false
+            onAuthorizationStateChanged?("Location access is needed for Travels.")
         @unknown default:
             break
         }
@@ -128,6 +164,24 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         locationManager.distanceFilter = currentDistanceFilter()
     }
 
+    private func updatePauseBehavior() {
+        let shouldPauseAutomatically = UIDevice.current.batteryState != .charging && UIDevice.current.batteryState != .full
+        locationManager.pausesLocationUpdatesAutomatically = shouldPauseAutomatically
+        if shouldPauseAutomatically {
+            locationManager.allowDeferredLocationUpdates(
+                untilTraveled: CLLocationDistance(kCLLocationAccuracyKilometer),
+                timeout: CLTimeIntervalMax
+            )
+        } else {
+            locationManager.disallowDeferredLocationUpdates()
+        }
+    }
+
+    private func startTrackingIfNeeded() {
+        guard settings.autoAddLocations else { return }
+        locationManager.startMonitoringSignificantLocationChanges()
+    }
+
     private func currentDistanceFilter() -> CLLocationDistance {
         switch UIDevice.current.batteryState {
         case .charging, .full:
@@ -143,6 +197,17 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         refreshAuthorization()
     }
 
+    func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
+        isPausing = true
+        if settings.autoAddLocations {
+            locationManager.requestLocation()
+        }
+    }
+
+    func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
+        isPausing = false
+    }
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if let clError = error as? CLError, clError.code == .locationUnknown {
             return
@@ -151,51 +216,101 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard settings.autoAddLocations, let location = locations.last else {
+        guard let location = locations.last else {
             return
         }
-        Task {
-            await handle(location: location)
+        guard settings.autoAddLocations || pendingManualCapture else {
+            return
         }
+        enqueue(location: location)
     }
 
     @objc private func batteryStateDidChange(_ notification: Notification) {
         updateDistanceFilter()
+        updatePauseBehavior()
+    }
+
+    private func enqueue(location: CLLocation) {
+        pendingLocation = location
+        guard locationProcessingTask == nil else { return }
+        locationProcessingTask = Task { [weak self] in
+            await self?.processPendingLocations()
+        }
+    }
+
+    private func processPendingLocations() async {
+        defer {
+            locationProcessingTask = nil
+        }
+
+        while let location = pendingLocation {
+            pendingLocation = nil
+            await handle(location: location)
+        }
     }
 
     private func handle(location: CLLocation) async {
+        let wasManualCapture = pendingManualCapture
+        let forceStoppedCapture = pendingForcedStoppedCapture
+        let forceCapture = pendingManualCapture
+        pendingManualCapture = false
+        pendingForcedStoppedCapture = false
         let sample = LocationSample(
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude,
             horizontalAccuracy: location.horizontalAccuracy,
             course: location.course,
-            speed: location.speed,
+            speed: forceStoppedCapture ? 0 : location.speed,
             timestamp: location.timestamp
         )
 
         let decision = LocationFiltering.decision(
             candidate: sample,
             previous: latestAcceptedEvent,
+            force: forceCapture,
+            isPausing: isPausing,
             minimumDistanceMeters: Double(settings.poweredUpdateDistanceMeters),
-            pausedMinimumDistanceMeters: Double(settings.batteryUpdateDistanceMeters)
+            pausedMinimumDistanceMeters: 50
         )
 
         guard decision != .reject else {
             return
         }
 
-        let event = LocationFiltering.event(from: sample, source: .locationServices)
+        var event = LocationFiltering.event(from: sample, source: .locationServices)
+        if decision == .acceptAndReplacePrevious {
+            event.geolocationID = latestAcceptedEvent?.geolocationID
+        }
         do {
-            try save(event: event)
+            let eventID = try await save(
+                event: event,
+                replacingEventID: decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil
+            )
+            if wasManualCapture, eventID > 0 {
+                onManualTrackedEvent?(eventID, event.timestamp)
+            }
         } catch {
             onStatusMessage?(error.localizedDescription)
         }
+
+        if isPausing {
+            isPausing = false
+        }
     }
 
-    private func save(event: LocationEvent) throws {
-        guard let store else { return }
-        _ = try store.saveEvent(event)
-        latestAcceptedEvent = event
+    private func save(event: LocationEvent, replacingEventID: Int64? = nil) async throws -> Int64 {
+        guard let store else { return 0 }
+        let eventID = try await Task.detached(priority: .utility) { [store, event] in
+            if let replacingEventID {
+                try store.replaceEvent(eventID: replacingEventID, with: event)
+                return replacingEventID
+            }
+            return try store.saveEvent(event)
+        }.value
+        var storedEvent = event
+        storedEvent.id = eventID
+        latestAcceptedEvent = storedEvent
         onTrackedEvent?()
+        return eventID
     }
 }

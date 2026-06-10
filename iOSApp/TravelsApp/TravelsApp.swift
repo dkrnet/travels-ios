@@ -16,7 +16,7 @@ struct TravelsApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(model)
-                .task {
+                .task(priority: .userInitiated) {
                     await model.bootstrap()
                 }
         }

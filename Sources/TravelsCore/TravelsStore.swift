@@ -5,15 +5,87 @@
 import Foundation
 
 public final class TravelsStore: @unchecked Sendable {
-    private let database: SQLiteDatabase
+    private var database: SQLiteDatabase
+    public let databaseURL: URL
+
+    public struct DatabaseHealthReport: Equatable, Sendable {
+        public let isHealthy: Bool
+        public let issues: [String]
+
+        public init(isHealthy: Bool, issues: [String]) {
+            self.isHealthy = isHealthy
+            self.issues = issues
+        }
+
+        public var summary: String {
+            issues.joined(separator: "; ")
+        }
+    }
+
+    public struct DatabaseRepairOutcome: Equatable, Sendable {
+        public let backupDirectory: URL?
+        public let issues: [String]
+
+        public init(backupDirectory: URL?, issues: [String]) {
+            self.backupDirectory = backupDirectory
+            self.issues = issues
+        }
+
+        public var userFacingMessage: String {
+            var message = "Travels found a database problem and rebuilt a fresh database."
+            if let backupDirectory {
+                message += " A backup was saved in \(backupDirectory.lastPathComponent)."
+            }
+            return message
+        }
+    }
 
     public init(path: String) throws {
+        databaseURL = URL(fileURLWithPath: path)
         database = try SQLiteDatabase(path: path)
         try migrate()
     }
 
     public convenience init(url: URL) throws {
         try self.init(path: url.path)
+    }
+
+    public func databaseHealthReport() throws -> DatabaseHealthReport {
+        let integrityMessages = try database.integrityCheck().map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        let nonEmptyIntegrityMessages = integrityMessages.filter { !$0.isEmpty }
+        let integrityHealthy = !nonEmptyIntegrityMessages.isEmpty && nonEmptyIntegrityMessages.allSatisfy {
+            $0.caseInsensitiveCompare("ok") == .orderedSame
+        }
+
+        let foreignKeyRows = try database.query("PRAGMA foreign_key_check")
+        let foreignKeyIssues = foreignKeyRows.map { row -> String in
+            let table = row["table"]?.string ?? "unknown table"
+            let rowID = row["rowid"]?.int64.map(String.init) ?? "?"
+            let parent = row["parent"]?.string ?? "unknown parent"
+            return "foreign_key_check failed for \(table) row \(rowID) referencing \(parent)"
+        }
+
+        var issues = nonEmptyIntegrityMessages
+        issues.append(contentsOf: foreignKeyIssues)
+        if issues.isEmpty {
+            issues = ["ok"]
+        }
+
+        return DatabaseHealthReport(
+            isHealthy: integrityHealthy && foreignKeyIssues.isEmpty,
+            issues: issues
+        )
+    }
+
+    @discardableResult
+    public func validateAndRepairIfNeeded(quarantineRoot: URL? = nil) throws -> DatabaseRepairOutcome? {
+        do {
+            let report = try databaseHealthReport()
+            guard !report.isHealthy else { return nil }
+            return try repairDatabase(using: report.issues, quarantineRoot: quarantineRoot)
+        } catch {
+            return try repairDatabase(using: [error.localizedDescription], quarantineRoot: quarantineRoot)
+        }
     }
 
     public func migrate() throws {
@@ -68,6 +140,12 @@ public final class TravelsStore: @unchecked Sendable {
             externalReference TEXT NOT NULL DEFAULT '',
             photoFilename TEXT NOT NULL DEFAULT '',
             isDemo INTEGER NOT NULL DEFAULT 0,
+            solar_period TEXT NOT NULL DEFAULT 'unknown',
+            solar_period_percent REAL,
+            solar_period_calculated_at DATETIME,
+            twilight_phase TEXT NOT NULL DEFAULT 'none',
+            twilight_percent REAL,
+            twilight_calculated_at DATETIME,
             UNIQUE(latitude, longitude, timestamp, source, externalReference),
             FOREIGN KEY(geolocationID) REFERENCES geolocations(id)
         )
@@ -80,11 +158,19 @@ public final class TravelsStore: @unchecked Sendable {
         )
         """)
 
+        try ensureColumnExists(table: "events", column: "photoFilename", definition: "TEXT NOT NULL DEFAULT ''")
+        try ensureColumnExists(table: "events", column: "solar_period", definition: "TEXT NOT NULL DEFAULT 'unknown'")
+        try ensureColumnExists(table: "events", column: "solar_period_percent", definition: "REAL")
+        try ensureColumnExists(table: "events", column: "solar_period_calculated_at", definition: "DATETIME")
+        try ensureColumnExists(table: "events", column: "twilight_phase", definition: "TEXT NOT NULL DEFAULT 'none'")
+        try ensureColumnExists(table: "events", column: "twilight_percent", definition: "REAL")
+        try ensureColumnExists(table: "events", column: "twilight_calculated_at", definition: "DATETIME")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_localized_date ON events(localizedDate)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_source ON events(source)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_events_twilight_calculated_at_timestamp ON events(twilight_calculated_at, timestamp DESC)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_events_solar_period_calculated_at_timestamp ON events(solar_period_calculated_at, timestamp DESC)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_geolocations_place ON geolocations(country, administrativeArea, subAdministrativeArea, locality)")
-        try ensureColumnExists(table: "events", column: "photoFilename", definition: "TEXT NOT NULL DEFAULT ''")
     }
 
     @discardableResult
@@ -136,12 +222,15 @@ public final class TravelsStore: @unchecked Sendable {
         if let duplicate = try findDuplicate(event) {
             return duplicate.id ?? 0
         }
+        let demoFlag = isDemo || event.isDemo
+        let solar = solarStorageValues(for: event)
         try database.execute(
             """
             INSERT INTO events (
                 latitude, longitude, horizontalAccuracy, verticalAccuracy, altitude, course, speed,
-                timestamp, localizedDate, source, geolocationID, note, tags, externalReference, photoFilename, isDemo
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                timestamp, localizedDate, source, geolocationID, note, tags, externalReference, photoFilename, isDemo,
+                solar_period, solar_period_percent, solar_period_calculated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             parameters: [
                 .real(event.latitude),
@@ -159,10 +248,49 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.tags),
                 .text(event.externalReference),
                 .text(event.photoFilename),
-                .integer(isDemo ? 1 : 0)
+                .integer(demoFlag ? 1 : 0),
+                .text(solar.period.rawValue),
+                optionalDouble(solar.percent),
+                optionalDate(solar.calculatedAt)
             ]
         )
         return database.lastInsertRowID()
+    }
+
+    public func replaceEvent(eventID: Int64, with event: LocationEvent) throws {
+        let solar = solarStorageValues(for: event)
+        try database.execute(
+            """
+            UPDATE events SET
+                latitude = ?, longitude = ?, horizontalAccuracy = ?, verticalAccuracy = ?,
+                altitude = ?, course = ?, speed = ?, timestamp = ?, localizedDate = ?,
+                source = ?, geolocationID = ?, note = ?, tags = ?, externalReference = ?,
+                photoFilename = ?, isDemo = ?, solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
+            WHERE id = ?
+            """,
+            parameters: [
+                .real(event.latitude),
+                .real(event.longitude),
+                .real(event.horizontalAccuracy),
+                .real(event.verticalAccuracy),
+                .real(event.altitude),
+                .real(event.course),
+                .real(event.speed),
+                .real(event.timestamp.timeIntervalSinceReferenceDate),
+                optionalString(event.localizedDate),
+                .integer(Int64(event.source.rawValue)),
+                optionalInt(event.geolocationID),
+                .text(event.note),
+                .text(event.tags),
+                .text(event.externalReference),
+                .text(event.photoFilename),
+                .integer(event.isDemo ? 1 : 0),
+                .text(solar.period.rawValue),
+                optionalDouble(solar.percent),
+                optionalDate(solar.calculatedAt),
+                .integer(eventID)
+            ]
+        )
     }
 
     public func events(on date: Date, includePreviousDayContext: Bool = false, includeDemo: Bool = true) throws -> [EventDetail] {
@@ -187,6 +315,14 @@ public final class TravelsStore: @unchecked Sendable {
             predicate = "e.isDemo = 0"
         }
         return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
+    }
+
+    public func checkpoint() throws {
+        _ = try database.query("PRAGMA wal_checkpoint(FULL)")
+    }
+
+    public func close() {
+        database.close()
     }
 
     public func search(_ criteria: SearchCriteria, includeDemo: Bool = true) throws -> [EventDetail] {
@@ -258,6 +394,10 @@ public final class TravelsStore: @unchecked Sendable {
         try database.execute("DELETE FROM events WHERE id = ?", parameters: [.integer(eventID)])
     }
 
+    public func deleteDemoEvents() throws {
+        try database.execute("DELETE FROM events WHERE isDemo = 1")
+    }
+
     public func eventCount(includeDemo: Bool = true) throws -> Int {
         let rows = try database.query("SELECT count(*) AS count FROM events WHERE (? = 1 OR isDemo = 0)", parameters: [.integer(includeDemo ? 1 : 0)])
         return Int(rows.first?["count"]?.int64 ?? 0)
@@ -271,6 +411,76 @@ public final class TravelsStore: @unchecked Sendable {
         return rows.first?["timestamp"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
     }
 
+    public func latestEvent(includeDemo: Bool = true) throws -> LocationEvent? {
+        let rows = try database.query(
+            """
+            SELECT *
+            FROM events
+            WHERE (? = 1 OR isDemo = 0)
+            ORDER BY timestamp DESC
+            LIMIT 1
+            """,
+            parameters: [.integer(includeDemo ? 1 : 0)]
+        )
+        return rows.first.map(event(from:))
+    }
+
+    public func fetchLocationEventsMissingSolarPeriod(limit: Int) throws -> [LocationEvent] {
+        let rows = try database.query(
+            """
+            SELECT *
+            FROM events
+            WHERE solar_period_calculated_at IS NULL
+            ORDER BY timestamp DESC
+            LIMIT ?
+            """,
+            parameters: [.integer(Int64(max(limit, 0)))]
+        )
+        return rows.map(event(from:))
+    }
+
+    public func fetchLocationEventsMissingTwilight(limit: Int) throws -> [LocationEvent] {
+        try fetchLocationEventsMissingSolarPeriod(limit: limit)
+    }
+
+    public func rebuildSolarPeriodCalculations(timeZoneIdentifier: String) throws -> Int {
+        let trimmedIdentifier = timeZoneIdentifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let timeZone = TimeZone(identifier: trimmedIdentifier) else {
+            throw TravelsError.invalidTimeZoneIdentifier(trimmedIdentifier)
+        }
+
+        let rows = try database.query("SELECT * FROM events ORDER BY timestamp ASC")
+        let processedAt = Date()
+        try database.transaction {
+            for row in rows {
+                let event = event(from: row)
+                guard let eventID = event.id else { continue }
+                let solar = solarStorageValues(
+                    for: event,
+                    timeZoneOverride: timeZone,
+                    calculatedAt: processedAt
+                )
+                try database.execute(
+                    """
+                    UPDATE events SET solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
+                    WHERE id = ?
+                    """,
+                    parameters: [
+                        .text(solar.period.rawValue),
+                        optionalDouble(solar.percent),
+                        optionalDate(solar.calculatedAt),
+                        .integer(eventID)
+                    ]
+                )
+            }
+        }
+        return rows.count
+    }
+
+    public func rebuildTwilightCalculations(timeZoneIdentifier: String) throws -> Int {
+        try rebuildSolarPeriodCalculations(timeZoneIdentifier: timeZoneIdentifier)
+    }
+
     public func oldestEventDate(includeDemo: Bool = true) throws -> Date? {
         let rows = try database.query(
             "SELECT timestamp FROM events WHERE (? = 1 OR isDemo = 0) ORDER BY timestamp ASC LIMIT 1",
@@ -279,19 +489,32 @@ public final class TravelsStore: @unchecked Sendable {
         return rows.first?["timestamp"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
     }
 
+    public func eventDateRange(includeDemo: Bool = true) throws -> (oldest: Date?, latest: Date?) {
+        let rows = try database.query(
+            """
+            SELECT MIN(timestamp) AS oldest, MAX(timestamp) AS latest
+            FROM events
+            WHERE (? = 1 OR isDemo = 0)
+            """,
+            parameters: [.integer(includeDemo ? 1 : 0)]
+        )
+        let oldest = rows.first?["oldest"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+        let latest = rows.first?["latest"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+        return (oldest, latest)
+    }
+
     public func eventsNeedingGeolocation(includeDemo: Bool = true) throws -> [EventDetail] {
         var predicate = "(e.geolocationID IS NULL OR g.id IS NULL OR trim(g.name) = '')"
         if !includeDemo {
             predicate += " AND e.isDemo = 0"
         }
-        return try fetchEventDetails(where: predicate, parameters: [], order: "e.timestamp ASC")
+        return try fetchEventDetails(where: predicate, parameters: [], order: "e.timestamp DESC")
     }
 
     public func attachGeolocation(_ geolocationID: Int64, toEvent eventID: Int64) throws {
-        try database.execute(
-            "UPDATE events SET geolocationID = ? WHERE id = ?",
-            parameters: [.integer(geolocationID), .integer(eventID)]
-        )
+        guard var event = try event(id: eventID) else { return }
+        event.geolocationID = geolocationID
+        try replaceEvent(eventID: eventID, with: event)
     }
 
     public func geolocation(id: Int64) throws -> Geolocation? {
@@ -357,6 +580,8 @@ public final class TravelsStore: @unchecked Sendable {
                 e.timestamp AS event_timestamp, e.localizedDate AS event_localizedDate,
                 e.source AS event_source, e.geolocationID AS event_geolocationID, e.note AS event_note,
                 e.tags AS event_tags, e.externalReference AS event_externalReference, e.photoFilename AS event_photoFilename,
+                e.isDemo AS event_isDemo, e.solar_period AS event_solar_period,
+                e.solar_period_percent AS event_solar_period_percent, e.solar_period_calculated_at AS event_solar_period_calculated_at,
                 g.*
             FROM events e
             LEFT JOIN geolocations g ON g.id = e.geolocationID
@@ -370,6 +595,48 @@ public final class TravelsStore: @unchecked Sendable {
             let geolocation = row["id"]?.int64 == nil ? nil : geolocation(from: row)
             return EventDetail(event: event, geolocation: geolocation)
         }
+    }
+
+    private func repairDatabase(using issues: [String], quarantineRoot: URL?) throws -> DatabaseRepairOutcome {
+        database.close()
+        let backupDirectory = try Self.quarantineDatabaseFiles(at: databaseURL, quarantineRoot: quarantineRoot)
+        database = try SQLiteDatabase(path: databaseURL.path)
+        try migrate()
+        return DatabaseRepairOutcome(backupDirectory: backupDirectory, issues: issues)
+    }
+
+    public static func quarantineDatabaseFiles(at databaseURL: URL, quarantineRoot: URL? = nil) throws -> URL {
+        let fileManager = FileManager.default
+        let root = quarantineRoot ?? databaseURL.deletingLastPathComponent()
+        let repairsRoot = root.appendingPathComponent("Database Repairs", isDirectory: true)
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let folderName = "\(formatter.string(from: Date()))-\(UUID().uuidString.prefix(8))"
+        let quarantineDirectory = repairsRoot.appendingPathComponent(folderName, isDirectory: true)
+        try fileManager.createDirectory(at: quarantineDirectory, withIntermediateDirectories: true)
+        for url in relatedDatabaseFiles(for: databaseURL) {
+            guard fileManager.fileExists(atPath: url.path) else { continue }
+            let destination = quarantineDirectory.appendingPathComponent(url.lastPathComponent)
+            if fileManager.fileExists(atPath: destination.path) {
+                try fileManager.removeItem(at: destination)
+            }
+            try fileManager.moveItem(at: url, to: destination)
+        }
+        return quarantineDirectory
+    }
+
+    private static func relatedDatabaseFiles(for databaseURL: URL) -> [URL] {
+        let directory = databaseURL.deletingLastPathComponent()
+        let baseName = databaseURL.lastPathComponent
+        return [
+            databaseURL,
+            directory.appendingPathComponent("\(baseName)-wal"),
+            directory.appendingPathComponent("\(baseName)-shm"),
+            directory.appendingPathComponent("\(baseName)-journal")
+        ]
     }
 
     private func event(from row: [String: SQLiteValue]) -> LocationEvent {
@@ -389,7 +656,11 @@ public final class TravelsStore: @unchecked Sendable {
             note: row["note"]?.string ?? "",
             tags: row["tags"]?.string ?? "",
             externalReference: row["externalReference"]?.string ?? "",
-            photoFilename: row["photoFilename"]?.string ?? ""
+            photoFilename: row["photoFilename"]?.string ?? "",
+            isDemo: (row["isDemo"]?.int64 ?? 0) != 0,
+            solarPeriod: SolarPeriod(rawValue: row["solar_period"]?.string ?? "") ?? .unknown,
+            solarPeriodPercent: row["solar_period_percent"]?.double,
+            solarPeriodCalculatedAt: row["solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
         )
     }
 
@@ -410,7 +681,11 @@ public final class TravelsStore: @unchecked Sendable {
             note: row["event_note"]?.string ?? "",
             tags: row["event_tags"]?.string ?? "",
             externalReference: row["event_externalReference"]?.string ?? "",
-            photoFilename: row["event_photoFilename"]?.string ?? ""
+            photoFilename: row["event_photoFilename"]?.string ?? "",
+            isDemo: (row["event_isDemo"]?.int64 ?? 0) != 0,
+            solarPeriod: SolarPeriod(rawValue: row["event_solar_period"]?.string ?? "") ?? .unknown,
+            solarPeriodPercent: row["event_solar_period_percent"]?.double,
+            solarPeriodCalculatedAt: row["event_solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
         )
     }
 
@@ -464,6 +739,38 @@ public final class TravelsStore: @unchecked Sendable {
     private func optionalDate(_ value: Date?) -> SQLiteValue {
         guard let value else { return .null }
         return .real(value.timeIntervalSinceReferenceDate)
+    }
+
+    private func solarStorageValues(
+        for event: LocationEvent,
+        timeZoneOverride: TimeZone? = nil,
+        calculatedAt: Date = Date()
+    ) -> (period: SolarPeriod, percent: Double?, calculatedAt: Date) {
+        let timeZone: TimeZone?
+        if let timeZoneOverride {
+            timeZone = timeZoneOverride
+        } else if let geolocationID = event.geolocationID,
+                  let geolocation = try? geolocation(id: geolocationID),
+                  let resolvedTimeZone = TimeZone(identifier: geolocation.timeZoneIdentifier) {
+            timeZone = resolvedTimeZone
+        } else {
+            timeZone = nil
+        }
+        guard let timeZone else {
+            return (.unknown, nil, calculatedAt)
+        }
+        let result = SolarTwilight.solarPeriodResult(
+            at: event.timestamp,
+            latitude: event.latitude,
+            longitude: event.longitude,
+            timeZone: timeZone
+        )
+        return (result.period, result.percent, calculatedAt)
+    }
+
+    private func event(id: Int64) throws -> LocationEvent? {
+        let rows = try database.query("SELECT * FROM events WHERE id = ?", parameters: [.integer(id)])
+        return rows.first.map(event(from:))
     }
 
     private func nonAny(_ value: String?) -> String? {

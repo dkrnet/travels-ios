@@ -41,6 +41,28 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var tags: String
     public var externalReference: String
     public var photoFilename: String
+    public var isDemo: Bool
+    public var solarPeriod: SolarPeriod
+    public var solarPeriodPercent: Double?
+    public var solarPeriodCalculatedAt: Date?
+
+    @available(*, deprecated, message: "Use solarPeriod instead.")
+    public var twilightPhase: TwilightPhase {
+        get { solarPeriod.twilightPhase }
+        set { solarPeriod = SolarPeriod(twilightPhase: newValue) }
+    }
+
+    @available(*, deprecated, message: "Use solarPeriodPercent instead.")
+    public var twilightPercent: Double? {
+        get { solarPeriodPercent }
+        set { solarPeriodPercent = newValue }
+    }
+
+    @available(*, deprecated, message: "Use solarPeriodCalculatedAt instead.")
+    public var twilightCalculatedAt: Date? {
+        get { solarPeriodCalculatedAt }
+        set { solarPeriodCalculatedAt = newValue }
+    }
 
     public init(
         id: Int64? = nil,
@@ -58,7 +80,11 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         note: String = "",
         tags: String = "",
         externalReference: String = "",
-        photoFilename: String = ""
+        photoFilename: String = "",
+        isDemo: Bool = false,
+        solarPeriod: SolarPeriod = .unknown,
+        solarPeriodPercent: Double? = nil,
+        solarPeriodCalculatedAt: Date? = nil
     ) {
         self.id = id
         self.latitude = latitude
@@ -76,6 +102,57 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         self.tags = tags
         self.externalReference = externalReference
         self.photoFilename = photoFilename
+        self.isDemo = isDemo
+        self.solarPeriod = solarPeriod
+        self.solarPeriodPercent = solarPeriodPercent
+        self.solarPeriodCalculatedAt = solarPeriodCalculatedAt
+    }
+
+    @available(*, deprecated, message: "Use solarPeriod instead.")
+    public init(
+        id: Int64? = nil,
+        latitude: Double,
+        longitude: Double,
+        horizontalAccuracy: Double = -1,
+        verticalAccuracy: Double = -1,
+        altitude: Double = 0,
+        course: Double = -1,
+        speed: Double = -1,
+        timestamp: Date,
+        localizedDate: String? = nil,
+        source: EventSource,
+        geolocationID: Int64? = nil,
+        note: String = "",
+        tags: String = "",
+        externalReference: String = "",
+        photoFilename: String = "",
+        isDemo: Bool = false,
+        twilightPhase: TwilightPhase,
+        twilightPercent: Double? = nil,
+        twilightCalculatedAt: Date? = nil
+    ) {
+        self.init(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            horizontalAccuracy: horizontalAccuracy,
+            verticalAccuracy: verticalAccuracy,
+            altitude: altitude,
+            course: course,
+            speed: speed,
+            timestamp: timestamp,
+            localizedDate: localizedDate,
+            source: source,
+            geolocationID: geolocationID,
+            note: note,
+            tags: tags,
+            externalReference: externalReference,
+            photoFilename: photoFilename,
+            isDemo: isDemo,
+            solarPeriod: SolarPeriod(twilightPhase: twilightPhase),
+            solarPeriodPercent: twilightPercent,
+            solarPeriodCalculatedAt: twilightCalculatedAt
+        )
     }
 }
 
@@ -220,6 +297,42 @@ public struct SearchCriteria: Equatable, Sendable {
     }
 }
 
+public enum MeasurementSystemPreference: String, Codable, CaseIterable, Sendable {
+    case metric
+    case imperial
+
+    public var displayName: String {
+        switch self {
+        case .metric:
+            "Metric"
+        case .imperial:
+            "Imperial"
+        }
+    }
+
+    public var lengthUnit: UnitLength {
+        switch self {
+        case .metric:
+            .meters
+        case .imperial:
+            .feet
+        }
+    }
+
+    public var speedUnit: UnitSpeed {
+        switch self {
+        case .metric:
+            .kilometersPerHour
+        case .imperial:
+            .milesPerHour
+        }
+    }
+
+    public static var `default`: MeasurementSystemPreference {
+        Locale.current.measurementSystem == .metric ? .metric : .imperial
+    }
+}
+
 public struct AppSettings: Codable, Equatable, Sendable {
     public var autoAddLocations: Bool
     public var backgroundLocationEnabled: Bool
@@ -231,10 +344,11 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var preferListView: Bool
     public var poweredUpdateDistanceMeters: Int
     public var batteryUpdateDistanceMeters: Int
+    public var preferredMeasurementSystem: MeasurementSystemPreference
 
     public init(
         autoAddLocations: Bool = true,
-        backgroundLocationEnabled: Bool = true,
+        backgroundLocationEnabled: Bool = false,
         resolveAddresses: Bool = true,
         resolveMissingAddresses: Bool = true,
         includePreviousDayContext: Bool = true,
@@ -242,7 +356,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         requireAuthentication: Bool = false,
         preferListView: Bool = false,
         poweredUpdateDistanceMeters: Int = 500,
-        batteryUpdateDistanceMeters: Int = 1_000
+        batteryUpdateDistanceMeters: Int = 1_000,
+        preferredMeasurementSystem: MeasurementSystemPreference = .default
     ) {
         self.autoAddLocations = autoAddLocations
         self.backgroundLocationEnabled = backgroundLocationEnabled
@@ -254,6 +369,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.preferListView = preferListView
         self.poweredUpdateDistanceMeters = poweredUpdateDistanceMeters
         self.batteryUpdateDistanceMeters = batteryUpdateDistanceMeters
+        self.preferredMeasurementSystem = preferredMeasurementSystem
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -267,12 +383,13 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case preferListView
         case poweredUpdateDistanceMeters
         case batteryUpdateDistanceMeters
+        case preferredMeasurementSystem
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.autoAddLocations = try container.decodeIfPresent(Bool.self, forKey: .autoAddLocations) ?? true
-        self.backgroundLocationEnabled = try container.decodeIfPresent(Bool.self, forKey: .backgroundLocationEnabled) ?? true
+        self.backgroundLocationEnabled = try container.decodeIfPresent(Bool.self, forKey: .backgroundLocationEnabled) ?? false
         self.resolveAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveAddresses) ?? true
         self.resolveMissingAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveMissingAddresses) ?? true
         self.includePreviousDayContext = try container.decodeIfPresent(Bool.self, forKey: .includePreviousDayContext) ?? true
@@ -281,6 +398,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? false
         self.poweredUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .poweredUpdateDistanceMeters) ?? 500
         self.batteryUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .batteryUpdateDistanceMeters) ?? 1_000
+        self.preferredMeasurementSystem = try container.decodeIfPresent(MeasurementSystemPreference.self, forKey: .preferredMeasurementSystem) ?? .default
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -295,6 +413,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         try container.encode(preferListView, forKey: .preferListView)
         try container.encode(poweredUpdateDistanceMeters, forKey: .poweredUpdateDistanceMeters)
         try container.encode(batteryUpdateDistanceMeters, forKey: .batteryUpdateDistanceMeters)
+        try container.encode(preferredMeasurementSystem, forKey: .preferredMeasurementSystem)
     }
 }
 
@@ -302,6 +421,8 @@ public enum TravelsError: Error, Equatable, LocalizedError, Sendable {
     case databaseOpenFailed(String)
     case databaseExecutionFailed(String)
     case invalidGPX(String)
+    case invalidTimeZoneIdentifier(String)
+    case photoImportFailed(String)
     case emptyExport
     case legacyDatabaseNotFound
     case legacyImportFailed(String)
@@ -312,6 +433,8 @@ public enum TravelsError: Error, Equatable, LocalizedError, Sendable {
         case .databaseOpenFailed(let message): "Unable to open database: \(message)"
         case .databaseExecutionFailed(let message): "Database operation failed: \(message)"
         case .invalidGPX(let message): "Invalid GPX: \(message)"
+        case .invalidTimeZoneIdentifier(let identifier): "Invalid time zone identifier: \(identifier)"
+        case .photoImportFailed(let message): "Photo import failed: \(message)"
         case .emptyExport: "Select at least one event to export."
         case .legacyDatabaseNotFound: "No legacy Travels database was found."
         case .legacyImportFailed(let message): "Legacy import failed: \(message)"

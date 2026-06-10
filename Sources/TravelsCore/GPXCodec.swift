@@ -4,12 +4,24 @@
 
 import Foundation
 
+public struct GPXTrackPoint: Equatable, Sendable {
+    public var event: LocationEvent
+    public var geolocation: Geolocation?
+
+    public init(event: LocationEvent, geolocation: Geolocation? = nil) {
+        self.event = event
+        self.geolocation = geolocation
+    }
+}
+
 public struct GPXImportResult: Equatable, Sendable {
     public var events: [LocationEvent]
+    public var trackPoints: [GPXTrackPoint]
     public var skippedInvalidPoints: Int
 
-    public init(events: [LocationEvent], skippedInvalidPoints: Int = 0) {
+    public init(events: [LocationEvent], trackPoints: [GPXTrackPoint] = [], skippedInvalidPoints: Int = 0) {
         self.events = events
+        self.trackPoints = trackPoints
         self.skippedInvalidPoints = skippedInvalidPoints
     }
 }
@@ -21,7 +33,13 @@ public enum GPXImporter {
     }
 
     public static func parse(url: URL) throws -> GPXImportResult {
-        try parse(data: Data(contentsOf: url))
+        let didStartAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+        return try parse(data: Data(contentsOf: url))
     }
 }
 
@@ -116,7 +134,7 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     private var currentPoint: [String: String]?
     private var currentElement = ""
     private var currentText = ""
-    private var events: [LocationEvent] = []
+    private var trackPoints: [GPXTrackPoint] = []
     private var skipped = 0
     private let formatter = ISO8601DateFormatter()
 
@@ -131,7 +149,7 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
         guard parser.parse() else {
             throw TravelsError.invalidGPX(parser.parserError?.localizedDescription ?? "Unable to parse GPX")
         }
-        return GPXImportResult(events: events, skippedInvalidPoints: skipped)
+        return GPXImportResult(events: trackPoints.map(\.event), trackPoints: trackPoints, skippedInvalidPoints: skipped)
     }
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
@@ -149,8 +167,8 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         guard var point = currentPoint else { return }
         if elementName == "trkpt" {
-            if let event = event(from: point) {
-                events.append(event)
+            if let trackPoint = trackPoint(from: point) {
+                trackPoints.append(trackPoint)
             } else {
                 skipped += 1
             }
@@ -161,19 +179,19 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
         }
     }
 
-    private func event(from point: [String: String]) -> LocationEvent? {
+    private func trackPoint(from point: [String: String]) -> GPXTrackPoint? {
         guard
             let latitude = Double(point["lat"] ?? ""),
             let longitude = Double(point["lon"] ?? ""),
             (-90...90).contains(latitude),
             (-180...180).contains(longitude),
             let time = point["time"],
-            let timestamp = formatter.date(from: time)
+            let timestamp = parseTimestamp(time)
         else {
             return nil
         }
 
-        return LocationEvent(
+        let event = LocationEvent(
             latitude: latitude,
             longitude: longitude,
             horizontalAccuracy: Double(point["horizontalAccuracy"] ?? "") ?? -1,
@@ -184,5 +202,71 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
             source: .imported,
             note: point["note"] ?? ""
         )
+        let geolocation = geolocation(from: point, event: event)
+        return GPXTrackPoint(event: event, geolocation: geolocation)
+    }
+
+    private func geolocation(from point: [String: String], event: LocationEvent) -> Geolocation? {
+        let areasOfInterest = point["areasOfInterest"].map { raw -> [String] in
+            guard !raw.isEmpty else { return [] }
+            return raw.components(separatedBy: "|||TRAVELS|||")
+        } ?? []
+
+        let hasMeaningfulMetadata =
+            !(point["timeZone"] ?? "").isEmpty ||
+            !(point["name"] ?? "").isEmpty ||
+            !(point["subThoroughfare"] ?? "").isEmpty ||
+            !(point["thoroughfare"] ?? "").isEmpty ||
+            !(point["subLocality"] ?? "").isEmpty ||
+            !(point["locality"] ?? "").isEmpty ||
+            !(point["subAdministrativeArea"] ?? "").isEmpty ||
+            !(point["administrativeArea"] ?? "").isEmpty ||
+            !(point["postalCode"] ?? "").isEmpty ||
+            !(point["isoCountryCode"] ?? "").isEmpty ||
+            !(point["country"] ?? "").isEmpty ||
+            !(point["inlandWater"] ?? "").isEmpty ||
+            !(point["ocean"] ?? "").isEmpty ||
+            !areasOfInterest.isEmpty
+
+        guard hasMeaningfulMetadata else { return nil }
+
+        return Geolocation(
+            latitude: event.latitude,
+            longitude: event.longitude,
+            radius: max(event.horizontalAccuracy, 0),
+            identifier: "\(event.timestamp.timeIntervalSinceReferenceDate)-\(event.latitude)-\(event.longitude)",
+            horizontalAccuracy: event.horizontalAccuracy,
+            verticalAccuracy: event.verticalAccuracy,
+            altitude: event.altitude,
+            timestamp: event.timestamp,
+            minLatitude: event.latitude,
+            maxLatitude: event.latitude,
+            minLongitude: event.longitude,
+            maxLongitude: event.longitude,
+            timeZoneIdentifier: point["timeZone"] ?? "",
+            name: point["name"] ?? "",
+            subThoroughfare: point["subThoroughfare"] ?? "",
+            thoroughfare: point["thoroughfare"] ?? "",
+            subLocality: point["subLocality"] ?? "",
+            locality: point["locality"] ?? "",
+            subAdministrativeArea: point["subAdministrativeArea"] ?? "",
+            administrativeArea: point["administrativeArea"] ?? "",
+            postalCode: point["postalCode"] ?? "",
+            isoCountryCode: point["isoCountryCode"] ?? "",
+            country: point["country"] ?? "",
+            inlandWater: point["inlandWater"] ?? "",
+            ocean: point["ocean"] ?? "",
+            areasOfInterest: areasOfInterest
+        )
+    }
+
+    private func parseTimestamp(_ value: String) -> Date? {
+        if let isoDate = formatter.date(from: value) {
+            return isoDate
+        }
+        if let seconds = Double(value) {
+            return Date(timeIntervalSinceReferenceDate: seconds)
+        }
+        return nil
     }
 }
