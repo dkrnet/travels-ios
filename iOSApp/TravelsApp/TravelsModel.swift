@@ -375,6 +375,12 @@ final class TravelsModel: ObservableObject {
         refreshSelectedEventIfNeeded()
     }
 
+    func setTripDisplay(_ tripID: DetectedTrip.ID, isSelected: Bool) {
+        let currentlySelected = isTripMapDisplaySelected(tripID)
+        guard currentlySelected != isSelected else { return }
+        toggleTripDisplay(tripID)
+    }
+
     func rebuildSolarPeriodCalculations(timeZoneIdentifier: String) {
         guard let store else {
             statusMessage = TravelsError.databaseOpenFailed("Database is unavailable.").localizedDescription
@@ -405,7 +411,14 @@ final class TravelsModel: ObservableObject {
     }
 
     var canAddCurrentLocation: Bool {
-        Calendar.current.isDateInToday(selectedDate)
+        CurrentLocationCaptureAvailability.canAddCurrentLocation(
+            selectedDate: selectedDate,
+            now: Date(),
+            calendar: Calendar.current,
+            locationServicesEnabled: locationService.isLocationServicesEnabled,
+            hasLocationPermission: locationService.hasCurrentLocationPermission,
+            isUnlocked: isUnlocked
+        )
     }
 
     var hasStoppedLocations: Bool {

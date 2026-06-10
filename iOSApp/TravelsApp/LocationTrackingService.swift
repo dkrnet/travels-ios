@@ -34,6 +34,19 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         locationManager.authorizationStatus
     }
 
+    var isLocationServicesEnabled: Bool {
+        CLLocationManager.locationServicesEnabled()
+    }
+
+    var hasCurrentLocationPermission: Bool {
+        switch authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            return true
+        default:
+            return false
+        }
+    }
+
     override init() {
         super.init()
         locationManager.delegate = self
@@ -135,6 +148,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         case .denied, .restricted:
             pendingAlwaysAuthorization = false
             didScheduleAlwaysAuthorizationUpgrade = false
+            locationManager.stopMonitoringSignificantLocationChanges()
+            locationManager.stopUpdatingLocation()
             onAuthorizationStateChanged?("Location access is needed for Travels.")
         @unknown default:
             break
@@ -210,6 +225,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if let clError = error as? CLError, clError.code == .locationUnknown {
+            return
+        }
+        if let clError = error as? CLError, clError.code == .denied {
+            // Regression guard: denied authorization should surface the friendly access message
+            // instead of leaking the raw kCLErrorDomain error back to the user.
+            onAuthorizationStateChanged?("Location access is needed for Travels.")
             return
         }
         onStatusMessage?(error.localizedDescription)
