@@ -54,6 +54,17 @@ A future developer should be able to regenerate the application from scratch wit
 - The bundle identifier must not be changed casually because it affects upgrade, sandbox, data-container, and App Store behavior.
 - Before release, verify that the bundle identifier, signing identity, app group assumptions if any, and migration path match the legacy app identity.
 
+## Versioning requirements
+
+- Travels shall use semantic marketing versions for the App Store-facing version number.
+- Travels shall use automatic development build metadata for the bundle version.
+- The initial marketing version shall be `2.0.0` unless intentionally changed.
+- Untagged development build versions shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`.
+- Tagged commit build versions shall use the form `2.0.0.<build-count>+<git-short-sha>`, where `build-count` resets to `0`.
+- The build count shall increment for each app build and may be stored locally in a gitignored state file so the version updates automatically at build time.
+- The About screen shall display the build version directly, for example `Version 2.0.0-dev.0+8508546`.
+- Future development builds shall keep the same pattern so the visible version matches the build metadata scheme unless this requirement is intentionally changed.
+
 ## Data storage requirements
 
 - The modern database shall be named `Travels.sqlite`.
