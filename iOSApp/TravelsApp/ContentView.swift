@@ -1,7 +1,6 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
-// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import MapKit
 import SwiftUI
@@ -114,10 +113,10 @@ struct ContentView: View {
                     .disabled(model.events.isEmpty)
                     Menu {
                         Button("About") { showingAbout = true }
-                        Button("Import GPX") { showingImporter = true }
+                        Button("Import Location File") { showingImporter = true }
                         Button("Import Photo") { showingPhotoImporter = true }
-                        Button("Export GPX") {
-                            if let url = model.exportCurrentDayGPX() {
+                        Button("Export Location File") {
+                            if let url = model.exportDisplayedGPX() {
                                 shareItem = ShareItem(url: url)
                             }
                         }
@@ -141,10 +140,8 @@ struct ContentView: View {
                     .disabled(!model.isUnlocked)
 
                     Menu {
-                        // Regression guard: keep menu selection visuals on system controls so
-                        // the selected-state indicator and label spacing stay consistent on
-                        // compact phone menus.
-                        Toggle("All", isOn: Binding(
+                        // REGRESSION GUARD: keep these rows as standard Toggle controls so the selection state is rendered consistently across device sizes and does not regress to a custom checkmark layout.
+                        displaySelectionToggle("All", isOn: Binding(
                             get: { model.isAllMapDisplaySelected() },
                             set: { isOn in
                                 if isOn {
@@ -152,21 +149,31 @@ struct ContentView: View {
                                 }
                             }
                         ))
-                        Toggle("Stopped Only", isOn: Binding(
-                            get: { model.isStoppedOnlyMapDisplaySelected() },
-                            set: { isOn in
-                                if isOn {
-                                    model.selectStoppedOnlyMapDisplay()
+                        displaySelectionToggle(
+                            "Stopped Only",
+                            isOn: Binding(
+                                get: { model.isStoppedOnlyMapDisplaySelected() },
+                                set: { isOn in
+                                    if isOn {
+                                        model.selectStoppedOnlyMapDisplay()
+                                    } else {
+                                        model.selectAllMapDisplay()
+                                    }
                                 }
-                            }
-                        ))
-                        .disabled(!model.hasStoppedLocations)
+                            ),
+                            isEnabled: model.hasStoppedLocations
+                        )
 
                         if !model.detectedTrips.isEmpty {
-                            ForEach(model.detectedTrips, id: \.id) { trip in
-                                Toggle(trip.displayName, isOn: Binding(
+                            // REGRESSION GUARD: the menu renders trip rows in the opposite visual order of the detector output, so reverse here to keep earlier trips higher in the list.
+                            ForEach(Array(model.detectedTrips.reversed()), id: \.id) { trip in
+                                displaySelectionToggle(trip.displayName, isOn: Binding(
                                     get: { model.isTripMapDisplaySelected(trip.id) },
-                                    set: { isOn in model.setTripDisplay(trip.id, isSelected: isOn) }
+                                    set: { isOn in
+                                        if isOn != model.isTripMapDisplaySelected(trip.id) {
+                                            model.toggleTripDisplay(trip.id)
+                                        }
+                                    }
                                 ))
                             }
                         }
@@ -184,8 +191,8 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
+                            // REGRESSION GUARD: keep the add button visibly muted when it is disabled so the inactive state is obvious and the disabled affordance does not regress.
                             .foregroundStyle(model.canAddCurrentLocation ? .primary : .tertiary)
-                            .opacity(model.canAddCurrentLocation ? 1.0 : 0.55)
                     } primaryAction: {
                         model.addCurrentLocation()
                     }
@@ -202,7 +209,7 @@ struct ContentView: View {
                 SettingsView()
             }
             .sheet(isPresented: $showingSearch) {
-                SearchView()
+                SearchView(initialCriteria: model.lastSearchCriteria)
             }
             .sheet(isPresented: $showingDatePicker) {
                 DatePickerSheet(
@@ -272,6 +279,15 @@ struct ContentView: View {
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
     }
 
+    @ViewBuilder
+    private func displaySelectionToggle(
+        _ title: String,
+        isOn: Binding<Bool>,
+        isEnabled: Bool = true,
+    ) -> some View {
+        Toggle(title, isOn: isOn)
+        .disabled(!isEnabled)
+    }
 }
 
 private struct PermissionBanner: View {
@@ -343,6 +359,14 @@ struct AboutView: View {
                         .font(.caption)
                     }
 
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Travels is licensed under the Mozilla Public License 2.0.")
+                            Link("Mozilla Public License 2.0", destination: URL(string: "https://www.mozilla.org/MPL/2.0/")!)
+                        }
+                        .font(.footnote)
+                    }
+
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Thanks to my wife, Pam, for tolerating the ridiculous amount of time I put into this project, as well as feigning interest every time I’ve talked in detail about time zones and auto-layout.")
                         Text("© 2026 David Redmond All Rights Reserved")
@@ -403,16 +427,20 @@ private struct DatePickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            DatePicker(
-                "Choose a day",
-                selection: $selection,
-                in: range,
-                displayedComponents: .date
-            )
-            .datePickerStyle(.graphical)
-            .labelsHidden()
-            .padding()
+            Form {
+                Section {
+                    DatePicker(
+                        "Choose a day",
+                        selection: $selection,
+                        in: range,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                }
+            }
             .navigationTitle("Choose Date")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
+  <metadata>
+    <name>Travels GPX v1 Example</name>
+    <time>2026-06-01T00:00:00Z</time>
+    <bounds minlat="37.3317" maxlat="37.3317" minlon="-122.0301" maxlon="-122.0301"/>
+  </metadata>
+  <trk>
+    <name>Travels GPX v1 Example</name>
+    <trkseg>
+      <trkpt lat="37.3317" lon="-122.0301">
+        <ele>12</ele>
+        <time>2026-05-31T12:00:00Z</time>
+        <name>Tom &amp; Jerry Park</name>
+        <cmt>Note with &lt;angle&gt; brackets &amp; ampersands</cmt>
+        <desc>Tom &amp; Jerry Park, Cupertino, California, United States</desc>
+        <src>Imported</src>
+        <extensions>
+          <travels:horizontalAccuracyMeters>12</travels:horizontalAccuracyMeters>
+          <travels:verticalAccuracyMeters>8</travels:verticalAccuracyMeters>
+          <travels:headingDegrees>90</travels:headingDegrees>
+          <travels:speedMetersPerSecond>1.2</travels:speedMetersPerSecond>
+          <travels:timeZone>America/Los_Angeles</travels:timeZone>
+          <travels:localizedDateKey>2026-05-31</travels:localizedDateKey>
+          <travels:source>Imported</travels:source>
+          <travels:tags>
+            <travels:tag>Museum &amp; art</travels:tag>
+            <travels:tag>Food &lt;travel&gt;</travels:tag>
+          </travels:tags>
+          <travels:externalReference>sample-reference</travels:externalReference>
+          <travels:photoFilename>sample-photo.jpg</travels:photoFilename>
+          <travels:demoData>true</travels:demoData>
+          <travels:solar>
+            <travels:period>day</travels:period>
+            <travels:periodPercent>0.5</travels:periodPercent>
+            <travels:calculatedAt>2026-05-31T12:05:00Z</travels:calculatedAt>
+          </travels:solar>
+          <travels:place>
+            <travels:identifier>place-1</travels:identifier>
+            <travels:latitude>37.3317</travels:latitude>
+            <travels:longitude>-122.0301</travels:longitude>
+            <travels:radiusMeters>25</travels:radiusMeters>
+            <travels:horizontalAccuracyMeters>12</travels:horizontalAccuracyMeters>
+            <travels:verticalAccuracyMeters>8</travels:verticalAccuracyMeters>
+            <travels:altitudeMeters>12</travels:altitudeMeters>
+            <travels:timestamp>2026-05-31T11:59:00Z</travels:timestamp>
+            <travels:bounds>
+              <travels:minLatitude>37.3310</travels:minLatitude>
+              <travels:maxLatitude>37.3320</travels:maxLatitude>
+              <travels:minLongitude>-122.0310</travels:minLongitude>
+              <travels:maxLongitude>-122.0290</travels:maxLongitude>
+            </travels:bounds>
+            <travels:name>Tom &amp; Jerry Park</travels:name>
+            <travels:subThoroughfare>1</travels:subThoroughfare>
+            <travels:thoroughfare>Infinite Loop</travels:thoroughfare>
+            <travels:subLocality>Cupertino West</travels:subLocality>
+            <travels:locality>Cupertino</travels:locality>
+            <travels:subAdministrativeArea>Santa Clara County</travels:subAdministrativeArea>
+            <travels:administrativeArea>California</travels:administrativeArea>
+            <travels:postalCode>95014</travels:postalCode>
+            <travels:isoCountryCode>US</travels:isoCountryCode>
+            <travels:country>United States</travels:country>
+            <travels:inlandWater>San Francisco Bay</travels:inlandWater>
+            <travels:ocean>Pacific Ocean</travels:ocean>
+            <travels:areasOfInterest>
+              <travels:areaOfInterest>Apple Park</travels:areaOfInterest>
+              <travels:areaOfInterest>Visitor Center</travels:areaOfInterest>
+            </travels:areasOfInterest>
+          </travels:place>
+        </extensions>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

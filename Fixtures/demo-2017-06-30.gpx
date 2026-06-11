@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<gpx version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/1" creator="Travels - life tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<gpx version="1.1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1" creator="Travels - life tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<metadata>
 		<name>Travels life tracker log</name>
 		<time>2018-09-29T17:11:12-07:00</time>
@@ -8,7 +8,7 @@
 	<trk>
 		<trkseg>
 			<trkpt lon="-119.118262399099" lat="37.9437555000539">
-				<time>520537312.000111</time>
+				<time>2017-06-30T17:41:52.000111Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -20,7 +20,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.129046807177" lat="37.9407165572401">
-				<time>520537376.999333</time>
+				<time>2017-06-30T17:42:56.999333Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Mono Lake Tufa State Natural Reserve</name>
@@ -33,7 +33,7 @@
 				<areasOfInterest>Mono Lake Tufa State Natural Reserve</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.140040762833" lat="37.9383046646024">
-				<time>520537423.998551</time>
+				<time>2017-06-30T17:43:43.998551Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Mono Lake Tufa State Natural Reserve</name>
@@ -46,7 +46,7 @@
 				<areasOfInterest>Mono Lake Tufa State Natural Reserve</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.155638059712" lat="37.9325188463907">
-				<time>520537491.99855</time>
+				<time>2017-06-30T17:44:51.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Mono Lake Tufa State Natural Reserve</name>
@@ -59,7 +59,7 @@
 				<areasOfInterest>Mono Lake Tufa State Natural Reserve</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.178179847188" lat="37.9353678971882">
-				<time>520537601.99855</time>
+				<time>2017-06-30T17:46:41.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -71,7 +71,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.188100081048" lat="37.9463612661119">
-				<time>520537688.99855</time>
+				<time>2017-06-30T17:48:08.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -83,7 +83,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.204597091413" lat="37.950136936305">
-				<time>520537784.99855</time>
+				<time>2017-06-30T17:49:44.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -95,7 +95,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.216079712025" lat="37.9498755885642">
-				<time>520537853.99855</time>
+				<time>2017-06-30T17:50:53.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -107,7 +107,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.226197926439" lat="37.9457150213774">
-				<time>520537974.99855</time>
+				<time>2017-06-30T17:52:54.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -119,7 +119,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.231238886825" lat="37.9376223357748">
-				<time>520538044.998549</time>
+				<time>2017-06-30T17:54:04.998549Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -131,7 +131,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.242207948229" lat="37.9401387926544">
-				<time>520538130.998551</time>
+				<time>2017-06-30T17:55:30.998551Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -143,7 +143,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.249169537909" lat="37.9329963634144">
-				<time>520538215.99855</time>
+				<time>2017-06-30T17:56:55.998550Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Tioga Pass Rd</name>
@@ -155,7 +155,7 @@
 				<country>United States</country>
 			</trkpt>
 			<trkpt lon="-119.268716303743" lat="37.8873107582684">
-				<time>520539153.84099</time>
+				<time>2017-06-30T18:12:33.840990Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>10.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -167,7 +167,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.275541436038" lat="37.8800730686988">
-				<time>520539214.000036</time>
+				<time>2017-06-30T18:13:34.000036Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -179,7 +179,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.292610259838" lat="37.8786575748007">
-				<time>520539305.000035</time>
+				<time>2017-06-30T18:15:05.000035Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -191,7 +191,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.303876208253" lat="37.8798300773258">
-				<time>520539361.000036</time>
+				<time>2017-06-30T18:16:01.000036Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -204,7 +204,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.321002951003" lat="37.881149305066">
-				<time>520539446.000035</time>
+				<time>2017-06-30T18:17:26.000035Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -217,7 +217,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.338141176961" lat="37.8799725696797">
-				<time>520539541.000035</time>
+				<time>2017-06-30T18:19:01.000035Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -229,7 +229,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.348960789032" lat="37.8771479940395">
-				<time>520539599.000036</time>
+				<time>2017-06-30T18:19:59.000036Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -242,7 +242,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.364952286817" lat="37.8722587461005">
-				<time>520539757.000095</time>
+				<time>2017-06-30T18:22:37.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -255,7 +255,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.376314375661" lat="37.8735587373729">
-				<time>520539822.000095</time>
+				<time>2017-06-30T18:23:42.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -268,7 +268,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.387666070945" lat="37.8740773676316">
-				<time>520539891.000095</time>
+				<time>2017-06-30T18:24:51.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -281,7 +281,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.396417532227" lat="37.8799593681822">
-				<time>520539963.000095</time>
+				<time>2017-06-30T18:26:03.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -294,7 +294,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.406950734667" lat="37.8765826346705">
-				<time>520540037.000095</time>
+				<time>2017-06-30T18:27:17.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -307,7 +307,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.418298825733" lat="37.8759541595707">
-				<time>520540097.000095</time>
+				<time>2017-06-30T18:28:17.000095Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -320,7 +320,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.430889953039" lat="37.8668081201966">
-				<time>520540191.000016</time>
+				<time>2017-06-30T18:29:51.000016Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -333,7 +333,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.436645638309" lat="37.8589755669589">
-				<time>520540246.000016</time>
+				<time>2017-06-30T18:30:46.000016Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -346,7 +346,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.445427693538" lat="37.8472823510299">
-				<time>520540327.000017</time>
+				<time>2017-06-30T18:32:07.000017Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -359,7 +359,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.454906787835" lat="37.8360565938408">
-				<time>520540424.000017</time>
+				<time>2017-06-30T18:33:44.000017Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -372,7 +372,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.455138333333" lat="37.8358283333333">
-				<time>520540819.0</time>
+				<time>2017-06-30T18:40:19Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -384,7 +384,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.513070490323" lat="37.8171219164858">
-				<time>520541475.854315</time>
+				<time>2017-06-30T18:51:15.854315Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -397,7 +397,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.523912482075" lat="37.81419566836">
-				<time>520541544.999866</time>
+				<time>2017-06-30T18:52:24.999866Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -410,7 +410,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.534138571582" lat="37.8100254200751">
-				<time>520541599.999866</time>
+				<time>2017-06-30T18:53:19.999866Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -423,7 +423,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.550727363787" lat="37.8066270193437">
-				<time>520541684.99895</time>
+				<time>2017-06-30T18:54:44.998950Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -436,7 +436,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.567776490114" lat="37.8079230711216">
-				<time>520541771.99872</time>
+				<time>2017-06-30T18:56:11.998720Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -449,7 +449,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.578034598492" lat="37.818836476689">
-				<time>520541889.99872</time>
+				<time>2017-06-30T18:58:09.998720Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -462,7 +462,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.581444105245" lat="37.8275088128055">
-				<time>520541957.000037</time>
+				<time>2017-06-30T18:59:17.000037Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -475,7 +475,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.578052451945" lat="37.8361292230318">
-				<time>520542016.000038</time>
+				<time>2017-06-30T19:00:16.000038Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -488,7 +488,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.571749009303" lat="37.8486804105694">
-				<time>520542101.000039</time>
+				<time>2017-06-30T19:01:41.000039Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -501,7 +501,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.588331347443" lat="37.8451717039923">
-				<time>520542215.000039</time>
+				<time>2017-06-30T19:03:35.000039Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -514,7 +514,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.598936382793" lat="37.8486868646348">
-				<time>520542339.000038</time>
+				<time>2017-06-30T19:05:39.000038Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -527,7 +527,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.610329903774" lat="37.848863177968">
-				<time>520542398.000057</time>
+				<time>2017-06-30T19:06:38.000057Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -540,7 +540,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.627426304035" lat="37.8501890274117">
-				<time>520542485.000057</time>
+				<time>2017-06-30T19:08:05.000057Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -553,7 +553,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.64197468955" lat="37.8572776448334">
-				<time>520542565.000056</time>
+				<time>2017-06-30T19:09:25.000056Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -566,7 +566,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.656235911064" lat="37.84973644655">
-				<time>520542659.000057</time>
+				<time>2017-06-30T19:10:59.000057Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -579,7 +579,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.667772259675" lat="37.8500447748581">
-				<time>520542721.000057</time>
+				<time>2017-06-30T19:12:01.000057Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -592,7 +592,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.678088622279" lat="37.8459412465224">
-				<time>520542778.000057</time>
+				<time>2017-06-30T19:12:58.000057Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -605,7 +605,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.691374944634" lat="37.8372754902">
-				<time>520542858.000029</time>
+				<time>2017-06-30T19:14:18.000029Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -618,7 +618,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.7018228193" lat="37.8265934251601">
-				<time>520542945.000029</time>
+				<time>2017-06-30T19:15:45.000029Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -631,7 +631,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.712530113868" lat="37.8159481985847">
-				<time>520543051.000029</time>
+				<time>2017-06-30T19:17:31.000029Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -644,7 +644,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.715658156313" lat="37.8071052907387">
-				<time>520543135.000033</time>
+				<time>2017-06-30T19:18:55.000033Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -657,7 +657,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.719061292819" lat="37.7985087689364">
-				<time>520543184.000032</time>
+				<time>2017-06-30T19:19:44.000032Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -670,7 +670,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.731884682663" lat="37.7894257195646">
-				<time>520543272.999218</time>
+				<time>2017-06-30T19:21:12.999218Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -683,7 +683,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.746397109814" lat="37.7821635967472">
-				<time>520543347.999218</time>
+				<time>2017-06-30T19:22:27.999218Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -696,7 +696,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.758967366181" lat="37.7729128254929">
-				<time>520543430.998671</time>
+				<time>2017-06-30T19:23:50.998671Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -709,7 +709,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.773864857964" lat="37.766279387323">
-				<time>520543515.998175</time>
+				<time>2017-06-30T19:25:15.998175Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -722,7 +722,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.786662347726" lat="37.7573641855621">
-				<time>520543699.000068</time>
+				<time>2017-06-30T19:28:19.000068Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -735,7 +735,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.797617159895" lat="37.7597204223627">
-				<time>520543779.000068</time>
+				<time>2017-06-30T19:29:39.000068Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -748,7 +748,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.794269930683" lat="37.7511034068072">
-				<time>520543995.000053</time>
+				<time>2017-06-30T19:33:15.000053Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -761,7 +761,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.782975735254" lat="37.75021500889">
-				<time>520544061.000054</time>
+				<time>2017-06-30T19:34:21.000054Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -774,7 +774,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.775324734039" lat="37.7434470830837">
-				<time>520544128.000054</time>
+				<time>2017-06-30T19:35:28.000054Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -787,7 +787,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.764879122488" lat="37.7398920664915">
-				<time>520544199.000054</time>
+				<time>2017-06-30T19:36:39.000054Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -800,7 +800,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.759413953982" lat="37.7319985768178">
-				<time>520544350.000054</time>
+				<time>2017-06-30T19:39:10.000054Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -813,7 +813,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.750257982053" lat="37.7264688676575">
-				<time>520544446.000053</time>
+				<time>2017-06-30T19:40:46.000053Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -826,7 +826,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.735558889918" lat="37.7141826320791">
-				<time>520544937.000059</time>
+				<time>2017-06-30T19:48:57.000059Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -839,7 +839,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.724614890404" lat="37.7165422635504">
-				<time>520545007.000059</time>
+				<time>2017-06-30T19:50:07.000059Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -852,7 +852,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.718412617333" lat="37.7241642633804">
-				<time>520545066.000059</time>
+				<time>2017-06-30T19:51:06.000059Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -865,7 +865,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.701274307556" lat="37.7242587274292">
-				<time>520545207.997845</time>
+				<time>2017-06-30T19:53:27.997845Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -878,7 +878,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.690165016912" lat="37.7220152691358">
-				<time>520545279.997638</time>
+				<time>2017-06-30T19:54:39.997638Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -891,7 +891,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.679499296583" lat="37.7188453590849">
-				<time>520545375.000029</time>
+				<time>2017-06-30T19:56:15.000029Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -904,7 +904,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.657467296458" lat="37.716683750076">
-				<time>520545976.999937</time>
+				<time>2017-06-30T20:06:16.999937Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -917,7 +917,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.647444551922" lat="37.7209509350711">
-				<time>520546070.000016</time>
+				<time>2017-06-30T20:07:50.000016Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -930,7 +930,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.6360407212" lat="37.7203946700671">
-				<time>520546151.000014</time>
+				<time>2017-06-30T20:09:11.000014Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -943,7 +943,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.624720960967" lat="37.7216467587629">
-				<time>520546224.000016</time>
+				<time>2017-06-30T20:10:24.000016Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -956,7 +956,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.61443510849" lat="37.7254579263159">
-				<time>520546287.998816</time>
+				<time>2017-06-30T20:11:27.998816Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -969,7 +969,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.605256421603" lat="37.7307694545367">
-				<time>520546361.998747</time>
+				<time>2017-06-30T20:12:41.998747Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -982,7 +982,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.597403751798" lat="37.7373641264045">
-				<time>520546462.998747</time>
+				<time>2017-06-30T20:14:22.998747Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -995,7 +995,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.589503221325" lat="37.7439497039074">
-				<time>520546661.000027</time>
+				<time>2017-06-30T20:17:41.000027Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>5.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>
@@ -1008,7 +1008,7 @@
 				<areasOfInterest>Yosemite National Park</areasOfInterest>
 			</trkpt>
 			<trkpt lon="-119.583886005096" lat="37.7466720203289">
-				<time>520547663.090941</time>
+				<time>2017-06-30T20:34:23.090941Z</time>
 				<timeZone>America/Los_Angeles</timeZone>
 				<horizontalAccuracy>30.0</horizontalAccuracy>
 				<name>Yosemite National Park</name>

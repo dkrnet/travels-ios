@@ -36,10 +36,20 @@ struct TravelsTool {
             let modernURL = URL(fileURLWithPath: args.dropFirst(2).first!)
             let store = try TravelsStore(url: modernURL)
             let result = try GPXImporter.parse(url: gpxURL)
-            for event in result.events {
-                _ = try store.saveEvent(event)
+            let importedCount = try store.transaction {
+                var count = 0
+                for point in result.trackPoints {
+                    let geolocationID = try point.geolocation.map { try store.saveGeolocation($0) }
+                    var event = point.event
+                    event.geolocationID = geolocationID
+                    if try store.findDuplicate(event) == nil {
+                        _ = try store.saveEvent(event)
+                        count += 1
+                    }
+                }
+                return count
             }
-            print("Imported \(result.events.count) GPX events; skipped \(result.skippedInvalidPoints) invalid points.")
+            print("Imported \(importedCount) GPX events; skipped \(result.skippedInvalidPoints) invalid points.")
 
         case "export-gpx":
             guard args.count == 3 else {

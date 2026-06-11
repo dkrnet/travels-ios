@@ -1,2 +1,4 @@
 // REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
+PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels
+DEVELOPMENT_TEAM = TA68L2V5PJ
 #include? "Signing.local.xcconfig"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <trkseg>
+      <trkpt lat="37.3317" lon="-122.0301">
+        <time>2026-05-31T12:00:00Z</time>
+        <heading>180</heading>
+        <speed>2.4</speed>
+        <horizontalAccuracy>7</horizontalAccuracy>
+        <timeZone>America/Los_Angeles</timeZone>
+        <name>Legacy Apple Park</name>
+        <locality>Cupertino</locality>
+        <administrativeArea>California</administrativeArea>
+        <country>United States</country>
+        <areasOfInterest>One|||TRAVELS|||Two</areasOfInterest>
+        <tags>legacy tag</tags>
+        <note>Legacy note</note>
+        <solarPeriod>day</solarPeriod>
+        <solarPeriodPercent>0.5</solarPeriodPercent>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
