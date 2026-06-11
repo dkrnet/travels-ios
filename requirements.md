@@ -38,6 +38,7 @@ A future developer should be able to regenerate the application from scratch wit
 - Source files shall retain MPL 2.0 notices where applicable.
 - Third-party or legacy assets shall retain their original attribution and license notices when they are retained.
 - The repository shall contain the MPL 2.0 license text in `LICENSE`.
+- The About screen shall identify Travels as licensed under the Mozilla Public License 2.0 and shall link to Mozilla's official MPL 2.0 license text at `https://www.mozilla.org/MPL/2.0/`.
 
 ## Application identity requirements
 
@@ -224,6 +225,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The preferred view shall be persisted.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
+- Export actions that operate from the map/list context shall use the active export scope rather than the transient set of events physically visible on screen, unless the user explicitly chooses a viewport-only or visible-only export mode.
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
 - The map shall provide sensible full-day and recent-event zoom behavior.
@@ -231,6 +233,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 ## Event detail requirements
 
 - The user shall be able to inspect an event's timestamp, location, source, note, geolocation/place metadata, photo attachment when present, and time-of-day/solar classification when present.
+- The event detail view shall hide optional rows whose values are unavailable, empty, whitespace-only, or otherwise not meaningful for the selected event while continuing to show core event information such as timestamp, coordinates, and source.
 - The user shall be able to edit an event note.
 - The user shall be able to request reverse address resolution for an event when supported.
 - The user shall be able to delete an event.
@@ -270,9 +273,15 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 
 ## GPX export requirements
 
-- The app shall export GPX for the selected day.
-- Export shall fail gracefully when the selected day has no exportable events.
-- Export filenames shall include the selected date.
+- The app shall export GPX from the active export scope.
+- The active export scope shall be the complete set of exportable events selected by the current user-visible event mode, filter, search, or trip selection.
+- The active export scope may represent the full selected day, a selected trip, a trip-oriented view, stopped-location view, search result, filtered result, or other supported event subset.
+- The active export scope shall not be limited to events physically visible on screen because of map panning, map zoom level, list scroll position, row virtualization, or screen size unless the user explicitly chooses a viewport-only or visible-only export mode.
+- When the active export scope is limited to a specific trip or trip-oriented subset, GPX export shall export that full selected subset rather than all events stored for the selected day, unless the user explicitly chooses a full-day export.
+- The user shall be able to distinguish whether GPX export will include the full selected day, a selected trip or subset, search or filter results, or another active export scope.
+- Full selected-day GPX export shall remain available.
+- Export shall fail gracefully when the active export scope has no exportable events.
+- Export filenames shall remain date-based and may include an additional scope indicator, such as a trip, subset, search, or filter label, when the export is not for the full day.
 - Export shall produce GPX 1.1-compatible XML.
 - Export shall include metadata name, export time, and bounds when available.
 - Export shall use GPX 1.1 standard elements where their semantics match.
@@ -288,6 +297,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 The canonical Travels GPX extension v1 schema is documented in `docs/gpx-extension-v1.md`. The implementation and tests shall treat that document as the source of truth for field names, nesting, and compatibility rules.
 
 These specifics are included because a vague "GPX-compatible" requirement is not enough for long-lived file interchange. A precise schema definition makes it much easier for other implementations, future app versions, and test fixtures to preserve data round-trips, avoid name collisions with standard GPX elements, and keep compatibility stable over time.
+
+The active export scope is the complete set of exportable events selected by the app's current user-visible event mode, filter, search, or trip selection. It is not limited to events physically visible on screen because of map panning, map zoom level, list scroll position, row virtualization, or screen size.
 
 ## Photo import requirements
 

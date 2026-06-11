@@ -14,3 +14,4 @@ xcuserdata/
 *.sqlite-shm
 *.sqlite-wal
 !Fixtures/*.sqlite
+Config/Signing.local.xcconfig

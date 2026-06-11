@@ -113,10 +113,10 @@ struct ContentView: View {
                     .disabled(model.events.isEmpty)
                     Menu {
                         Button("About") { showingAbout = true }
-                        Button("Import GPX") { showingImporter = true }
+                        Button("Import Location File") { showingImporter = true }
                         Button("Import Photo") { showingPhotoImporter = true }
-                        Button("Export GPX") {
-                            if let url = model.exportCurrentDayGPX() {
+                        Button("Export Location File") {
+                            if let url = model.exportDisplayedGPX() {
                                 shareItem = ShareItem(url: url)
                             }
                         }
@@ -140,22 +140,41 @@ struct ContentView: View {
                     .disabled(!model.isUnlocked)
 
                     Menu {
-                        displaySelectionButton("All", isSelected: model.isAllMapDisplaySelected) {
-                            model.selectAllMapDisplay()
-                        }
-                        displaySelectionButton(
+                        // REGRESSION GUARD: keep these rows as standard Toggle controls so the selection state is rendered consistently across device sizes and does not regress to a custom checkmark layout.
+                        displaySelectionToggle("All", isOn: Binding(
+                            get: { model.isAllMapDisplaySelected() },
+                            set: { isOn in
+                                if isOn {
+                                    model.selectAllMapDisplay()
+                                }
+                            }
+                        ))
+                        displaySelectionToggle(
                             "Stopped Only",
-                            isSelected: model.isStoppedOnlyMapDisplaySelected,
+                            isOn: Binding(
+                                get: { model.isStoppedOnlyMapDisplaySelected() },
+                                set: { isOn in
+                                    if isOn {
+                                        model.selectStoppedOnlyMapDisplay()
+                                    } else {
+                                        model.selectAllMapDisplay()
+                                    }
+                                }
+                            ),
                             isEnabled: model.hasStoppedLocations
-                        ) {
-                            model.selectStoppedOnlyMapDisplay()
-                        }
+                        )
 
                         if !model.detectedTrips.isEmpty {
-                            ForEach(model.detectedTrips, id: \.id) { trip in
-                                displaySelectionButton(trip.displayName, isSelected: { model.isTripMapDisplaySelected(trip.id) }) {
-                                    model.toggleTripDisplay(trip.id)
-                                }
+                            // REGRESSION GUARD: the menu renders trip rows in the opposite visual order of the detector output, so reverse here to keep earlier trips higher in the list.
+                            ForEach(Array(model.detectedTrips.reversed()), id: \.id) { trip in
+                                displaySelectionToggle(trip.displayName, isOn: Binding(
+                                    get: { model.isTripMapDisplaySelected(trip.id) },
+                                    set: { isOn in
+                                        if isOn != model.isTripMapDisplaySelected(trip.id) {
+                                            model.toggleTripDisplay(trip.id)
+                                        }
+                                    }
+                                ))
                             }
                         }
                     } label: {
@@ -172,7 +191,8 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
-                            .foregroundStyle(.primary)
+                            // REGRESSION GUARD: keep the add button visibly muted when it is disabled so the inactive state is obvious and the disabled affordance does not regress.
+                            .foregroundStyle(model.canAddCurrentLocation ? .primary : .tertiary)
                     } primaryAction: {
                         model.addCurrentLocation()
                     }
@@ -189,7 +209,7 @@ struct ContentView: View {
                 SettingsView()
             }
             .sheet(isPresented: $showingSearch) {
-                SearchView()
+                SearchView(initialCriteria: model.lastSearchCriteria)
             }
             .sheet(isPresented: $showingDatePicker) {
                 DatePickerSheet(
@@ -260,25 +280,12 @@ struct ContentView: View {
     }
 
     @ViewBuilder
-    private func displaySelectionButton(
+    private func displaySelectionToggle(
         _ title: String,
-        isSelected: @escaping () -> Bool,
+        isOn: Binding<Bool>,
         isEnabled: Bool = true,
-        action: @escaping () -> Void
     ) -> some View {
-        Button {
-            action()
-        } label: {
-            HStack {
-                if isSelected() {
-                    Image(systemName: "checkmark")
-                } else {
-                    Image(systemName: "checkmark")
-                        .hidden()
-                }
-                Text(title)
-            }
-        }
+        Toggle(title, isOn: isOn)
         .disabled(!isEnabled)
     }
 }
@@ -352,6 +359,14 @@ struct AboutView: View {
                         .font(.caption)
                     }
 
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Travels is licensed under the Mozilla Public License 2.0.")
+                            Link("Mozilla Public License 2.0", destination: URL(string: "https://www.mozilla.org/MPL/2.0/")!)
+                        }
+                        .font(.footnote)
+                    }
+
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Thanks to my wife, Pam, for tolerating the ridiculous amount of time I put into this project, as well as feigning interest every time I’ve talked in detail about time zones and auto-layout.")
                         Text("© 2026 David Redmond All Rights Reserved")
@@ -412,16 +427,20 @@ private struct DatePickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            DatePicker(
-                "Choose a day",
-                selection: $selection,
-                in: range,
-                displayedComponents: .date
-            )
-            .datePickerStyle(.graphical)
-            .labelsHidden()
-            .padding()
+            Form {
+                Section {
+                    DatePicker(
+                        "Choose a day",
+                        selection: $selection,
+                        in: range,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                }
+            }
             .navigationTitle("Choose Date")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)

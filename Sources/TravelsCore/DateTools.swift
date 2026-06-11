@@ -32,4 +32,10 @@ public enum TravelsDateTools {
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
     }
+
+    public static func gpxFractionalSecondsFormatter() -> ISO8601DateFormatter {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }
 }

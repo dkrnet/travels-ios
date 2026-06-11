@@ -24,6 +24,7 @@ final class TravelsModel: ObservableObject {
     @Published private(set) var selectedMapDisplay: MapDisplaySelection = .all
     @Published var statusMessage: String?
     @Published var searchResults: [EventDetail] = []
+    @Published var lastSearchCriteria = SearchCriteria()
     @Published var addressResolutionLog: [String] = []
     @Published var addressResolutionStatus = "Idle"
     @Published var addressResolutionPendingCount = 0
@@ -97,20 +98,15 @@ final class TravelsModel: ObservableObject {
             if let repairMessage = launch.repairMessage {
                 self.statusMessage = repairMessage
             }
-            let latestAcceptedEvent = try launch.store.latestEvent(includeDemo: settings.includeDemoData)
-            locationService.configure(
-                store: launch.store,
-                settings: settings,
-                latestEvent: latestAcceptedEvent
-            )
             let didRepairDatabase = launch.repairMessage != nil
-            Task(priority: .userInitiated) { [weak self, launch, settings, didRepairDatabase] in
+            if settings.includeDemoData && !didRepairDatabase {
+                try self.ensureDemoReferenceDate(referenceDate: Date())
+                try self.seedDemoDataIfNeeded()
+            }
+            Task(priority: .userInitiated) { [weak self, launch, settings] in
                 do {
                     guard let self else { return }
-                    if settings.includeDemoData && !didRepairDatabase {
-                        try self.ensureDemoReferenceDate(referenceDate: Date())
-                        try self.seedDemoDataIfNeeded()
-                    }
+                    let latestAcceptedEvent = try launch.store.latestEvent(includeDemo: settings.includeDemoData)
                     let startup = try loadStartupState(store: launch.store, settings: settings)
                     await MainActor.run {
                         self.selectedDate = startup.selectedDate
@@ -122,6 +118,11 @@ final class TravelsModel: ObservableObject {
                             latestEvent: try? launch.store.latestEvent(includeDemo: settings.includeDemoData)
                         )
                         self.refreshDateSelectionBounds()
+                        self.locationService.configure(
+                            store: launch.store,
+                            settings: settings,
+                            latestEvent: latestAcceptedEvent
+                        )
                         self.startAddressResolutionTimer()
                         if settings.requireAuthentication {
                             self.isUnlocked = false
@@ -184,6 +185,7 @@ final class TravelsModel: ObservableObject {
 
     func search(_ criteria: SearchCriteria) {
         do {
+            lastSearchCriteria = criteria
             searchResults = try store?.search(criteria, includeDemo: settings.includeDemoData) ?? []
         } catch {
             statusMessage = error.localizedDescription
@@ -301,17 +303,19 @@ final class TravelsModel: ObservableObject {
     }
 
     func panMapToMostRecentEvent() {
-        guard let lastEventID = events.last?.id else { return }
+        guard let lastEventID = displayedEvents.last?.id ?? events.last?.id else { return }
         mapFocusEventIDs = [lastEventID]
         mapCameraCommandID = UUID()
     }
 
     func scrollListToTop() {
-        requestListScrollTarget(events.first?.id)
+        // BUGFIX: scroll relative to the currently displayed subset so trip/filter views do not target hidden rows.
+        requestListScrollTarget(displayedEvents.first?.id)
     }
 
     func scrollListToBottom() {
-        requestListScrollTarget(events.last?.id)
+        // BUGFIX: scroll relative to the currently displayed subset so the bottom button reaches the last visible row.
+        requestListScrollTarget(displayedEvents.last?.id)
     }
 
     func addCurrentLocation(forceStopped: Bool = false) {
@@ -487,16 +491,30 @@ final class TravelsModel: ObservableObject {
             let result = try GPXImporter.parse(url: url)
             var importedEventIDs: [Int64] = []
             importedEventIDs.reserveCapacity(result.events.count)
-            for event in result.events {
-                let eventID = try store.saveEvent(event)
-                importedEventIDs.append(eventID)
+            let importedCount = try store.transaction {
+                var count = 0
+                for (trackPoint, event) in zip(result.trackPoints, result.events) {
+                    let geolocationID = try trackPoint.geolocation.map { try store.saveGeolocation($0) }
+                    var event = event
+                    event.geolocationID = geolocationID
+                    if try store.findDuplicate(event) == nil {
+                        let eventID = try store.saveEvent(event)
+                        importedEventIDs.append(eventID)
+                        count += 1
+                    }
+                }
+                return count
             }
             if let firstImported = result.events.first, importedEventIDs.first != nil {
                 focusAfterImport(eventIDs: importedEventIDs, timestamp: firstImported.timestamp)
             } else {
                 try reloadEvents()
             }
-            statusMessage = "Imported \(result.events.count) events"
+            if importedCount == 0 && !result.events.isEmpty {
+                statusMessage = "Imported 0 events; all were duplicates."
+            } else {
+                statusMessage = "Imported \(importedCount) event\(importedCount == 1 ? "" : "s")"
+            }
         } catch {
             statusMessage = error.localizedDescription
         }
@@ -569,6 +587,8 @@ final class TravelsModel: ObservableObject {
 
     private func focusAfterEventIDs(_ eventIDs: [Int64], timestamp: Date) {
         selectDate(timestamp)
+        // REGRESSION GUARD: search/import/capture focus must not stay trapped inside a trip or stopped-only filter, or the exact event can never be centered.
+        selectedMapDisplay = .all
         let distinctEventIDs = eventIDs.reduce(into: [Int64]()) { partialResult, eventID in
             guard !partialResult.contains(eventID) else { return }
             partialResult.append(eventID)
@@ -583,25 +603,87 @@ final class TravelsModel: ObservableObject {
         return appSupportURL.appendingPathComponent("Photos", isDirectory: true).appendingPathComponent(filename)
     }
 
-    func exportCurrentDayGPX() -> URL? {
+    func exportDisplayedGPX() -> URL? {
+        exportGPX(
+            events: displayedEvents,
+            baseDate: selectedDate,
+            scopeComponent: currentDisplayExportScopeComponent()
+        )
+    }
+
+    func exportFullDayGPX() -> URL? {
         do {
             guard let store else { return nil }
             let items = try store.events(
                 on: selectedDate,
-                includePreviousDayContext: shouldIncludePreviousDayContext(store: store, settings: settings, date: selectedDate),
+                includePreviousDayContext: false,
                 includeDemo: settings.includeDemoData
             )
-            let xml = try GPXExporter.export(events: items)
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let name = "Travels-\(formatter.string(from: selectedDate)).gpx"
-            let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
-            try xml.write(to: url, atomically: true, encoding: .utf8)
-            return url
+            return try writeGPX(events: items, baseDate: selectedDate, scopeComponent: nil)
         } catch {
             statusMessage = error.localizedDescription
             return nil
         }
+    }
+
+    func exportSearchResultsGPX() -> URL? {
+        exportGPX(
+            events: searchResults,
+            baseDate: searchResults.first?.event.timestamp ?? selectedDate,
+            scopeComponent: "search-results"
+        )
+    }
+
+    private func exportGPX(events: [EventDetail], baseDate: Date, scopeComponent: String?) -> URL? {
+        do {
+            return try writeGPX(events: events, baseDate: baseDate, scopeComponent: scopeComponent)
+        } catch {
+            statusMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    private func writeGPX(events: [EventDetail], baseDate: Date, scopeComponent: String?) throws -> URL {
+        guard !events.isEmpty else {
+            throw TravelsError.emptyExport
+        }
+
+        let xml = try GPXExporter.export(events: events)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        // BUGFIX: export must stay aligned with the active export scope so trip, stopped-only, and search views do not silently widen back to the full day.
+        var name = "Travels-\(formatter.string(from: baseDate))"
+        if let scopeComponent = scopeComponent, !scopeComponent.isEmpty {
+            name += "-\(sanitizedExportScopeComponent(scopeComponent))"
+        }
+        name += ".gpx"
+
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        try xml.write(to: url, atomically: true, encoding: .utf8)
+        return url
+    }
+
+    private func currentDisplayExportScopeComponent() -> String? {
+        switch selectedMapDisplay {
+        case .all:
+            return nil
+        case .stoppedOnly:
+            return "stopped-only"
+        case .trips(let tripIDs):
+            let selectedTrips = detectedTrips.filter { tripIDs.contains($0.id) }
+            if selectedTrips.count == 1, let trip = selectedTrips.first {
+                return trip.displayName
+            }
+            return "trips"
+        }
+    }
+
+    private func sanitizedExportScopeComponent(_ value: String) -> String {
+        let lowercased = value.lowercased()
+        let hyphenated = lowercased.replacingOccurrences(of: "\\s+", with: "-", options: .regularExpression)
+        let stripped = hyphenated.replacingOccurrences(of: "[^a-z0-9_-]+", with: "-", options: .regularExpression)
+        return stripped.trimmingCharacters(in: CharacterSet(charactersIn: "-_"))
     }
 
     func createDatabaseBackup() throws -> URL {
@@ -719,10 +801,12 @@ final class TravelsModel: ObservableObject {
         let storedSeedVersion = try store.setting("demo.seed.version")
         if storedSeedVersion != DemoData.seedVersion {
             try syncDemoMetadata(referenceDate: referenceDate)
-            try store.setSetting("demo.seed.version", value: DemoData.seedVersion)
         }
         guard try store.eventCount(includeDemo: false) == 0 else { return }
         guard try store.eventCount(includeDemo: true) == 0 else { return }
+        if storedSeedVersion != DemoData.seedVersion {
+            try store.deleteDemoEvents()
+        }
         try DemoData.seed(into: store, anchoredTo: referenceDate)
         try store.setSetting("demo.seed.version", value: DemoData.seedVersion)
     }
@@ -999,11 +1083,14 @@ final class TravelsModel: ObservableObject {
     }
 
     private func refreshDetectedTrips() {
+        let displayedDay = TravelsDateTools.localizedDayString(for: selectedDate, timeZoneIdentifier: nil)
+        let tripDetails = events.filter { $0.event.localizedDate == displayedDay }
         let trips = tripDetectionService.detectTrips(
-            from: events.map(\.event),
-            timeZone: tripDisplayTimeZone(for: events)
+            from: tripDetectionEvents(from: tripDetails, displayedDate: selectedDate),
+            timeZone: tripDisplayTimeZone(for: tripDetails)
         )
-        detectedTrips = trips
+        // REGRESSION GUARD: keep trip choices in chronological order so the top-to-bottom list matches the day's natural flow.
+        detectedTrips = trips.sorted { $0.movingStartDate < $1.movingStartDate }
         switch selectedMapDisplay {
         case .all, .stoppedOnly:
             clearTripFocus()

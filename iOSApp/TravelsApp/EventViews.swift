@@ -177,6 +177,7 @@ struct EventMapView: View {
 
     private func fullDayEvents() -> [EventDetail] {
         let dayString = TravelsDateTools.localizedDayString(for: day, timeZoneIdentifier: nil)
+        // BUGFIX: the zoom/reset controls must use the currently displayed subset, not the entire day's data.
         let dayEvents = events.filter { $0.event.localizedDate == dayString }
         return dayEvents.isEmpty ? events : dayEvents
     }
@@ -799,29 +800,64 @@ struct EventDetailView: View {
                 }
 
                 Section("Note") {
-                    TextEditor(text: $note)
-                        .frame(minHeight: 100)
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $note)
+                            .frame(minHeight: 100)
+                            .scrollContentBackground(.hidden)
+                        if !EventDetailDisplayRules.isMeaningfulDisplayText(note) {
+                            Text("Add a note")
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 8)
+                                .padding(.leading, 5)
+                        }
+                    }
                 }
 
                 Section("Event") {
                     labeled("Latitude", coordinateText(detail.event.latitude))
                     labeled("Longitude", coordinateText(detail.event.longitude))
-                    labeled("Horizontal Accuracy", formattedPrecisionLength(detail.event.horizontalAccuracy) ?? "")
-                    labeled("Vertical Accuracy", formattedPrecisionLength(detail.event.verticalAccuracy) ?? "")
-                    labeled("Altitude", formattedPrecisionLength(detail.event.altitude) ?? "")
-                    labeled("Course", formattedAngle(detail.event.course) ?? "")
-                    labeled("Speed", formattedSpeed(detail.event.speed) ?? "")
+                    if EventDetailDisplayRules.hasMeaningfulAccuracy(detail.event.horizontalAccuracy) {
+                        labeled("Horizontal Accuracy", formattedPrecisionLength(detail.event.horizontalAccuracy) ?? "")
+                    }
+                    if EventDetailDisplayRules.hasMeaningfulAccuracy(detail.event.verticalAccuracy) {
+                        labeled("Vertical Accuracy", formattedPrecisionLength(detail.event.verticalAccuracy) ?? "")
+                    }
+                    if EventDetailDisplayRules.hasMeaningfulAltitude(detail.event.altitude) {
+                        labeled("Altitude", formattedPrecisionLength(detail.event.altitude) ?? "")
+                    }
+                    if EventDetailDisplayRules.hasMeaningfulCourse(detail.event.course) {
+                        labeled("Course", formattedAngle(detail.event.course) ?? "")
+                    }
+                    if EventDetailDisplayRules.hasMeaningfulSpeed(detail.event.speed) {
+                        labeled("Speed", formattedSpeed(detail.event.speed) ?? "")
+                    }
                     labeled("Timestamp", formattedTimestamp(detail.event.timestamp, timeZoneIdentifier: detail.geolocation?.timeZoneIdentifier))
-                    labeled("Localized Date", detail.event.localizedDate ?? "")
-                    labeled("Time of Day", timeOfDayText)
+                    if let localizedDate = EventDetailDisplayRules.normalizedDisplayText(detail.event.localizedDate) {
+                        labeled("Localized Date", localizedDate)
+                    }
+                    if EventDetailDisplayRules.hasMeaningfulSolarPeriod(detail.event.solarPeriod) {
+                        labeled("Time of Day", timeOfDayText)
+                    }
                     labeled("Source", detail.event.source.displayName)
+                    if let tags = EventDetailDisplayRules.normalizedDisplayText(detail.event.tags) {
+                        labeled("Tags", tags)
+                    }
+                    if let externalReference = EventDetailDisplayRules.normalizedDisplayText(detail.event.externalReference) {
+                        labeled("External Reference", externalReference)
+                    }
+                    if let photoFilename = EventDetailDisplayRules.normalizedDisplayText(detail.event.photoFilename) {
+                        labeled("Photo", photoFilename)
+                    }
                 }
 
-                Section("Geolocation") {
-                    if let geolocation = detail.geolocation {
+                if let geolocation = detail.geolocation,
+                   EventDetailDisplayRules.hasMeaningfulPlaceMetadata(geolocation) {
+                    Section("Geolocation") {
                         geolocationFallbackField("Latitude", eventValue: coordinateText(detail.event.latitude), geolocationValue: coordinateText(geolocation.latitude))
                         geolocationFallbackField("Longitude", eventValue: coordinateText(detail.event.longitude), geolocationValue: coordinateText(geolocation.longitude))
-                        labeled("Radius", formattedLength(geolocation.radius))
+                        if geolocation.radius > 0 {
+                            labeled("Radius", formattedLength(geolocation.radius))
+                        }
                         geolocationFallbackField("Horizontal Accuracy", eventValue: formattedPrecisionLength(detail.event.horizontalAccuracy), geolocationValue: formattedPrecisionLength(geolocation.horizontalAccuracy))
                         geolocationFallbackField("Vertical Accuracy", eventValue: formattedPrecisionLength(detail.event.verticalAccuracy), geolocationValue: formattedPrecisionLength(geolocation.verticalAccuracy))
                         geolocationFallbackField("Altitude", eventValue: formattedPrecisionLength(detail.event.altitude), geolocationValue: formattedPrecisionLength(geolocation.altitude))
@@ -830,52 +866,63 @@ struct EventDetailView: View {
                             eventValue: formattedTimestamp(detail.event.timestamp, timeZoneIdentifier: detail.geolocation?.timeZoneIdentifier),
                             geolocationValue: geolocation.timestamp.map { formattedTimestamp($0, timeZoneIdentifier: geolocation.timeZoneIdentifier) }
                         )
-                        labeled("Min Latitude", geolocation.minLatitude.map { coordinateText($0) } ?? "")
-                        labeled("Max Latitude", geolocation.maxLatitude.map { coordinateText($0) } ?? "")
-                        labeled("Min Longitude", geolocation.minLongitude.map { coordinateText($0) } ?? "")
-                        labeled("Max Longitude", geolocation.maxLongitude.map { coordinateText($0) } ?? "")
-                        labeled("Time Zone Identifier", geolocation.timeZoneIdentifier)
-                        labeled("Name", geolocation.name)
-                        labeled("SubThoroughfare", geolocation.subThoroughfare)
-                        labeled("Thoroughfare", geolocation.thoroughfare)
-                        labeled("SubLocality", geolocation.subLocality)
-                        labeled("Locality", geolocation.locality)
-                        labeled("SubAdministrativeArea", geolocation.subAdministrativeArea)
-                        labeled("AdministrativeArea", geolocation.administrativeArea)
-                        labeled("Postal Code", geolocation.postalCode)
-                        labeled("ISO Country Code", geolocation.isoCountryCode)
-                        labeled("Country", geolocation.country)
-                        labeled("Inland Water", geolocation.inlandWater)
-                        labeled("Ocean", geolocation.ocean)
-                        labeled("Areas Of Interest", geolocation.areasOfInterest.joined(separator: "\n"))
-                    } else {
-                        labeled("ID", "")
-                        labeled("Latitude", "")
-                        labeled("Longitude", "")
-                        labeled("Radius", "")
-                        labeled("Identifier", "")
-                        labeled("Horizontal Accuracy", "")
-                        labeled("Vertical Accuracy", "")
-                        labeled("Altitude", "")
-                        labeled("Timestamp", "")
-                        labeled("Min Latitude", "")
-                        labeled("Max Latitude", "")
-                        labeled("Min Longitude", "")
-                        labeled("Max Longitude", "")
-                        labeled("Time Zone Identifier", "")
-                        labeled("Name", "")
-                        labeled("SubThoroughfare", "")
-                        labeled("Thoroughfare", "")
-                        labeled("SubLocality", "")
-                        labeled("Locality", "")
-                        labeled("SubAdministrativeArea", "")
-                        labeled("AdministrativeArea", "")
-                        labeled("Postal Code", "")
-                        labeled("ISO Country Code", "")
-                        labeled("Country", "")
-                        labeled("Inland Water", "")
-                        labeled("Ocean", "")
-                        labeled("Areas Of Interest", "")
+                        if let minLatitude = geolocation.minLatitude {
+                            labeled("Min Latitude", coordinateText(minLatitude))
+                        }
+                        if let maxLatitude = geolocation.maxLatitude {
+                            labeled("Max Latitude", coordinateText(maxLatitude))
+                        }
+                        if let minLongitude = geolocation.minLongitude {
+                            labeled("Min Longitude", coordinateText(minLongitude))
+                        }
+                        if let maxLongitude = geolocation.maxLongitude {
+                            labeled("Max Longitude", coordinateText(maxLongitude))
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.identifier) {
+                            labeled("Identifier", geolocation.identifier)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.timeZoneIdentifier) {
+                            labeled("Time Zone Identifier", geolocation.timeZoneIdentifier)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.name) {
+                            labeled("Name", geolocation.name)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.subThoroughfare) {
+                            labeled("SubThoroughfare", geolocation.subThoroughfare)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.thoroughfare) {
+                            labeled("Thoroughfare", geolocation.thoroughfare)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.subLocality) {
+                            labeled("SubLocality", geolocation.subLocality)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.locality) {
+                            labeled("Locality", geolocation.locality)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.subAdministrativeArea) {
+                            labeled("SubAdministrativeArea", geolocation.subAdministrativeArea)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.administrativeArea) {
+                            labeled("AdministrativeArea", geolocation.administrativeArea)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.postalCode) {
+                            labeled("Postal Code", geolocation.postalCode)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.isoCountryCode) {
+                            labeled("ISO Country Code", geolocation.isoCountryCode)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.country) {
+                            labeled("Country", geolocation.country)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.inlandWater) {
+                            labeled("Inland Water", geolocation.inlandWater)
+                        }
+                        if EventDetailDisplayRules.isMeaningfulDisplayText(geolocation.ocean) {
+                            labeled("Ocean", geolocation.ocean)
+                        }
+                        if EventDetailDisplayRules.hasMeaningfulAreasOfInterest(geolocation.areasOfInterest) {
+                            labeled("Areas Of Interest", geolocation.areasOfInterest.filter { EventDetailDisplayRules.isMeaningfulDisplayText($0) }.joined(separator: "\n"))
+                        }
                     }
                 }
 
@@ -925,7 +972,7 @@ struct EventDetailView: View {
     }
 
     private var primaryText: String {
-        if let name = detail.geolocation?.name, !name.isEmpty { return name }
+        if let name = EventDetailDisplayRules.normalizedDisplayText(detail.geolocation?.name) { return name }
         return "Location"
     }
 
@@ -968,7 +1015,8 @@ struct EventDetailView: View {
 
     @ViewBuilder
     private func geolocationFallbackField(_ title: String, eventValue: String?, geolocationValue: String?) -> some View {
-        if nonEmpty(eventValue) == nil, let geolocationValue = nonEmpty(geolocationValue) {
+        if EventDetailDisplayRules.normalizedDisplayText(eventValue) == nil,
+           let geolocationValue = EventDetailDisplayRules.normalizedDisplayText(geolocationValue) {
             labeled(title, geolocationValue)
         }
     }
@@ -1025,13 +1073,6 @@ struct EventDetailView: View {
         formatter.numberFormatter.minimumFractionDigits = 2
         formatter.numberFormatter.maximumFractionDigits = 2
         return formatter
-    }
-
-    private func nonEmpty(_ value: String?) -> String? {
-        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
-            return nil
-        }
-        return value
     }
 }
 

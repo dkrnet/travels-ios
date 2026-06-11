@@ -46,16 +46,25 @@ public enum GPXImporter {
 public enum GPXExporter {
     fileprivate static let travelsNamespace = "https://github.com/dkrnet/travels-ios/gpx/extensions/1"
 
+    private static func timestampString(for date: Date, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
+        let interval = date.timeIntervalSinceReferenceDate
+        if interval.rounded(.towardZero) == interval {
+            return formatter.string(from: date)
+        }
+        return fractionalFormatter.string(from: date)
+    }
+
     public static func export(events: [EventDetail], title: String = "Travels life tracker log") throws -> String {
         guard !events.isEmpty else { throw TravelsError.emptyExport }
         let bounds = coordinateBounds(for: events)
         let formatter = TravelsDateTools.gpxFormatter()
+        let fractionalFormatter = TravelsDateTools.gpxFractionalSecondsFormatter()
         var xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="\(travelsNamespace)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
           <metadata>
             <name>\(escape(title))</name>
-            <time>\(formatter.string(from: Date()))</time>
+            <time>\(timestampString(for: Date(), formatter: formatter, fractionalFormatter: fractionalFormatter))</time>
             <bounds minlat="\(bounds.minLat)" maxlat="\(bounds.maxLat)" minlon="\(bounds.minLon)" maxlon="\(bounds.maxLon)"/>
           </metadata>
           <trk>
@@ -64,7 +73,7 @@ public enum GPXExporter {
         """
 
         for detail in events {
-            appendTrackPoint(detail, formatter: formatter, to: &xml)
+            appendTrackPoint(detail, formatter: formatter, fractionalFormatter: fractionalFormatter, to: &xml)
         }
 
         xml += """
@@ -76,7 +85,7 @@ public enum GPXExporter {
         return xml
     }
 
-    private static func appendTrackPoint(_ detail: EventDetail, formatter: ISO8601DateFormatter, to xml: inout String) {
+    private static func appendTrackPoint(_ detail: EventDetail, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter, to xml: inout String) {
         let event = detail.event
         let geolocation = detail.geolocation
 
@@ -84,14 +93,14 @@ public enum GPXExporter {
         if event.altitude != 0 || event.verticalAccuracy >= 0 {
             xml += "\n        <ele>\(event.altitude)</ele>"
         }
-        xml += "\n        <time>\(formatter.string(from: event.timestamp))</time>"
+        xml += "\n        <time>\(timestampString(for: event.timestamp, formatter: formatter, fractionalFormatter: fractionalFormatter))</time>"
         appendStandardText("name", geolocation?.name, to: &xml)
         appendStandardText("cmt", event.note, to: &xml)
         appendStandardText("desc", readablePlaceSummary(for: geolocation), to: &xml)
         appendStandardText("src", event.source.displayName, to: &xml)
 
-        let eventExtension = eventExtensionXML(event: event, geolocation: geolocation, formatter: formatter)
-        let placeExtension = geolocation.map { placeExtensionXML($0, formatter: formatter) } ?? ""
+        let eventExtension = eventExtensionXML(event: event, geolocation: geolocation, formatter: formatter, fractionalFormatter: fractionalFormatter)
+        let placeExtension = geolocation.map { placeExtensionXML($0, formatter: formatter, fractionalFormatter: fractionalFormatter) } ?? ""
 
         if !eventExtension.isEmpty || !placeExtension.isEmpty {
             xml += "\n        <extensions>"
@@ -117,7 +126,7 @@ public enum GPXExporter {
         xml += "\n\(indent)<travels:\(name)>\(escape(value))</travels:\(name)>"
     }
 
-    private static func eventExtensionXML(event: LocationEvent, geolocation: Geolocation?, formatter: ISO8601DateFormatter) -> String {
+    private static func eventExtensionXML(event: LocationEvent, geolocation: Geolocation?, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
         var xml = ""
         appendTravelsText("horizontalAccuracyMeters", value: event.horizontalAccuracy >= 0 ? String(event.horizontalAccuracy) : nil, to: &xml)
         appendTravelsText("verticalAccuracyMeters", value: event.verticalAccuracy >= 0 ? String(event.verticalAccuracy) : nil, to: &xml)
@@ -144,14 +153,14 @@ public enum GPXExporter {
             xml += "\n          <travels:solar>"
             appendTravelsText("period", value: event.solarPeriod.rawValue, to: &xml, indent: "            ")
             appendTravelsText("periodPercent", value: event.solarPeriodPercent.map { String($0) }, to: &xml, indent: "            ")
-            appendTravelsText("calculatedAt", value: event.solarPeriodCalculatedAt.map { formatter.string(from: $0) }, to: &xml, indent: "            ")
+            appendTravelsText("calculatedAt", value: event.solarPeriodCalculatedAt.map { timestampString(for: $0, formatter: formatter, fractionalFormatter: fractionalFormatter) }, to: &xml, indent: "            ")
             xml += "\n          </travels:solar>"
         }
 
         return xml
     }
 
-    private static func placeExtensionXML(_ geolocation: Geolocation, formatter: ISO8601DateFormatter) -> String {
+    private static func placeExtensionXML(_ geolocation: Geolocation, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
         var xml = ""
         appendTravelsText("identifier", value: geolocation.identifier, to: &xml)
         appendTravelsText("latitude", value: String(geolocation.latitude), to: &xml)
@@ -160,7 +169,7 @@ public enum GPXExporter {
         appendTravelsText("horizontalAccuracyMeters", value: geolocation.horizontalAccuracy >= 0 ? String(geolocation.horizontalAccuracy) : nil, to: &xml)
         appendTravelsText("verticalAccuracyMeters", value: geolocation.verticalAccuracy >= 0 ? String(geolocation.verticalAccuracy) : nil, to: &xml)
         appendTravelsText("altitudeMeters", value: String(geolocation.altitude), to: &xml)
-        appendTravelsText("timestamp", value: geolocation.timestamp.map { formatter.string(from: $0) }, to: &xml)
+        appendTravelsText("timestamp", value: geolocation.timestamp.map { timestampString(for: $0, formatter: formatter, fractionalFormatter: fractionalFormatter) }, to: &xml)
 
         if geolocation.minLatitude != nil || geolocation.maxLatitude != nil || geolocation.minLongitude != nil || geolocation.maxLongitude != nil {
             xml += "\n          <travels:bounds>"
@@ -520,47 +529,48 @@ private final class GPXTrackPointBuilder {
                 store(text, in: &placeMaxLongitudeText, namespaced: isNamespaced)
             }
         case "subThoroughfare":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeSubThoroughfareText, namespaced: isNamespaced)
             }
         case "thoroughfare":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeThoroughfareText, namespaced: isNamespaced)
             }
         case "subLocality":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeSubLocalityText, namespaced: isNamespaced)
             }
         case "locality":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeLocalityText, namespaced: isNamespaced)
             }
         case "subAdministrativeArea":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeSubAdministrativeAreaText, namespaced: isNamespaced)
             }
         case "administrativeArea":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeAdministrativeAreaText, namespaced: isNamespaced)
             }
         case "postalCode":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placePostalCodeText, namespaced: isNamespaced)
             }
         case "isoCountryCode":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeIsoCountryCodeText, namespaced: isNamespaced)
             }
         case "country":
-            if containsPlace {
+            // BUGFIX: legacy Travels GPX trackpoints store place metadata as flat children, so keep accepting country even when it is not wrapped in the newer namespaced <place> block.
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeCountryText, namespaced: isNamespaced)
             }
         case "inlandWater":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeInlandWaterText, namespaced: isNamespaced)
             }
         case "ocean":
-            if containsPlace {
+            if containsPlace || !isNamespaced {
                 store(text, in: &placeOceanText, namespaced: isNamespaced)
             }
         case "areaOfInterest":
@@ -764,10 +774,18 @@ private final class GPXTrackPointBuilder {
         }
     }
 
+    private let fractionalFormatter = TravelsDateTools.gpxFractionalSecondsFormatter()
+
     private func parseDate(_ value: String?, formatter: ISO8601DateFormatter? = nil) -> Date? {
         guard let value, !value.isEmpty else { return nil }
         if let formatter, let date = formatter.date(from: value) {
             return date
+        }
+        if let date = fractionalFormatter.date(from: value) {
+            return date
+        }
+        if let interval = Double(value) {
+            return Date(timeIntervalSinceReferenceDate: interval)
         }
         return ISO8601DateFormatter().date(from: value)
     }
@@ -776,6 +794,13 @@ private final class GPXTrackPointBuilder {
         if let date = formatter.date(from: value) {
             return date
         }
+        if let date = fractionalFormatter.date(from: value) {
+            return date
+        }
+        if let interval = Double(value) {
+            return Date(timeIntervalSinceReferenceDate: interval)
+        }
         return ISO8601DateFormatter().date(from: value)
     }
+
 }

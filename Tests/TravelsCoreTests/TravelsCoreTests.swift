@@ -124,6 +124,11 @@ final class TravelsCoreTests: XCTestCase {
         )
     }
 
+    func testAddButtonUsesMutedToneWhenDisabled() {
+        XCTAssertEqual(ButtonForegroundTone.addButton(canAddCurrentLocation: true), .primary)
+        XCTAssertEqual(ButtonForegroundTone.addButton(canAddCurrentLocation: false), .tertiary)
+    }
+
     func testAreasOfInterestAreNormalized() {
         XCTAssertEqual(Geolocation.normalizedAreasOfInterest([" Pier ", "", "Park", "Pier"]), ["Park", "Pier"])
     }
@@ -356,7 +361,7 @@ final class TravelsCoreTests: XCTestCase {
             .morningCivilTwilight
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: morningHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: morningHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.5,
             accuracy: 0.0001
         )
@@ -369,7 +374,7 @@ final class TravelsCoreTests: XCTestCase {
             .day
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: dayQuarter, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: dayQuarter, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.25,
             accuracy: 0.0001
         )
@@ -382,7 +387,7 @@ final class TravelsCoreTests: XCTestCase {
             .day
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: dayThreeQuarter, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: dayThreeQuarter, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.75,
             accuracy: 0.0001
         )
@@ -395,7 +400,7 @@ final class TravelsCoreTests: XCTestCase {
             .eveningCivilTwilight
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: eveningHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: eveningHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.5,
             accuracy: 0.0001
         )
@@ -408,7 +413,7 @@ final class TravelsCoreTests: XCTestCase {
             .nightBeforeMidnight
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: nightBeforeHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: nightBeforeHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.5,
             accuracy: 0.0001
         )
@@ -421,7 +426,7 @@ final class TravelsCoreTests: XCTestCase {
             .nightAfterMidnight
         )
         XCTAssertEqual(
-            SolarTwilight.solarPeriodResult(at: nightAfterHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent,
+            try XCTUnwrap(SolarTwilight.solarPeriodResult(at: nightAfterHalfway, latitude: 33.8403, longitude: -118.0037, timeZone: timeZone).percent),
             0.5,
             accuracy: 0.0001
         )
@@ -731,6 +736,47 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertNotNil(saved?.event.solarPeriodCalculatedAt)
         XCTAssertEqual(try XCTUnwrap(saved?.event.twilightPhase), .none)
         XCTAssertNil(saved?.event.twilightPercent)
+    }
+
+    func testDemoDayDoesNotPullInPreviousDayContext() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let previousDayTail = makeDate(year: 2026, month: 6, day: 7, hour: 23, minute: 50, timeZone: timeZone)
+        let demoDayStart = makeDate(year: 2026, month: 6, day: 8, hour: 0, minute: 10, timeZone: timeZone)
+
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: previousDayTail,
+                localizedDate: TravelsDateTools.localizedDayString(for: previousDayTail, timeZoneIdentifier: timeZone.identifier),
+                source: .locationServices,
+                note: "Previous day tail"
+            )
+        )
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: demoDayStart,
+                localizedDate: TravelsDateTools.localizedDayString(for: demoDayStart, timeZoneIdentifier: timeZone.identifier),
+                source: .simulated,
+                note: "Demo day start",
+                isDemo: true
+            ),
+            isDemo: true
+        )
+
+        let dayEvents = try store.events(
+            on: demoDayStart,
+            includePreviousDayContext: true,
+            includeDemo: true
+        )
+
+        XCTAssertEqual(dayEvents.map(\.event.note), ["Demo day start"])
     }
 
     func testMigrationAddsTwilightCalculatedAtWithoutDestroyingExistingEvents() throws {
@@ -1191,6 +1237,30 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertNotNil(evening.event.twilightPercent)
     }
 
+    func testRebuildTwilightCalculationsRecomputesPreviouslyUnknownEventsEvenWhenAlreadyProcessed() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let middayID = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: TimeZone(identifier: "UTC")!),
+                localizedDate: "2026-06-07",
+                source: .locationServices
+            )
+        )
+
+        let processedCount = try store.rebuildTwilightCalculations(timeZoneIdentifier: "America/Los_Angeles")
+        XCTAssertEqual(processedCount, 1)
+
+        let midday = try XCTUnwrap(try store.allEvents().first(where: { $0.event.id == middayID }))
+        XCTAssertNotNil(midday.event.solarPeriodCalculatedAt)
+        XCTAssertEqual(midday.event.solarPeriod, .day)
+        XCTAssertEqual(try XCTUnwrap(midday.event.solarPeriodPercent), 0.5, accuracy: 0.0001)
+    }
+
     func testGPXImportParsesTrackPoints() throws {
         let result = try GPXImporter.parse(url: fixtureURL("sample.gpx"))
         XCTAssertEqual(result.events.count, 1)
@@ -1202,7 +1272,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(result.events[0].course, 90, accuracy: 0.0001)
         XCTAssertEqual(result.events[0].localizedDate, "2026-05-31")
         XCTAssertEqual(result.events[0].solarPeriod, .day)
-        XCTAssertEqual(result.events[0].solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(result.events[0].solarPeriodPercent), 0.5, accuracy: 0.0001)
         XCTAssertEqual(result.trackPoints.first?.geolocation?.timeZoneIdentifier, "America/Los_Angeles")
         XCTAssertEqual(result.trackPoints.first?.geolocation?.areasOfInterest, ["Apple Park"])
     }
@@ -1240,7 +1310,29 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(result.events[0].course, 180, accuracy: 0.0001)
         XCTAssertEqual(result.events[0].speed, 2.4, accuracy: 0.0001)
         XCTAssertEqual(result.trackPoints.first?.geolocation?.name, "Legacy Apple Park")
+        XCTAssertEqual(result.trackPoints.first?.geolocation?.locality, "Cupertino")
+        XCTAssertEqual(result.trackPoints.first?.geolocation?.administrativeArea, "California")
+        XCTAssertEqual(result.trackPoints.first?.geolocation?.country, "United States")
         XCTAssertEqual(result.trackPoints.first?.geolocation?.areasOfInterest, ["One", "Two"])
+    }
+
+    func testGPXImportParsesLegacyReferenceDateTimestamps() throws {
+        let legacyGPX = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1">
+          <trk>
+            <trkseg>
+              <trkpt lat="37.331700" lon="-122.030100">
+                <time>520537312.000111</time>
+              </trkpt>
+            </trkseg>
+          </trk>
+        </gpx>
+        """
+
+        let result = try GPXImporter.parse(data: Data(legacyGPX.utf8))
+        XCTAssertEqual(result.events.count, 1)
+        XCTAssertEqual(result.events[0].timestamp.timeIntervalSinceReferenceDate, 520537312.000111, accuracy: 0.000001)
     }
 
     func testGPXExtensionSpecDocumentExists() {
@@ -1272,7 +1364,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(event.photoFilename, "sample-photo.jpg")
         XCTAssertEqual(event.isDemo, true)
         XCTAssertEqual(event.solarPeriod, .day)
-        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(event.solarPeriodPercent), 0.5, accuracy: 0.0001)
         XCTAssertEqual(geolocation.name, "Tom & Jerry Park")
         XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
         XCTAssertEqual(geolocation.areasOfInterest, ["Apple Park", "Visitor Center"])
@@ -1291,7 +1383,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(event.speed, 2.4, accuracy: 0.0001)
         XCTAssertEqual(event.tags, "legacy tag")
         XCTAssertEqual(event.solarPeriod, .day)
-        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(event.solarPeriodPercent), 0.5, accuracy: 0.0001)
         XCTAssertEqual(geolocation.name, "Legacy Apple Park")
         XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
         XCTAssertEqual(geolocation.areasOfInterest, ["One", "Two"])
@@ -1342,7 +1434,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(event.source, .imported)
         XCTAssertEqual(event.horizontalAccuracy, 12)
         XCTAssertEqual(event.solarPeriod, .day)
-        XCTAssertEqual(event.solarPeriodPercent, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(event.solarPeriodPercent), 0.5, accuracy: 0.0001)
         XCTAssertEqual(event.tags, "canonical tag")
         XCTAssertEqual(geolocation.name, "Canonical Name")
         XCTAssertEqual(geolocation.timeZoneIdentifier, "America/Los_Angeles")
@@ -1465,6 +1557,50 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(importedEvent.tags, "Museum & art\nFood <travel>")
         XCTAssertEqual(importedGeolocation.name, "Tom & Jerry Park")
         XCTAssertEqual(importedGeolocation.areasOfInterest, ["Apple & Park", "Visitor <Center>"])
+    }
+
+    func testGPXReimportReusesExactDuplicateGeolocationsAndEvents() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let originalTimestamp = Date(timeIntervalSinceReferenceDate: 2_000.125)
+        let geolocation = Geolocation(
+            latitude: 37.3317,
+            longitude: -122.0301,
+            radius: 25,
+            timeZoneIdentifier: "America/Los_Angeles",
+            name: "Apple Park",
+            locality: "Cupertino",
+            administrativeArea: "California",
+            country: "United States",
+            areasOfInterest: ["Apple Park"]
+        )
+        let geolocationID = try store.saveGeolocation(geolocation)
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 37.3317,
+                longitude: -122.0301,
+                timestamp: originalTimestamp,
+                localizedDate: "2001-01-01",
+                source: .imported,
+                geolocationID: geolocationID,
+                note: "Round-trip"
+            )
+        )
+
+        let exported = try GPXExporter.export(events: try store.allEvents(), title: "Round Trip")
+        let imported = try GPXImporter.parse(data: Data(exported.utf8))
+        let importedGeolocation = try XCTUnwrap(imported.trackPoints.first?.geolocation)
+        let duplicateGeolocationID = try store.saveGeolocation(importedGeolocation)
+        XCTAssertEqual(duplicateGeolocationID, geolocationID)
+
+        var importedEvent = try XCTUnwrap(imported.events.first)
+        XCTAssertEqual(importedEvent.timestamp, originalTimestamp)
+        importedEvent.geolocationID = duplicateGeolocationID
+        let duplicateEventID = try store.saveEvent(importedEvent)
+        XCTAssertEqual(duplicateEventID, try XCTUnwrap(store.allEvents().first?.event.id))
+        XCTAssertEqual(try store.allEvents().count, 1)
     }
 
     func testDemoDataSeedsThreeDaysBeforeLaunchAndCanBeHidden() throws {
@@ -1710,6 +1846,99 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(try store.allEvents().first?.geolocation?.name, "Oakland")
     }
 
+    func testAttachGeolocationRecalculatesPreviouslyUnknownSolarPeriod() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let eventDate = makeDate(
+            year: 2026,
+            month: 6,
+            day: 7,
+            hour: 20,
+            minute: 10,
+            timeZone: TimeZone(identifier: "America/Los_Angeles")!
+        )
+        let eventID = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: eventDate,
+                localizedDate: TravelsDateTools.localizedDayString(for: eventDate, timeZoneIdentifier: "America/Los_Angeles"),
+                source: .photo
+            )
+        )
+        let geolocationID = try store.saveGeolocation(
+            Geolocation(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timeZoneIdentifier: "America/Los_Angeles",
+                name: "Buena Park"
+            )
+        )
+
+        let before = try XCTUnwrap(try store.allEvents().first(where: { $0.event.id == eventID }))
+        XCTAssertEqual(before.event.solarPeriod, .unknown)
+        XCTAssertNotNil(before.event.solarPeriodCalculatedAt)
+
+        try store.attachGeolocation(geolocationID, toEvent: eventID)
+
+        let solarEvents = try XCTUnwrap(losAngelesSolarEvents(on: eventDate))
+        let sunset = try XCTUnwrap(solarEvents.sunset)
+        let civilDusk = try XCTUnwrap(solarEvents.civilDusk)
+        let expectedPercent = eventDate.timeIntervalSince(sunset) / civilDusk.timeIntervalSince(sunset)
+
+        let saved = try XCTUnwrap(try store.allEvents().first(where: { $0.event.id == eventID }))
+        XCTAssertEqual(saved.geolocation?.timeZoneIdentifier, "America/Los_Angeles")
+        XCTAssertEqual(saved.event.solarPeriod, .eveningCivilTwilight)
+        XCTAssertNotNil(saved.event.solarPeriodCalculatedAt)
+        XCTAssertEqual(try XCTUnwrap(saved.event.solarPeriodPercent), expectedPercent, accuracy: 0.0001)
+    }
+
+    func testLoadingUnknownSolarPeriodRecalculatesAndPersistsIt() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let eventDate = makeDate(
+            year: 2026,
+            month: 6,
+            day: 7,
+            hour: 20,
+            minute: 10,
+            timeZone: TimeZone(identifier: "America/Los_Angeles")!
+        )
+        let geolocationID = try store.saveGeolocation(
+            Geolocation(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timeZoneIdentifier: "America/Los_Angeles",
+                name: "Buena Park"
+            )
+        )
+        let eventID = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: eventDate,
+                localizedDate: TravelsDateTools.localizedDayString(for: eventDate, timeZoneIdentifier: "America/Los_Angeles"),
+                source: .photo,
+                geolocationID: geolocationID
+            )
+        )
+        let inspector = try SQLiteDatabase(path: url.path)
+        try inspector.execute("UPDATE events SET solar_period = 'unknown', solar_period_percent = NULL, solar_period_calculated_at = NULL WHERE id = ?", parameters: [.integer(eventID)])
+
+        let details = try store.allEvents()
+        let saved = try XCTUnwrap(details.first(where: { $0.event.id == eventID }))
+        XCTAssertEqual(saved.event.solarPeriod, .eveningCivilTwilight)
+        XCTAssertNotNil(saved.event.solarPeriodCalculatedAt)
+        XCTAssertNotNil(saved.event.solarPeriodPercent)
+
+        let persisted = try XCTUnwrap(try store.allEvents().first(where: { $0.event.id == eventID }))
+        XCTAssertEqual(persisted.event.solarPeriod, .eveningCivilTwilight)
+    }
+
     func testGeolocationNearLookupFindsStoredCache() throws {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
         defer { try? FileManager.default.removeItem(at: url) }
@@ -1753,14 +1982,14 @@ final class TravelsCoreTests: XCTestCase {
             timestamp: Date(timeIntervalSinceReferenceDate: 1_000),
             localizedDate: "2001-01-01",
             source: .manual,
+            note: "Westminster",
             tags: "museum\nart",
             externalReference: "ref-1",
             photoFilename: "photo-1.jpg",
             isDemo: true,
             solarPeriod: .day,
             solarPeriodPercent: 0.5,
-            solarPeriodCalculatedAt: Date(timeIntervalSinceReferenceDate: 1_500),
-            note: "Westminster"
+            solarPeriodCalculatedAt: Date(timeIntervalSinceReferenceDate: 1_500)
         )
         let geolocation = Geolocation(
             latitude: 51.5007,

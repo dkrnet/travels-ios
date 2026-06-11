@@ -31,20 +31,34 @@ final class TripDetectionTests: XCTestCase {
 
     private func makeEvent(
         id: Int64,
+        day: Int = 7,
         hour: Int,
         minute: Int = 0,
         speed: Double,
         second: Int = 0
     ) -> LocationEvent {
-        LocationEvent(
+        let timestamp = makeDate(day: day, hour: hour, minute: minute, second: second)
+        return LocationEvent(
             id: id,
             latitude: 33.8403,
             longitude: -118.0037,
             horizontalAccuracy: 10,
             speed: speed,
-            timestamp: makeDate(hour: hour, minute: minute, second: second),
+            timestamp: timestamp,
+            localizedDate: TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: timeZone.identifier),
             source: .locationServices
         )
+    }
+
+    private func makeDetail(
+        id: Int64,
+        day: Int = 7,
+        hour: Int,
+        minute: Int = 0,
+        speed: Double,
+        second: Int = 0
+    ) -> EventDetail {
+        EventDetail(event: makeEvent(id: id, day: day, hour: hour, minute: minute, speed: speed, second: second), geolocation: nil)
     }
 
     private func detect(_ events: [LocationEvent]) -> [DetectedTrip] {
@@ -280,10 +294,43 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(trips.map(\.displayName), ["Early morning", "Midafternoon"])
     }
 
+    func testPreviousDayContextEventIsExcludedFromTripDetectionInput() {
+        let displayedDate = makeDate(day: 7, hour: 0)
+        let events = [
+            makeDetail(id: 99, day: 6, hour: 23, minute: 50, speed: 4),
+            makeDetail(id: 1, day: 7, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, day: 7, hour: 8, minute: 20, speed: 5),
+            makeDetail(id: 3, day: 7, hour: 15, minute: 10, speed: 4),
+            makeDetail(id: 4, day: 7, hour: 15, minute: 20, speed: 5)
+        ]
+
+        let tripEvents = tripDetectionEvents(from: events, displayedDate: displayedDate)
+        XCTAssertEqual(tripEvents.map(\.id), [1, 2, 3, 4])
+
+        let trips = detect(tripEvents)
+        XCTAssertEqual(trips.map(\.displayName), ["Early morning", "Midafternoon"])
+        XCTAssertEqual(trips.map(\.movingStartDate), trips.map(\.movingStartDate).sorted())
+    }
+
+    func testEarlierTripsAppearBeforeLaterTripsInTheReturnedArray() {
+        let events = [
+            makeEvent(id: 10, hour: 17, minute: 0, speed: 4),
+            makeEvent(id: 11, hour: 17, minute: 10, speed: 5),
+            makeEvent(id: 12, hour: 17, minute: 20, speed: 0),
+            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
+            makeEvent(id: 2, hour: 8, minute: 15, speed: 5)
+        ]
+
+        let trips = detect(events)
+        XCTAssertEqual(trips.count, 2)
+        XCTAssertEqual(trips.map(\.displayName), ["Early morning", "Late afternoon"])
+        XCTAssertLessThan(trips[0].movingStartDate, trips[1].movingStartDate)
+    }
+
     func testMapDisplaySelectionAllReturnsAllEvents() {
         let events = [
-            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
-            makeEvent(id: 2, hour: 8, minute: 10, speed: 0)
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0)
         ]
 
         XCTAssertEqual(filteredEvents(from: events, selection: .all, detectedTrips: []), events)
@@ -291,31 +338,31 @@ final class TripDetectionTests: XCTestCase {
 
     func testMapDisplaySelectionStoppedOnlyReturnsOnlyStoppedEvents() {
         let events = [
-            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
-            makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 20, speed: -1)
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0),
+            makeDetail(id: 3, hour: 8, minute: 20, speed: -1)
         ]
 
         let filtered = filteredEvents(from: events, selection: .stoppedOnly, detectedTrips: [])
-        XCTAssertEqual(filtered.map(\.id), [2, 3])
+        XCTAssertEqual(filtered.compactMap(\.id), [2, 3])
     }
 
     func testMapDisplaySelectionTripReturnsTripEvents() {
         let events = [
-            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
-            makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 20, speed: 5)
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0),
+            makeDetail(id: 3, hour: 8, minute: 20, speed: 5)
         ]
-        let trips = detect(events)
+        let trips = detect(events.map(\.event))
 
         let filtered = filteredEvents(from: events, selection: .trips([trips[0].id]), detectedTrips: trips)
-        XCTAssertEqual(filtered.map(\.id), [1, 2])
+        XCTAssertEqual(filtered.compactMap(\.id), [1, 2])
     }
 
     func testMapDisplaySelectionTripReturnsNoEventsWhenTripMissing() {
         let events = [
-            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
-            makeEvent(id: 2, hour: 8, minute: 10, speed: 0)
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0)
         ]
 
         let filtered = filteredEvents(from: events, selection: .trips(["missing"]), detectedTrips: [])
@@ -324,16 +371,16 @@ final class TripDetectionTests: XCTestCase {
 
     func testMapDisplaySelectionMultipleTripsReturnsUnionOfTripEvents() {
         let events = [
-            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
-            makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 20, speed: 5),
-            makeEvent(id: 4, hour: 15, minute: 0, speed: 4),
-            makeEvent(id: 5, hour: 15, minute: 10, speed: 0),
-            makeEvent(id: 6, hour: 15, minute: 20, speed: 5)
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0),
+            makeDetail(id: 3, hour: 8, minute: 20, speed: 5),
+            makeDetail(id: 4, hour: 15, minute: 0, speed: 4),
+            makeDetail(id: 5, hour: 15, minute: 10, speed: 0),
+            makeDetail(id: 6, hour: 15, minute: 20, speed: 5)
         ]
 
-        let trips = detect(events)
+        let trips = detect(events.map(\.event))
         let filtered = filteredEvents(from: events, selection: .trips([trips[0].id, trips[1].id]), detectedTrips: trips)
-        XCTAssertEqual(filtered.map(\.id), [1, 2, 3, 4, 5, 6])
+        XCTAssertEqual(filtered.compactMap(\.id), [1, 2, 3, 4, 5, 6])
     }
 }

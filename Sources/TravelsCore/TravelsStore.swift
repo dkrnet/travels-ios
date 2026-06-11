@@ -175,6 +175,9 @@ public final class TravelsStore: @unchecked Sendable {
 
     @discardableResult
     public func saveGeolocation(_ geolocation: Geolocation) throws -> Int64 {
+        if let duplicate = try findDuplicate(geolocation) {
+            return duplicate.id ?? 0
+        }
         let areas = Geolocation.normalizedAreasOfInterest(geolocation.areasOfInterest).joined(separator: "|||TRAVELS|||")
         try database.execute(
             """
@@ -215,6 +218,54 @@ public final class TravelsStore: @unchecked Sendable {
             ]
         )
         return database.lastInsertRowID()
+    }
+
+    public func findDuplicate(_ geolocation: Geolocation) throws -> Geolocation? {
+        let areas = Geolocation.normalizedAreasOfInterest(geolocation.areasOfInterest).joined(separator: "|||TRAVELS|||")
+        let rows = try database.query(
+            """
+            SELECT * FROM geolocations
+            WHERE latitude = ? AND longitude = ? AND radius = ?
+            AND horizontalAccuracy = ? AND verticalAccuracy = ? AND altitude = ?
+            AND minLatitude IS ? AND maxLatitude IS ?
+            AND minLongitude IS ? AND maxLongitude IS ?
+            AND timeZoneIdentifier = ?
+            AND name = ? AND subThoroughfare = ? AND thoroughfare = ?
+            AND subLocality = ? AND locality = ?
+            AND subAdministrativeArea = ? AND administrativeArea = ?
+            AND postalCode = ? AND isoCountryCode = ?
+            AND country = ? AND inlandWater = ? AND ocean = ?
+            AND areasOfInterest = ?
+            LIMIT 1
+            """,
+            parameters: [
+                .real(geolocation.latitude),
+                .real(geolocation.longitude),
+                .real(geolocation.radius),
+                .real(geolocation.horizontalAccuracy),
+                .real(geolocation.verticalAccuracy),
+                .real(geolocation.altitude),
+                optionalDouble(geolocation.minLatitude),
+                optionalDouble(geolocation.maxLatitude),
+                optionalDouble(geolocation.minLongitude),
+                optionalDouble(geolocation.maxLongitude),
+                .text(geolocation.timeZoneIdentifier),
+                .text(geolocation.name),
+                .text(geolocation.subThoroughfare),
+                .text(geolocation.thoroughfare),
+                .text(geolocation.subLocality),
+                .text(geolocation.locality),
+                .text(geolocation.subAdministrativeArea),
+                .text(geolocation.administrativeArea),
+                .text(geolocation.postalCode),
+                .text(geolocation.isoCountryCode),
+                .text(geolocation.country),
+                .text(geolocation.inlandWater),
+                .text(geolocation.ocean),
+                .text(areas)
+            ]
+        )
+        return rows.first.map(geolocation(from:))
     }
 
     @discardableResult
@@ -297,7 +348,7 @@ public final class TravelsStore: @unchecked Sendable {
         let day = TravelsDateTools.localizedDayString(for: date, timeZoneIdentifier: nil)
         var parameters: [SQLiteValue] = [.text(day)]
         var predicate = "e.localizedDate = ?"
-        if includePreviousDayContext {
+        if includePreviousDayContext, try dayHasVisibleNonDemoEvents(day: day, includeDemo: includeDemo) {
             let previous = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
             predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? ORDER BY timestamp DESC LIMIT 1))"
             parameters.append(.text(TravelsDateTools.localizedDayString(for: previous, timeZoneIdentifier: nil)))
@@ -319,6 +370,10 @@ public final class TravelsStore: @unchecked Sendable {
 
     public func checkpoint() throws {
         _ = try database.query("PRAGMA wal_checkpoint(FULL)")
+    }
+
+    public func transaction<T>(_ work: () throws -> T) throws -> T {
+        try database.transaction(work)
     }
 
     public func close() {
@@ -422,7 +477,9 @@ public final class TravelsStore: @unchecked Sendable {
             """,
             parameters: [.integer(includeDemo ? 1 : 0)]
         )
-        return rows.first.map(event(from:))
+        guard let row = rows.first else { return nil }
+        let event = event(from: row)
+        return try refreshSolarPeriodIfNeeded(for: event)
     }
 
     public func fetchLocationEventsMissingSolarPeriod(limit: Int) throws -> [LocationEvent] {
@@ -590,10 +647,11 @@ public final class TravelsStore: @unchecked Sendable {
             """,
             parameters: parameters
         )
-        return rows.map { row in
+        return try rows.map { row in
             let event = event(fromJoined: row)
             let geolocation = row["id"]?.int64 == nil ? nil : geolocation(from: row)
-            return EventDetail(event: event, geolocation: geolocation)
+            let refreshedEvent = try refreshSolarPeriodIfNeeded(for: event, geolocation: geolocation)
+            return EventDetail(event: refreshedEvent, geolocation: geolocation)
         }
     }
 
@@ -746,7 +804,7 @@ public final class TravelsStore: @unchecked Sendable {
         timeZoneOverride: TimeZone? = nil,
         calculatedAt: Date = Date()
     ) -> (period: SolarPeriod, percent: Double?, calculatedAt: Date) {
-        if event.solarPeriod != .unknown || event.solarPeriodPercent != nil || event.solarPeriodCalculatedAt != nil {
+        if timeZoneOverride == nil, event.solarPeriod != .unknown {
             return (event.solarPeriod, event.solarPeriodPercent, event.solarPeriodCalculatedAt ?? calculatedAt)
         }
 
@@ -772,9 +830,65 @@ public final class TravelsStore: @unchecked Sendable {
         return (result.period, result.percent, calculatedAt)
     }
 
+    private func refreshSolarPeriodIfNeeded(
+        for event: LocationEvent,
+        geolocation: Geolocation? = nil
+    ) throws -> LocationEvent {
+        guard event.solarPeriod == .unknown else {
+            return event
+        }
+
+        let resolvedGeolocation: Geolocation?
+        if let geolocation {
+            resolvedGeolocation = geolocation
+        } else if let geolocationID = event.geolocationID {
+            resolvedGeolocation = try self.geolocation(id: geolocationID)
+        } else {
+            resolvedGeolocation = nil
+        }
+        guard let timeZoneIdentifier = resolvedGeolocation?.timeZoneIdentifier,
+              let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
+            return event
+        }
+
+        let solar = solarStorageValues(for: event, timeZoneOverride: timeZone)
+        guard solar.period != .unknown || solar.percent != nil else {
+            return event
+        }
+
+        guard let eventID = event.id else {
+            return event
+        }
+
+        var refreshedEvent = event
+        refreshedEvent.solarPeriod = solar.period
+        refreshedEvent.solarPeriodPercent = solar.percent
+        refreshedEvent.solarPeriodCalculatedAt = solar.calculatedAt
+        try replaceEvent(eventID: eventID, with: refreshedEvent)
+        return refreshedEvent
+    }
+
     private func event(id: Int64) throws -> LocationEvent? {
         let rows = try database.query("SELECT * FROM events WHERE id = ?", parameters: [.integer(id)])
-        return rows.first.map(event(from:))
+        guard let row = rows.first else { return nil }
+        let event = event(from: row)
+        return try refreshSolarPeriodIfNeeded(for: event)
+    }
+
+    private func dayHasVisibleNonDemoEvents(day: String, includeDemo: Bool) throws -> Bool {
+        let rows = try database.query(
+            """
+            SELECT 1
+            FROM events
+            WHERE localizedDate = ? AND (? = 1 OR isDemo = 0) AND isDemo = 0
+            LIMIT 1
+            """,
+            parameters: [
+                .text(day),
+                .integer(includeDemo ? 1 : 0)
+            ]
+        )
+        return !rows.isEmpty
     }
 
     private func nonAny(_ value: String?) -> String? {

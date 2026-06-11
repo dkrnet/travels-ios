@@ -11,13 +11,13 @@ import TravelsCore
 struct SearchView: View {
     @EnvironmentObject private var model: TravelsModel
     @Environment(\.dismiss) private var dismiss
-    @State private var term = ""
-    @State private var hasNote = false
+    @State private var term: String
+    @State private var hasNote: Bool
     @State private var source: EventSource?
-    @State private var useStartDate = false
-    @State private var startDate = Calendar.current.startOfDay(for: Date())
-    @State private var useEndDate = false
-    @State private var endDate = Calendar.current.startOfDay(for: Date())
+    @State private var useStartDate: Bool
+    @State private var startDate: Date
+    @State private var useEndDate: Bool
+    @State private var endDate: Date
     @State private var placeOptions = SearchPlaceOptions.empty
     @State private var country: String?
     @State private var administrativeArea: String?
@@ -25,6 +25,27 @@ struct SearchView: View {
     @State private var locality: String?
     @State private var bodyOfWater: String?
     @State private var searchResultsScrollCommandID = UUID()
+
+    init(initialCriteria: SearchCriteria = SearchCriteria()) {
+        // REGRESSION GUARD: restore the last confirmed search criteria so the form does not fall back to blank "Any" defaults every time the sheet opens.
+        _term = State(initialValue: initialCriteria.term)
+        _hasNote = State(initialValue: initialCriteria.hasNote)
+        _source = State(initialValue: initialCriteria.source)
+        _useStartDate = State(initialValue: initialCriteria.startDate != nil)
+        _startDate = State(initialValue: initialCriteria.startDate ?? Calendar.current.startOfDay(for: Date()))
+        _useEndDate = State(initialValue: initialCriteria.endDate != nil)
+        _endDate = State(initialValue: {
+            if let endDate = initialCriteria.endDate {
+                return Calendar.current.date(byAdding: .day, value: -1, to: endDate) ?? Calendar.current.startOfDay(for: Date())
+            }
+            return Calendar.current.startOfDay(for: Date())
+        }())
+        _country = State(initialValue: initialCriteria.country)
+        _administrativeArea = State(initialValue: initialCriteria.administrativeArea)
+        _subAdministrativeArea = State(initialValue: initialCriteria.subAdministrativeArea)
+        _locality = State(initialValue: initialCriteria.locality)
+        _bodyOfWater = State(initialValue: initialCriteria.bodyOfWater)
+    }
 
     var body: some View {
         NavigationStack {
@@ -114,6 +135,10 @@ struct SearchView: View {
                 .task(id: filterSignature) {
                     refreshPlaceOptions()
                 }
+                .task(id: placeOptionsDataSignature) {
+                    // REGRESSION GUARD: reload the place filter options when the underlying event data finishes loading so the menus do not stay stuck on the initial empty state.
+                    refreshPlaceOptions()
+                }
                 .task(id: searchResultsScrollCommandID) {
                     guard !model.searchResults.isEmpty else { return }
                     await Task.yield()
@@ -128,6 +153,7 @@ struct SearchView: View {
                         Button("Close") { dismiss() }
                     }
                     ToolbarItem(placement: .confirmationAction) {
+                        // REGRESSION GUARD: keep search as a visible button on the search screen so the user can run the query directly without hiding it inside an overflow menu.
                         Button("Search") {
                             model.search(searchCriteria)
                             searchResultsScrollCommandID = UUID()
@@ -139,9 +165,7 @@ struct SearchView: View {
                         }
                     }
                 }
-                .onAppear {
-                    refreshPlaceOptions()
-                }
+                .onAppear { refreshPlaceOptions() }
             }
         }
     }
@@ -178,6 +202,10 @@ struct SearchView: View {
             locality ?? "",
             bodyOfWater ?? ""
         ].joined(separator: "|")
+    }
+
+    private var placeOptionsDataSignature: String {
+        "\(model.events.count)|\(model.settings.includeDemoData ? 1 : 0)"
     }
 
     private func refreshPlaceOptions() {
@@ -230,5 +258,6 @@ struct SearchView: View {
         locality = nil
         bodyOfWater = nil
         model.searchResults = []
+        model.lastSearchCriteria = SearchCriteria()
     }
 }

@@ -17,6 +17,7 @@
 		1D2A3B4C5D6E7F810001000F /* TravelsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */; };
 		1D2A3B4C5D6E7F810001001A /* SolarTwilight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */; };
 		1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */; };
+		1D2A3B4C5D6E7F8100010054 /* EventDetailDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */; };
 		1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004D /* TripDetection.swift */; };
 		1D2A3B4C5D6E7F8100010018 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010029 /* ShareSheet.swift */; };
 		1D2A3B4C5D6E7F8100010019 /* LocationTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010035 /* LocationTrackingService.swift */; };
@@ -66,7 +67,9 @@
 		1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TravelsStore.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SolarTwilight.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TimeOfDayColorResolver.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/EventDetailDisplay.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F810001004D /* TripDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TripDetection.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010051 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Signing.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +103,7 @@
 		};
 		1D2A3B4C5D6E7F810001003E /* Stamp Build Version */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -108,9 +112,6 @@
 			inputPaths = (
 			);
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/TravelsStampBuildVersion.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -123,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				1D2A3B4C5D6E7F8100010041 /* Products */,
+				1D2A3B4C5D6E7F8100010052 /* Config */,
 				1D2A3B4C5D6E7F8100010045 /* Fixtures */,
 				1D2A3B4C5D6E7F8100010044 /* Sources */,
 				1D2A3B4C5D6E7F8100010042 /* iOSApp */,
@@ -147,6 +149,14 @@
 			);
 			name = Products;
 			sourceTree = "<group>";
+		};
+		1D2A3B4C5D6E7F8100010052 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				1D2A3B4C5D6E7F8100010051 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = SOURCE_ROOT;
 		};
 		1D2A3B4C5D6E7F8100010042 /* iOSApp */ = {
 			isa = PBXGroup;
@@ -189,6 +199,7 @@
 				1D2A3B4C5D6E7F8100010028 /* TravelsStore.swift */,
 				1D2A3B4C5D6E7F810001004A /* SolarTwilight.swift */,
 				1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */,
+				1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */,
 				1D2A3B4C5D6E7F810001004D /* TripDetection.swift */,
 				1D2A3B4C5D6E7F8100010037 /* DemoData.swift */,
 			);
@@ -281,6 +292,7 @@
 				1D2A3B4C5D6E7F810001000F /* TravelsStore.swift in Sources */,
 				1D2A3B4C5D6E7F810001001A /* SolarTwilight.swift in Sources */,
 				1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */,
+				1D2A3B4C5D6E7F8100010054 /* EventDetailDisplay.swift in Sources */,
 				1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */,
 				1D2A3B4C5D6E7F810001002B /* DemoData.swift in Sources */,
 				1D2A3B4C5D6E7F8100010001 /* TravelsApp.swift in Sources */,
@@ -302,6 +314,7 @@
 /* Begin XCBuildConfiguration section */
 		1D2A3B4C5D6E7F8100010090 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1D2A3B4C5D6E7F8100010051 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -314,7 +327,6 @@
 				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = TA68L2V5PJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
@@ -328,7 +340,6 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -340,6 +351,7 @@
 		};
 		1D2A3B4C5D6E7F8100010091 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1D2A3B4C5D6E7F8100010051 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -352,7 +364,6 @@
 				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = dwarf-with-dsym;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = TA68L2V5PJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
@@ -366,7 +377,6 @@
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.adigitalanalog.Travels;
 				PRODUCT_NAME = Travels;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
