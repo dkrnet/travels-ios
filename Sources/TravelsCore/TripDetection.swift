@@ -13,6 +13,20 @@ public func isStoppedLocationEvent(_ event: LocationEvent) -> Bool {
     !isMovingLocationEvent(event)
 }
 
+public func tripDetectionEvents(
+    from events: [EventDetail],
+    displayedDate: Date
+) -> [LocationEvent] {
+    let displayedDay = TravelsDateTools.localizedDayString(
+        for: displayedDate,
+        timeZoneIdentifier: nil
+    )
+    return events.compactMap { detail in
+        guard detail.event.localizedDate == displayedDay else { return nil }
+        return detail.event
+    }
+}
+
 public struct DetectedTrip: Identifiable, Equatable, Sendable {
     public let id: String
     public let movingStartDate: Date

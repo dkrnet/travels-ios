@@ -1,7 +1,6 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
-// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import Foundation
 
@@ -45,53 +44,36 @@ public enum GPXImporter {
 }
 
 public enum GPXExporter {
+    fileprivate static let travelsNamespace = "https://github.com/dkrnet/travels-ios/gpx/extensions/1"
+
+    private static func timestampString(for date: Date, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
+        let interval = date.timeIntervalSinceReferenceDate
+        if interval.rounded(.towardZero) == interval {
+            return formatter.string(from: date)
+        }
+        return fractionalFormatter.string(from: date)
+    }
+
     public static func export(events: [EventDetail], title: String = "Travels life tracker log") throws -> String {
         guard !events.isEmpty else { throw TravelsError.emptyExport }
         let bounds = coordinateBounds(for: events)
         let formatter = TravelsDateTools.gpxFormatter()
+        let fractionalFormatter = TravelsDateTools.gpxFractionalSecondsFormatter()
         var xml = """
         <?xml version="1.0" encoding="UTF-8"?>
-        <gpx version="1.1" creator="Travels - life tracking" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+        <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="\(travelsNamespace)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
           <metadata>
             <name>\(escape(title))</name>
-            <time>\(formatter.string(from: Date()))</time>
+            <time>\(timestampString(for: Date(), formatter: formatter, fractionalFormatter: fractionalFormatter))</time>
             <bounds minlat="\(bounds.minLat)" maxlat="\(bounds.maxLat)" minlon="\(bounds.minLon)" maxlon="\(bounds.maxLon)"/>
           </metadata>
           <trk>
+            <name>\(escape(title))</name>
             <trkseg>
         """
 
         for detail in events {
-            let event = detail.event
-            let geolocation = detail.geolocation
-            // REQUIREMENTS: Keep standard GPX trackpoint fields separate from Travels-only metadata so other
-            // importers can consume the file without understanding our extension fields.
-            xml += "\n      <trkpt lat=\"\(event.latitude)\" lon=\"\(event.longitude)\">"
-            xml += "\n        <time>\(formatter.string(from: event.timestamp))</time>"
-            xml += "\n        <heading>\(event.course)</heading>"
-            xml += "\n        <speed>\(event.speed)</speed>"
-            if event.horizontalAccuracy >= 0 {
-                xml += "\n        <horizontalAccuracy>\(event.horizontalAccuracy)</horizontalAccuracy>"
-            }
-            if let timeZone = geolocation?.timeZoneIdentifier, !timeZone.isEmpty {
-                xml += "\n        <timeZone>\(escape(timeZone))</timeZone>"
-            }
-            append("name", geolocation?.name, to: &xml)
-            append("subThoroughfare", geolocation?.subThoroughfare, to: &xml)
-            append("thoroughfare", geolocation?.thoroughfare, to: &xml)
-            append("subLocality", geolocation?.subLocality, to: &xml)
-            append("locality", geolocation?.locality, to: &xml)
-            append("subAdministrativeArea", geolocation?.subAdministrativeArea, to: &xml)
-            append("administrativeArea", geolocation?.administrativeArea, to: &xml)
-            append("postalCode", geolocation?.postalCode, to: &xml)
-            append("isoCountryCode", geolocation?.isoCountryCode, to: &xml)
-            append("country", geolocation?.country, to: &xml)
-            append("inlandWater", geolocation?.inlandWater, to: &xml)
-            append("ocean", geolocation?.ocean, to: &xml)
-            let areas = Geolocation.normalizedAreasOfInterest(geolocation?.areasOfInterest ?? []).joined(separator: "|||TRAVELS|||")
-            append("areasOfInterest", areas, to: &xml)
-            append("note", event.note, to: &xml)
-            xml += "\n      </trkpt>"
+            appendTrackPoint(detail, formatter: formatter, fractionalFormatter: fractionalFormatter, to: &xml)
         }
 
         xml += """
@@ -103,9 +85,145 @@ public enum GPXExporter {
         return xml
     }
 
-    private static func append(_ name: String, _ value: String?, to xml: inout String) {
+    private static func appendTrackPoint(_ detail: EventDetail, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter, to xml: inout String) {
+        let event = detail.event
+        let geolocation = detail.geolocation
+
+        xml += "\n      <trkpt lat=\"\(event.latitude)\" lon=\"\(event.longitude)\">"
+        if event.altitude != 0 || event.verticalAccuracy >= 0 {
+            xml += "\n        <ele>\(event.altitude)</ele>"
+        }
+        xml += "\n        <time>\(timestampString(for: event.timestamp, formatter: formatter, fractionalFormatter: fractionalFormatter))</time>"
+        appendStandardText("name", geolocation?.name, to: &xml)
+        appendStandardText("cmt", event.note, to: &xml)
+        appendStandardText("desc", readablePlaceSummary(for: geolocation), to: &xml)
+        appendStandardText("src", event.source.displayName, to: &xml)
+
+        let eventExtension = eventExtensionXML(event: event, geolocation: geolocation, formatter: formatter, fractionalFormatter: fractionalFormatter)
+        let placeExtension = geolocation.map { placeExtensionXML($0, formatter: formatter, fractionalFormatter: fractionalFormatter) } ?? ""
+
+        if !eventExtension.isEmpty || !placeExtension.isEmpty {
+            xml += "\n        <extensions>"
+            if !eventExtension.isEmpty {
+                xml += eventExtension
+            }
+            if !placeExtension.isEmpty {
+                xml += "\n          <travels:place>\(placeExtension)\n          </travels:place>"
+            }
+            xml += "\n        </extensions>"
+        }
+
+        xml += "\n      </trkpt>"
+    }
+
+    private static func appendStandardText(_ name: String, _ value: String?, to xml: inout String) {
         guard let value, !value.isEmpty else { return }
         xml += "\n        <\(name)>\(escape(value))</\(name)>"
+    }
+
+    private static func appendTravelsText(_ name: String, value: String?, to xml: inout String, indent: String = "          ") {
+        guard let value, !value.isEmpty else { return }
+        xml += "\n\(indent)<travels:\(name)>\(escape(value))</travels:\(name)>"
+    }
+
+    private static func eventExtensionXML(event: LocationEvent, geolocation: Geolocation?, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
+        var xml = ""
+        appendTravelsText("horizontalAccuracyMeters", value: event.horizontalAccuracy >= 0 ? String(event.horizontalAccuracy) : nil, to: &xml)
+        appendTravelsText("verticalAccuracyMeters", value: event.verticalAccuracy >= 0 ? String(event.verticalAccuracy) : nil, to: &xml)
+        appendTravelsText("headingDegrees", value: event.course >= 0 ? String(event.course) : nil, to: &xml)
+        appendTravelsText("speedMetersPerSecond", value: event.speed >= 0 ? String(event.speed) : nil, to: &xml)
+        appendTravelsText("timeZone", value: geolocation?.timeZoneIdentifier, to: &xml)
+        appendTravelsText("localizedDateKey", value: event.localizedDate, to: &xml)
+        appendTravelsText("source", value: event.source.displayName, to: &xml)
+
+        if !event.tags.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            let tags = tagTokens(from: event.tags)
+            xml += "\n          <travels:tags>"
+            for tag in tags {
+                xml += "\n            <travels:tag>\(escape(tag))</travels:tag>"
+            }
+            xml += "\n          </travels:tags>"
+        }
+
+        appendTravelsText("externalReference", value: event.externalReference, to: &xml)
+        appendTravelsText("photoFilename", value: event.photoFilename, to: &xml)
+        appendTravelsText("demoData", value: event.isDemo ? "true" : nil, to: &xml)
+
+        if event.solarPeriod != .unknown || event.solarPeriodPercent != nil || event.solarPeriodCalculatedAt != nil {
+            xml += "\n          <travels:solar>"
+            appendTravelsText("period", value: event.solarPeriod.rawValue, to: &xml, indent: "            ")
+            appendTravelsText("periodPercent", value: event.solarPeriodPercent.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("calculatedAt", value: event.solarPeriodCalculatedAt.map { timestampString(for: $0, formatter: formatter, fractionalFormatter: fractionalFormatter) }, to: &xml, indent: "            ")
+            xml += "\n          </travels:solar>"
+        }
+
+        return xml
+    }
+
+    private static func placeExtensionXML(_ geolocation: Geolocation, formatter: ISO8601DateFormatter, fractionalFormatter: ISO8601DateFormatter) -> String {
+        var xml = ""
+        appendTravelsText("identifier", value: geolocation.identifier, to: &xml)
+        appendTravelsText("latitude", value: String(geolocation.latitude), to: &xml)
+        appendTravelsText("longitude", value: String(geolocation.longitude), to: &xml)
+        appendTravelsText("radiusMeters", value: String(geolocation.radius), to: &xml)
+        appendTravelsText("horizontalAccuracyMeters", value: geolocation.horizontalAccuracy >= 0 ? String(geolocation.horizontalAccuracy) : nil, to: &xml)
+        appendTravelsText("verticalAccuracyMeters", value: geolocation.verticalAccuracy >= 0 ? String(geolocation.verticalAccuracy) : nil, to: &xml)
+        appendTravelsText("altitudeMeters", value: String(geolocation.altitude), to: &xml)
+        appendTravelsText("timestamp", value: geolocation.timestamp.map { timestampString(for: $0, formatter: formatter, fractionalFormatter: fractionalFormatter) }, to: &xml)
+
+        if geolocation.minLatitude != nil || geolocation.maxLatitude != nil || geolocation.minLongitude != nil || geolocation.maxLongitude != nil {
+            xml += "\n          <travels:bounds>"
+            appendTravelsText("minLatitude", value: geolocation.minLatitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("maxLatitude", value: geolocation.maxLatitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("minLongitude", value: geolocation.minLongitude.map { String($0) }, to: &xml, indent: "            ")
+            appendTravelsText("maxLongitude", value: geolocation.maxLongitude.map { String($0) }, to: &xml, indent: "            ")
+            xml += "\n          </travels:bounds>"
+        }
+
+        appendTravelsText("name", value: geolocation.name, to: &xml)
+        appendTravelsText("subThoroughfare", value: geolocation.subThoroughfare, to: &xml)
+        appendTravelsText("thoroughfare", value: geolocation.thoroughfare, to: &xml)
+        appendTravelsText("subLocality", value: geolocation.subLocality, to: &xml)
+        appendTravelsText("locality", value: geolocation.locality, to: &xml)
+        appendTravelsText("subAdministrativeArea", value: geolocation.subAdministrativeArea, to: &xml)
+        appendTravelsText("administrativeArea", value: geolocation.administrativeArea, to: &xml)
+        appendTravelsText("postalCode", value: geolocation.postalCode, to: &xml)
+        appendTravelsText("isoCountryCode", value: geolocation.isoCountryCode, to: &xml)
+        appendTravelsText("country", value: geolocation.country, to: &xml)
+        appendTravelsText("inlandWater", value: geolocation.inlandWater, to: &xml)
+        appendTravelsText("ocean", value: geolocation.ocean, to: &xml)
+
+        if !geolocation.areasOfInterest.isEmpty {
+            xml += "\n          <travels:areasOfInterest>"
+            for area in geolocation.areasOfInterest {
+                xml += "\n            <travels:areaOfInterest>\(escape(area))</travels:areaOfInterest>"
+            }
+            xml += "\n          </travels:areasOfInterest>"
+        }
+
+        return xml
+    }
+
+    private static func tagTokens(from tags: String) -> [String] {
+        tags
+            .split(whereSeparator: \.isNewline)
+            .map(String.init)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private static func readablePlaceSummary(for geolocation: Geolocation?) -> String? {
+        guard let geolocation else { return nil }
+        let parts = [
+            geolocation.name,
+            geolocation.locality,
+            geolocation.administrativeArea,
+            geolocation.country
+        ]
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
     }
 
     private static func coordinateBounds(for events: [EventDetail]) -> (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
@@ -132,11 +250,16 @@ public enum GPXExporter {
     }
 }
 
+private struct GPXElementContext {
+    let localName: String
+    let isTravelsNamespace: Bool
+}
+
 private final class GPXTrackParser: NSObject, XMLParserDelegate {
     private let parser: XMLParser
-    private var currentPoint: [String: String]?
-    private var currentElement = ""
-    private var currentText = ""
+    private var elementStack: [GPXElementContext] = []
+    private var textStack: [String] = []
+    private var currentPoint: GPXTrackPointBuilder?
     private var trackPoints: [GPXTrackPoint] = []
     private var skipped = 0
     private let formatter = ISO8601DateFormatter()
@@ -146,6 +269,8 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
         super.init()
         formatter.formatOptions = [.withInternetDateTime]
         parser.delegate = self
+        parser.shouldProcessNamespaces = true
+        parser.shouldReportNamespacePrefixes = true
     }
 
     func parse() throws -> GPXImportResult {
@@ -156,122 +281,526 @@ private final class GPXTrackParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
-        currentElement = elementName
-        currentText = ""
-        if elementName == "trkpt" {
-            currentPoint = attributeDict
+        let localName = normalizedElementName(elementName, qualifiedName: qName)
+        let isTravelsNamespace = (namespaceURI == GPXExporter.travelsNamespace) || (qName?.hasPrefix("travels:") == true)
+        elementStack.append(GPXElementContext(localName: localName, isTravelsNamespace: isTravelsNamespace))
+        textStack.append("")
+
+        if localName == "trkpt" {
+            currentPoint = GPXTrackPointBuilder(attributes: attributeDict)
         }
     }
 
     func parser(_ parser: XMLParser, foundCharacters string: String) {
-        currentText += string
+        guard !textStack.isEmpty else { return }
+        textStack[textStack.count - 1] += string
     }
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        guard var point = currentPoint else { return }
-        if elementName == "trkpt" {
-            if let trackPoint = trackPoint(from: point) {
+        let localName = normalizedElementName(elementName, qualifiedName: qName)
+        let text = textStack.popLast()?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        defer {
+            _ = elementStack.popLast()
+        }
+
+        if let currentPoint, !text.isEmpty {
+            currentPoint.consume(text: text, path: elementStack)
+        }
+
+        if localName == "trkpt" {
+            if let trackPoint = currentPoint?.build(using: formatter) {
                 trackPoints.append(trackPoint)
             } else {
                 skipped += 1
             }
             currentPoint = nil
-        } else if !currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            point[elementName] = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
-            currentPoint = point
         }
     }
 
-    private func trackPoint(from point: [String: String]) -> GPXTrackPoint? {
+    private func normalizedElementName(_ elementName: String, qualifiedName: String?) -> String {
+        (qualifiedName ?? elementName).split(separator: ":").last.map(String.init) ?? elementName
+    }
+}
+
+private final class GPXTrackPointBuilder {
+    private let attributes: [String: String]
+
+    private var timestampText: String?
+    private var altitudeText: String?
+    private var noteText: String?
+    private var standardNameText: String?
+    private var standardSourceText: String?
+    private var eventSourceText: String?
+    private var eventHorizontalAccuracyText: String?
+    private var eventVerticalAccuracyText: String?
+    private var eventHeadingText: String?
+    private var eventSpeedText: String?
+    private var eventTimeZoneText: String?
+    private var eventLocalizedDateText: String?
+    private var eventExternalReferenceText: String?
+    private var eventPhotoFilenameText: String?
+    private var eventDemoDataText: String?
+    private var eventSolarPeriodText: String?
+    private var eventSolarPeriodPercentText: String?
+    private var eventSolarCalculatedAtText: String?
+
+    private var placeIdentifierText: String?
+    private var placeLatitudeText: String?
+    private var placeLongitudeText: String?
+    private var placeRadiusText: String?
+    private var placeHorizontalAccuracyText: String?
+    private var placeVerticalAccuracyText: String?
+    private var placeAltitudeText: String?
+    private var placeTimestampText: String?
+    private var placeMinLatitudeText: String?
+    private var placeMaxLatitudeText: String?
+    private var placeMinLongitudeText: String?
+    private var placeMaxLongitudeText: String?
+    private var placeTimeZoneText: String?
+    private var placeNameText: String?
+    private var placeSubThoroughfareText: String?
+    private var placeThoroughfareText: String?
+    private var placeSubLocalityText: String?
+    private var placeLocalityText: String?
+    private var placeSubAdministrativeAreaText: String?
+    private var placeAdministrativeAreaText: String?
+    private var placePostalCodeText: String?
+    private var placeIsoCountryCodeText: String?
+    private var placeCountryText: String?
+    private var placeInlandWaterText: String?
+    private var placeOceanText: String?
+    private var placeSummaryText: String?
+    private var placeLegacyAreasOfInterestText: String?
+    private var placeCanonicalAreasOfInterest: [String] = []
+
+    private var legacyTagsText: String?
+    private var canonicalTags: [String] = []
+
+    init(attributes: [String: String]) {
+        self.attributes = attributes
+    }
+
+    func consume(text: String, path: [GPXElementContext]) {
+        let names = path.map(\.localName)
+        let last = names.last ?? ""
+        let isNamespaced = path.last?.isTravelsNamespace == true
+        let containsPlace = names.contains("place")
+        let containsSolar = names.contains("solar")
+        let containsBounds = names.contains("bounds")
+
+        switch last {
+        case "time":
+            timestampText = text
+        case "ele":
+            altitudeText = text
+        case "name" where containsPlace:
+            store(text, in: &placeNameText, namespaced: isNamespaced)
+        case "name":
+            store(text, in: &standardNameText, namespaced: isNamespaced)
+        case "desc":
+            placeSummaryText = text
+        case "cmt", "note":
+            store(text, in: &noteText, namespaced: isNamespaced)
+        case "src":
+            store(text, in: &standardSourceText, namespaced: isNamespaced)
+        case "source":
+            store(text, in: &eventSourceText, namespaced: isNamespaced)
+        case "heading", "course":
+            store(text, in: &eventHeadingText, namespaced: isNamespaced)
+        case "speed":
+            store(text, in: &eventSpeedText, namespaced: isNamespaced)
+        case "horizontalAccuracyMeters":
+            if containsPlace {
+                store(text, in: &placeHorizontalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventHorizontalAccuracyText, namespaced: isNamespaced)
+            }
+        case "horizontalAccuracy":
+            if containsPlace {
+                store(text, in: &placeHorizontalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventHorizontalAccuracyText, namespaced: isNamespaced)
+            }
+        case "verticalAccuracyMeters":
+            if containsPlace {
+                store(text, in: &placeVerticalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventVerticalAccuracyText, namespaced: isNamespaced)
+            }
+        case "verticalAccuracy":
+            if containsPlace {
+                store(text, in: &placeVerticalAccuracyText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventVerticalAccuracyText, namespaced: isNamespaced)
+            }
+        case "timeZone":
+            if containsPlace {
+                store(text, in: &placeTimeZoneText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventTimeZoneText, namespaced: isNamespaced)
+            }
+        case "timeZoneIdentifier":
+            if containsPlace {
+                store(text, in: &placeTimeZoneText, namespaced: isNamespaced)
+            } else {
+                store(text, in: &eventTimeZoneText, namespaced: isNamespaced)
+            }
+        case "localizedDateKey":
+            store(text, in: &eventLocalizedDateText, namespaced: isNamespaced)
+        case "localizedDate":
+            store(text, in: &eventLocalizedDateText, namespaced: isNamespaced)
+        case "tags":
+            if isNamespaced {
+                // Wrapper element; child <travels:tag> values are captured separately.
+            } else {
+                // REGRESSION GUARD: legacy flat <tags> values remain accepted as a fallback alias.
+                legacyTagsText = text
+            }
+        case "tag":
+            if isNamespaced {
+                canonicalTags.append(text)
+            } else if legacyTagsText == nil {
+                legacyTagsText = text
+            } else {
+                legacyTagsText = (legacyTagsText ?? "") + "\n" + text
+            }
+        case "externalReference":
+            store(text, in: &eventExternalReferenceText, namespaced: isNamespaced)
+        case "photoFilename":
+            store(text, in: &eventPhotoFilenameText, namespaced: isNamespaced)
+        case "demoData", "isDemo":
+            store(text, in: &eventDemoDataText, namespaced: isNamespaced)
+        case "period":
+            if containsSolar {
+                store(text, in: &eventSolarPeriodText, namespaced: isNamespaced)
+            }
+        case "solarPeriod":
+            store(text, in: &eventSolarPeriodText, namespaced: isNamespaced)
+        case "periodPercent":
+            if containsSolar {
+                store(text, in: &eventSolarPeriodPercentText, namespaced: isNamespaced)
+            }
+        case "solarPeriodPercent":
+            store(text, in: &eventSolarPeriodPercentText, namespaced: isNamespaced)
+        case "calculatedAt":
+            if containsSolar {
+                store(text, in: &eventSolarCalculatedAtText, namespaced: isNamespaced)
+            }
+        case "solarPeriodCalculatedAt":
+            store(text, in: &eventSolarCalculatedAtText, namespaced: isNamespaced)
+        case "identifier":
+            if containsPlace {
+                store(text, in: &placeIdentifierText, namespaced: isNamespaced)
+            }
+        case "latitude":
+            if containsPlace {
+                store(text, in: &placeLatitudeText, namespaced: isNamespaced)
+            }
+        case "longitude":
+            if containsPlace {
+                store(text, in: &placeLongitudeText, namespaced: isNamespaced)
+            }
+        case "radiusMeters", "radius":
+            if containsPlace {
+                store(text, in: &placeRadiusText, namespaced: isNamespaced)
+            }
+        case "altitudeMeters":
+            if containsPlace {
+                store(text, in: &placeAltitudeText, namespaced: isNamespaced)
+            }
+        case "timestamp":
+            if containsPlace {
+                store(text, in: &placeTimestampText, namespaced: isNamespaced)
+            }
+        case "minLatitude":
+            if containsBounds || containsPlace {
+                store(text, in: &placeMinLatitudeText, namespaced: isNamespaced)
+            }
+        case "maxLatitude":
+            if containsBounds || containsPlace {
+                store(text, in: &placeMaxLatitudeText, namespaced: isNamespaced)
+            }
+        case "minLongitude":
+            if containsBounds || containsPlace {
+                store(text, in: &placeMinLongitudeText, namespaced: isNamespaced)
+            }
+        case "maxLongitude":
+            if containsBounds || containsPlace {
+                store(text, in: &placeMaxLongitudeText, namespaced: isNamespaced)
+            }
+        case "subThoroughfare":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeSubThoroughfareText, namespaced: isNamespaced)
+            }
+        case "thoroughfare":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeThoroughfareText, namespaced: isNamespaced)
+            }
+        case "subLocality":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeSubLocalityText, namespaced: isNamespaced)
+            }
+        case "locality":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeLocalityText, namespaced: isNamespaced)
+            }
+        case "subAdministrativeArea":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeSubAdministrativeAreaText, namespaced: isNamespaced)
+            }
+        case "administrativeArea":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeAdministrativeAreaText, namespaced: isNamespaced)
+            }
+        case "postalCode":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placePostalCodeText, namespaced: isNamespaced)
+            }
+        case "isoCountryCode":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeIsoCountryCodeText, namespaced: isNamespaced)
+            }
+        case "country":
+            // BUGFIX: legacy Travels GPX trackpoints store place metadata as flat children, so keep accepting country even when it is not wrapped in the newer namespaced <place> block.
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeCountryText, namespaced: isNamespaced)
+            }
+        case "inlandWater":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeInlandWaterText, namespaced: isNamespaced)
+            }
+        case "ocean":
+            if containsPlace || !isNamespaced {
+                store(text, in: &placeOceanText, namespaced: isNamespaced)
+            }
+        case "areaOfInterest":
+            if isNamespaced {
+                placeCanonicalAreasOfInterest.append(text)
+            } else if placeLegacyAreasOfInterestText == nil {
+                placeLegacyAreasOfInterestText = text
+            } else {
+                placeLegacyAreasOfInterestText = (placeLegacyAreasOfInterestText ?? "") + "|||TRAVELS|||" + text
+            }
+        case "areasOfInterest":
+            if !isNamespaced {
+                placeLegacyAreasOfInterestText = text
+            }
+        default:
+            break
+        }
+    }
+
+    func build(using formatter: ISO8601DateFormatter) -> GPXTrackPoint? {
         guard
-            let latitude = Double(point["lat"] ?? ""),
-            let longitude = Double(point["lon"] ?? ""),
+            let latitude = Double(attributes["lat"] ?? ""),
+            let longitude = Double(attributes["lon"] ?? ""),
             (-90...90).contains(latitude),
             (-180...180).contains(longitude),
-            let time = point["time"],
-            let timestamp = parseTimestamp(time)
+            let timestampText,
+            let timestamp = parseTimestamp(timestampText, formatter: formatter)
         else {
             return nil
         }
 
+        let eventTimeZoneIdentifier = firstNonEmpty(eventTimeZoneText, placeTimeZoneText)
+        let localizedDate = firstNonEmpty(eventLocalizedDateText, eventTimeZoneIdentifier.map { TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: $0) })
+        let eventTags = canonicalTags.isEmpty ? legacyTagsText ?? "" : canonicalTags.joined(separator: "\n")
+        let solarPeriod = parseSolarPeriod(eventSolarPeriodText)
+        let source = parseEventSource(firstNonEmpty(eventSourceText, standardSourceText))
+        let solarCalculatedAt = parseDate(eventSolarCalculatedAtText, formatter: formatter)
+
         let event = LocationEvent(
             latitude: latitude,
             longitude: longitude,
-            horizontalAccuracy: Double(point["horizontalAccuracy"] ?? "") ?? -1,
-            course: Double(point["heading"] ?? "") ?? -1,
-            speed: Double(point["speed"] ?? "") ?? -1,
+            horizontalAccuracy: parseDouble(firstNonEmpty(eventHorizontalAccuracyText, placeHorizontalAccuracyText)),
+            verticalAccuracy: parseDouble(firstNonEmpty(eventVerticalAccuracyText, placeVerticalAccuracyText)),
+            altitude: parseDouble(firstNonEmpty(altitudeText, placeAltitudeText), defaultValue: 0),
+            course: parseDouble(firstNonEmpty(eventHeadingText)),
+            speed: parseDouble(firstNonEmpty(eventSpeedText)),
             timestamp: timestamp,
-            localizedDate: TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: point["timeZone"]),
-            source: .imported,
-            note: point["note"] ?? ""
+            localizedDate: localizedDate,
+            source: source,
+            note: noteText ?? "",
+            tags: eventTags,
+            externalReference: eventExternalReferenceText ?? "",
+            photoFilename: eventPhotoFilenameText ?? "",
+            isDemo: parseBool(eventDemoDataText),
+            solarPeriod: solarPeriod,
+            solarPeriodPercent: parseDouble(eventSolarPeriodPercentText),
+            solarPeriodCalculatedAt: solarCalculatedAt
         )
-        let geolocation = geolocation(from: point, event: event)
-        return GPXTrackPoint(event: event, geolocation: geolocation)
+
+        return GPXTrackPoint(event: event, geolocation: geolocation(for: event, timeZoneIdentifier: eventTimeZoneIdentifier))
     }
 
-    private func geolocation(from point: [String: String], event: LocationEvent) -> Geolocation? {
-        // REGRESSION GUARD: Legacy GPX files store multiple areas of interest in a single separator-delimited
-        // string; preserve that fallback so old exports still round-trip after newer extension-based exports.
-        let areasOfInterest = point["areasOfInterest"].map { raw -> [String] in
-            guard !raw.isEmpty else { return [] }
-            return raw.components(separatedBy: "|||TRAVELS|||")
-        } ?? []
+    private func geolocation(for event: LocationEvent, timeZoneIdentifier: String?) -> Geolocation? {
+        let areas = placeCanonicalAreasOfInterest.isEmpty
+            ? Geolocation.normalizedAreasOfInterest(placeLegacyAreasOfInterestText?.components(separatedBy: "|||TRAVELS|||") ?? [])
+            : Geolocation.normalizedAreasOfInterest(placeCanonicalAreasOfInterest)
 
         let hasMeaningfulMetadata =
-            !(point["timeZone"] ?? "").isEmpty ||
-            !(point["name"] ?? "").isEmpty ||
-            !(point["subThoroughfare"] ?? "").isEmpty ||
-            !(point["thoroughfare"] ?? "").isEmpty ||
-            !(point["subLocality"] ?? "").isEmpty ||
-            !(point["locality"] ?? "").isEmpty ||
-            !(point["subAdministrativeArea"] ?? "").isEmpty ||
-            !(point["administrativeArea"] ?? "").isEmpty ||
-            !(point["postalCode"] ?? "").isEmpty ||
-            !(point["isoCountryCode"] ?? "").isEmpty ||
-            !(point["country"] ?? "").isEmpty ||
-            !(point["inlandWater"] ?? "").isEmpty ||
-            !(point["ocean"] ?? "").isEmpty ||
-            !areasOfInterest.isEmpty
+            !(placeIdentifierText ?? "").isEmpty ||
+            !(timeZoneIdentifier ?? "").isEmpty ||
+            !(placeNameText ?? "").isEmpty ||
+            !(standardNameText ?? "").isEmpty ||
+            !(placeSummaryText ?? "").isEmpty ||
+            !(placeSubThoroughfareText ?? "").isEmpty ||
+            !(placeThoroughfareText ?? "").isEmpty ||
+            !(placeSubLocalityText ?? "").isEmpty ||
+            !(placeLocalityText ?? "").isEmpty ||
+            !(placeSubAdministrativeAreaText ?? "").isEmpty ||
+            !(placeAdministrativeAreaText ?? "").isEmpty ||
+            !(placePostalCodeText ?? "").isEmpty ||
+            !(placeIsoCountryCodeText ?? "").isEmpty ||
+            !(placeCountryText ?? "").isEmpty ||
+            !(placeInlandWaterText ?? "").isEmpty ||
+            !(placeOceanText ?? "").isEmpty ||
+            !areas.isEmpty ||
+            placeLatitudeText != nil ||
+            placeLongitudeText != nil ||
+            placeRadiusText != nil ||
+            placeHorizontalAccuracyText != nil ||
+            placeVerticalAccuracyText != nil ||
+            placeAltitudeText != nil ||
+            placeTimestampText != nil ||
+            placeMinLatitudeText != nil ||
+            placeMaxLatitudeText != nil ||
+            placeMinLongitudeText != nil ||
+            placeMaxLongitudeText != nil
 
         guard hasMeaningfulMetadata else { return nil }
 
+        let latitude = parseDouble(placeLatitudeText, defaultValue: event.latitude)
+        let longitude = parseDouble(placeLongitudeText, defaultValue: event.longitude)
+        let radius = parseDouble(placeRadiusText, defaultValue: max(event.horizontalAccuracy, 0))
+        let geolocationTimestamp = parseDate(placeTimestampText)
+
         return Geolocation(
-            latitude: event.latitude,
-            longitude: event.longitude,
-            radius: max(event.horizontalAccuracy, 0),
-            identifier: "\(event.timestamp.timeIntervalSinceReferenceDate)-\(event.latitude)-\(event.longitude)",
-            horizontalAccuracy: event.horizontalAccuracy,
-            verticalAccuracy: event.verticalAccuracy,
-            altitude: event.altitude,
-            timestamp: event.timestamp,
-            minLatitude: event.latitude,
-            maxLatitude: event.latitude,
-            minLongitude: event.longitude,
-            maxLongitude: event.longitude,
-            timeZoneIdentifier: point["timeZone"] ?? "",
-            name: point["name"] ?? "",
-            subThoroughfare: point["subThoroughfare"] ?? "",
-            thoroughfare: point["thoroughfare"] ?? "",
-            subLocality: point["subLocality"] ?? "",
-            locality: point["locality"] ?? "",
-            subAdministrativeArea: point["subAdministrativeArea"] ?? "",
-            administrativeArea: point["administrativeArea"] ?? "",
-            postalCode: point["postalCode"] ?? "",
-            isoCountryCode: point["isoCountryCode"] ?? "",
-            country: point["country"] ?? "",
-            inlandWater: point["inlandWater"] ?? "",
-            ocean: point["ocean"] ?? "",
-            areasOfInterest: areasOfInterest
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius,
+            identifier: placeIdentifierText ?? "\(event.timestamp.timeIntervalSinceReferenceDate)-\(event.latitude)-\(event.longitude)",
+            horizontalAccuracy: parseDouble(placeHorizontalAccuracyText, defaultValue: event.horizontalAccuracy),
+            verticalAccuracy: parseDouble(placeVerticalAccuracyText, defaultValue: event.verticalAccuracy),
+            altitude: parseDouble(placeAltitudeText, defaultValue: event.altitude),
+            timestamp: geolocationTimestamp ?? event.timestamp,
+            minLatitude: parseOptionalDouble(placeMinLatitudeText),
+            maxLatitude: parseOptionalDouble(placeMaxLatitudeText),
+            minLongitude: parseOptionalDouble(placeMinLongitudeText),
+            maxLongitude: parseOptionalDouble(placeMaxLongitudeText),
+            timeZoneIdentifier: timeZoneIdentifier ?? "",
+            name: firstNonEmpty(placeNameText, standardNameText, placeSummaryText) ?? "",
+            subThoroughfare: placeSubThoroughfareText ?? "",
+            thoroughfare: placeThoroughfareText ?? "",
+            subLocality: placeSubLocalityText ?? "",
+            locality: placeLocalityText ?? "",
+            subAdministrativeArea: placeSubAdministrativeAreaText ?? "",
+            administrativeArea: placeAdministrativeAreaText ?? "",
+            postalCode: placePostalCodeText ?? "",
+            isoCountryCode: placeIsoCountryCodeText ?? "",
+            country: placeCountryText ?? "",
+            inlandWater: placeInlandWaterText ?? "",
+            ocean: placeOceanText ?? "",
+            areasOfInterest: areas
         )
     }
 
-    private func parseTimestamp(_ value: String) -> Date? {
-        if let isoDate = formatter.date(from: value) {
-            return isoDate
+    private func store(_ text: String, in value: inout String?, namespaced: Bool) {
+        // BUGFIX: canonical Travels v1 values must win over legacy aliases when both are present.
+        if namespaced || value == nil {
+            value = text
         }
-        if let seconds = Double(value) {
-            return Date(timeIntervalSinceReferenceDate: seconds)
+    }
+
+    private func firstNonEmpty(_ values: String?...) -> String? {
+        for value in values {
+            if let value, !value.isEmpty {
+                return value
+            }
         }
         return nil
     }
+
+    private func parseDouble(_ value: String?, defaultValue: Double = -1) -> Double {
+        guard let value, let parsed = Double(value) else { return defaultValue }
+        return parsed
+    }
+
+    private func parseOptionalDouble(_ value: String?) -> Double? {
+        guard let value, let parsed = Double(value) else { return nil }
+        return parsed
+    }
+
+    private func parseBool(_ value: String?) -> Bool {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() else { return false }
+        return ["1", "true", "yes", "y"].contains(value)
+    }
+
+    private func parseSolarPeriod(_ value: String?) -> SolarPeriod {
+        guard let value, !value.isEmpty else { return .unknown }
+        if let solarPeriod = SolarPeriod(rawValue: value) {
+            return solarPeriod
+        }
+        if let twilightPhase = TwilightPhase(rawValue: value) {
+            return SolarPeriod(twilightPhase: twilightPhase)
+        }
+        return .unknown
+    }
+
+    private func parseEventSource(_ value: String?) -> EventSource {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return .imported
+        }
+
+        if let source = EventSource(rawValue: Int(value) ?? -1) {
+            return source
+        }
+
+        switch value.lowercased() {
+        case EventSource.locationServices.displayName.lowercased():
+            return .locationServices
+        case EventSource.imported.displayName.lowercased():
+            return .imported
+        case EventSource.photo.displayName.lowercased():
+            return .photo
+        case EventSource.manual.displayName.lowercased():
+            return .manual
+        case EventSource.invalid.displayName.lowercased():
+            return .invalid
+        case EventSource.simulated.displayName.lowercased():
+            return .simulated
+        default:
+            return .imported
+        }
+    }
+
+    private let fractionalFormatter = TravelsDateTools.gpxFractionalSecondsFormatter()
+
+    private func parseDate(_ value: String?, formatter: ISO8601DateFormatter? = nil) -> Date? {
+        guard let value, !value.isEmpty else { return nil }
+        if let formatter, let date = formatter.date(from: value) {
+            return date
+        }
+        if let date = fractionalFormatter.date(from: value) {
+            return date
+        }
+        if let interval = Double(value) {
+            return Date(timeIntervalSinceReferenceDate: interval)
+        }
+        return ISO8601DateFormatter().date(from: value)
+    }
+
+    private func parseTimestamp(_ value: String, formatter: ISO8601DateFormatter) -> Date? {
+        if let date = formatter.date(from: value) {
+            return date
+        }
+        if let date = fractionalFormatter.date(from: value) {
+            return date
+        }
+        if let interval = Double(value) {
+            return Date(timeIntervalSinceReferenceDate: interval)
+        }
+        return ISO8601DateFormatter().date(from: value)
+    }
+
 }
