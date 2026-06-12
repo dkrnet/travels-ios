@@ -181,6 +181,7 @@ The app shall persist user settings including at least:
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
 - Preferred initial view, map or list.
+- Always-On High Precision Location enabled/disabled.
 - Powered update distance threshold.
 - Battery update distance threshold.
 - Preferred measurement system.
@@ -211,6 +212,12 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall allow a user to add the current location manually for today's selected date.
 - The add-current-location button shall be enabled only for today's selected date.
 - When the add-current-location function is unavailable, disabled, or unsafe to perform, the Add button shall be visibly disabled or grayed out rather than appearing actionable. This includes, at minimum, non-today selected dates, unavailable location services, missing required permission, an active privacy lock state that blocks interaction, or any internal disabled state that prevents the function from running.
+- The app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
+- The app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval, unless Always-On High Precision Location is enabled.
+- The app shall support an Always-On High Precision Location setting that keeps active high-fidelity tracking enabled continuously and prevents automatic downgrading back to significant-location-change monitoring while the setting is on.
+- Automatic hybrid tracking may miss the very beginning of a trip because significant-location-change monitoring is not immediate.
+- Always-On High Precision Location shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
+- The Always-On High Precision Location setting shall be separate from any future manual start/stop tracking feature.
 - Automatic foreground location capture shall respect the automatic location setting.
 - Background location capture shall respect the background location setting and required iOS permissions.
 - The app shall apply distance, recency, and accuracy filtering to avoid noisy event spam.

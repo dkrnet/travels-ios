@@ -11,6 +11,8 @@
 		1D2A3B4C5D6E7F8100010009 /* GPXCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010022 /* GPXCodec.swift */; };
 		1D2A3B4C5D6E7F810001000A /* LegacyTravelsImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010023 /* LegacyTravelsImporter.swift */; };
 		1D2A3B4C5D6E7F810001000B /* LocationFiltering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010024 /* LocationFiltering.swift */; };
+		1D2A3B4C5D6E7F8100010055 /* LocationTrackingStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010056 /* LocationTrackingStateMachine.swift */; };
+		1D2A3B4C5D6E7F8100010057 /* CurrentLocationCaptureAvailability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010058 /* CurrentLocationCaptureAvailability.swift */; };
 		1D2A3B4C5D6E7F810001000C /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010025 /* Models.swift */; };
 		1D2A3B4C5D6E7F810001000D /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */; };
 		1D2A3B4C5D6E7F810001000E /* SQLiteDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */; };
@@ -19,6 +21,7 @@
 		1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */; };
 		1D2A3B4C5D6E7F8100010054 /* EventDetailDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */; };
 		1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001004D /* TripDetection.swift */; };
+		1D2A3B4C5D6E7F8100010059 /* ToolbarAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001005A /* ToolbarAppearance.swift */; };
 		1D2A3B4C5D6E7F8100010018 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010029 /* ShareSheet.swift */; };
 		1D2A3B4C5D6E7F8100010019 /* LocationTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010035 /* LocationTrackingService.swift */; };
 		1D2A3B4C5D6E7F810001002A /* PhotoImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010036 /* PhotoImportView.swift */; };
@@ -61,6 +64,8 @@
 		1D2A3B4C5D6E7F8100010022 /* GPXCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/GPXCodec.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010023 /* LegacyTravelsImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/LegacyTravelsImporter.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010024 /* LocationFiltering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/LocationFiltering.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010056 /* LocationTrackingStateMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/LocationTrackingStateMachine.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F8100010058 /* CurrentLocationCaptureAvailability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/CurrentLocationCaptureAvailability.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010025 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/Models.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SettingsStore.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/SQLiteDatabase.swift; sourceTree = SOURCE_ROOT; };
@@ -69,6 +74,7 @@
 		1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TimeOfDayColorResolver.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/EventDetailDisplay.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F810001004D /* TripDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/TripDetection.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001005A /* ToolbarAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/ToolbarAppearance.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010051 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Signing.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -193,6 +199,8 @@
 				1D2A3B4C5D6E7F8100010022 /* GPXCodec.swift */,
 				1D2A3B4C5D6E7F8100010023 /* LegacyTravelsImporter.swift */,
 				1D2A3B4C5D6E7F8100010024 /* LocationFiltering.swift */,
+				1D2A3B4C5D6E7F8100010056 /* LocationTrackingStateMachine.swift */,
+				1D2A3B4C5D6E7F8100010058 /* CurrentLocationCaptureAvailability.swift */,
 				1D2A3B4C5D6E7F8100010025 /* Models.swift */,
 				1D2A3B4C5D6E7F8100010026 /* SettingsStore.swift */,
 				1D2A3B4C5D6E7F8100010027 /* SQLiteDatabase.swift */,
@@ -201,6 +209,7 @@
 				1D2A3B4C5D6E7F810001004B /* TimeOfDayColorResolver.swift */,
 				1D2A3B4C5D6E7F8100010053 /* EventDetailDisplay.swift */,
 				1D2A3B4C5D6E7F810001004D /* TripDetection.swift */,
+				1D2A3B4C5D6E7F810001005A /* ToolbarAppearance.swift */,
 				1D2A3B4C5D6E7F8100010037 /* DemoData.swift */,
 			);
 			name = Sources;
@@ -286,6 +295,8 @@
 				1D2A3B4C5D6E7F8100010009 /* GPXCodec.swift in Sources */,
 				1D2A3B4C5D6E7F810001000A /* LegacyTravelsImporter.swift in Sources */,
 				1D2A3B4C5D6E7F810001000B /* LocationFiltering.swift in Sources */,
+				1D2A3B4C5D6E7F8100010055 /* LocationTrackingStateMachine.swift in Sources */,
+				1D2A3B4C5D6E7F8100010057 /* CurrentLocationCaptureAvailability.swift in Sources */,
 				1D2A3B4C5D6E7F810001000C /* Models.swift in Sources */,
 				1D2A3B4C5D6E7F810001000D /* SettingsStore.swift in Sources */,
 				1D2A3B4C5D6E7F810001000E /* SQLiteDatabase.swift in Sources */,
@@ -294,6 +305,7 @@
 				1D2A3B4C5D6E7F810001001B /* TimeOfDayColorResolver.swift in Sources */,
 				1D2A3B4C5D6E7F8100010054 /* EventDetailDisplay.swift in Sources */,
 				1D2A3B4C5D6E7F810001004C /* TripDetection.swift in Sources */,
+				1D2A3B4C5D6E7F8100010059 /* ToolbarAppearance.swift in Sources */,
 				1D2A3B4C5D6E7F810001002B /* DemoData.swift in Sources */,
 				1D2A3B4C5D6E7F8100010001 /* TravelsApp.swift in Sources */,
 				1D2A3B4C5D6E7F8100010002 /* ContentView.swift in Sources */,

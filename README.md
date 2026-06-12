@@ -17,7 +17,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
 - Date navigation with previous-day context for continuity
-- Automatic and manual location capture
+- Automatic and manual location capture, including hybrid significant-change tracking with an optional always-on high precision mode
 - Background-location option with separate powered and battery distance thresholds
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics

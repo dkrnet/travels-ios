@@ -343,6 +343,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var includeDemoData: Bool
     public var requireAuthentication: Bool
     public var preferListView: Bool
+    public var alwaysOnHighPrecisionLocation: Bool
     public var poweredUpdateDistanceMeters: Int
     public var batteryUpdateDistanceMeters: Int
     public var preferredMeasurementSystem: MeasurementSystemPreference
@@ -356,6 +357,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         includeDemoData: Bool = true,
         requireAuthentication: Bool = false,
         preferListView: Bool = false,
+        alwaysOnHighPrecisionLocation: Bool = false,
         poweredUpdateDistanceMeters: Int = 500,
         batteryUpdateDistanceMeters: Int = 1_000,
         preferredMeasurementSystem: MeasurementSystemPreference = .default
@@ -368,6 +370,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includeDemoData = includeDemoData
         self.requireAuthentication = requireAuthentication
         self.preferListView = preferListView
+        self.alwaysOnHighPrecisionLocation = alwaysOnHighPrecisionLocation
         self.poweredUpdateDistanceMeters = poweredUpdateDistanceMeters
         self.batteryUpdateDistanceMeters = batteryUpdateDistanceMeters
         self.preferredMeasurementSystem = preferredMeasurementSystem
@@ -382,6 +385,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case includeDemoData
         case requireAuthentication
         case preferListView
+        case alwaysOnHighPrecisionLocation
         case poweredUpdateDistanceMeters
         case batteryUpdateDistanceMeters
         case preferredMeasurementSystem
@@ -397,6 +401,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includeDemoData = try container.decodeIfPresent(Bool.self, forKey: .includeDemoData) ?? true
         self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false
         self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? false
+        self.alwaysOnHighPrecisionLocation = try container.decodeIfPresent(Bool.self, forKey: .alwaysOnHighPrecisionLocation) ?? false
         self.poweredUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .poweredUpdateDistanceMeters) ?? 500
         self.batteryUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .batteryUpdateDistanceMeters) ?? 1_000
         self.preferredMeasurementSystem = try container.decodeIfPresent(MeasurementSystemPreference.self, forKey: .preferredMeasurementSystem) ?? .default
@@ -412,6 +417,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         try container.encode(includeDemoData, forKey: .includeDemoData)
         try container.encode(requireAuthentication, forKey: .requireAuthentication)
         try container.encode(preferListView, forKey: .preferListView)
+        try container.encode(alwaysOnHighPrecisionLocation, forKey: .alwaysOnHighPrecisionLocation)
         try container.encode(poweredUpdateDistanceMeters, forKey: .poweredUpdateDistanceMeters)
         try container.encode(batteryUpdateDistanceMeters, forKey: .batteryUpdateDistanceMeters)
         try container.encode(preferredMeasurementSystem, forKey: .preferredMeasurementSystem)
