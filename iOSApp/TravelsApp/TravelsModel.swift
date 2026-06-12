@@ -151,14 +151,24 @@ final class TravelsModel: ObservableObject {
         }
     }
 
-    func reloadEvents() throws {
+    func reloadEvents(recenterSelectedTrips: Bool = false) throws {
         guard let store else { return }
+        let selectedTripIDs: Set<DetectedTrip.ID>?
+        if case .trips(let tripIDs) = selectedMapDisplay {
+            selectedTripIDs = tripIDs
+        } else {
+            selectedTripIDs = nil
+        }
         events = try store.events(
             on: selectedDate,
             includePreviousDayContext: shouldIncludePreviousDayContext(store: store, settings: settings, date: selectedDate),
             includeDemo: settings.includeDemoData
         )
         refreshDetectedTrips()
+        if recenterSelectedTrips, let selectedTripIDs, !selectedTripIDs.isEmpty {
+            // REGRESSION GUARD: trip endpoint overrides can change trip grouping without changing the selected trip IDs, so re-focus the selected trips after reload to force the map/list to pick up the new trip composition.
+            focusSelectedTrips(selectedTripIDs)
+        }
         refreshDateSelectionBounds()
         refreshSelectedEventIfNeeded()
     }
@@ -463,6 +473,16 @@ final class TravelsModel: ObservableObject {
         do {
             try store?.updateNote(eventID: id, note: note)
             try reloadEvents()
+        } catch {
+            statusMessage = error.localizedDescription
+        }
+    }
+
+    func updateTripEndpointOverride(for detail: EventDetail, tripEndpointOverride: TripEndpointOverride?) {
+        guard let id = detail.event.id else { return }
+        do {
+            try store?.updateTripEndpointOverride(eventID: id, tripEndpointOverride: tripEndpointOverride)
+            try reloadEvents(recenterSelectedTrips: true)
         } catch {
             statusMessage = error.localizedDescription
         }
@@ -1074,7 +1094,7 @@ final class TravelsModel: ObservableObject {
         }
 
         let tripEventIDs = selectedTrips.reduce(into: Set<Int64>()) { partialResult, trip in
-            partialResult.formUnion(trip.displayEventIDs.compactMap { $0 })
+            partialResult.formUnion(trip.displayEventIDs)
         }
         guard !tripEventIDs.isEmpty else {
             clearTripFocus()

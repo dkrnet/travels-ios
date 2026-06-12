@@ -25,6 +25,29 @@ public enum EventSource: Int, Codable, CaseIterable, Sendable {
     }
 }
 
+public enum TripEndpointOverride: Int, Codable, CaseIterable, Sendable {
+    case notTripEndpoint = 0
+    case tripEndpoint = 1
+
+    public var displayName: String {
+        switch self {
+        case .notTripEndpoint:
+            return "Not a trip endpoint"
+        case .tripEndpoint:
+            return "Trip endpoint"
+        }
+    }
+
+    public var gpxValue: String {
+        switch self {
+        case .notTripEndpoint:
+            return "false"
+        case .tripEndpoint:
+            return "true"
+        }
+    }
+}
+
 public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var id: Int64?
     public var latitude: Double
@@ -46,6 +69,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var solarPeriod: SolarPeriod
     public var solarPeriodPercent: Double?
     public var solarPeriodCalculatedAt: Date?
+    public var tripEndpointOverride: TripEndpointOverride?
 
     @available(*, deprecated, message: "Use solarPeriod instead.")
     public var twilightPhase: TwilightPhase {
@@ -85,7 +109,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         isDemo: Bool = false,
         solarPeriod: SolarPeriod = .unknown,
         solarPeriodPercent: Double? = nil,
-        solarPeriodCalculatedAt: Date? = nil
+        solarPeriodCalculatedAt: Date? = nil,
+        tripEndpointOverride: TripEndpointOverride? = nil
     ) {
         self.id = id
         self.latitude = latitude
@@ -107,6 +132,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         self.solarPeriod = solarPeriod
         self.solarPeriodPercent = solarPeriodPercent
         self.solarPeriodCalculatedAt = solarPeriodCalculatedAt
+        self.tripEndpointOverride = tripEndpointOverride
     }
 
     @available(*, deprecated, message: "Use solarPeriod instead.")
@@ -130,7 +156,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         isDemo: Bool = false,
         twilightPhase: TwilightPhase,
         twilightPercent: Double? = nil,
-        twilightCalculatedAt: Date? = nil
+        twilightCalculatedAt: Date? = nil,
+        tripEndpointOverride: TripEndpointOverride? = nil
     ) {
         self.init(
             id: id,
@@ -152,7 +179,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
             isDemo: isDemo,
             solarPeriod: SolarPeriod(twilightPhase: twilightPhase),
             solarPeriodPercent: twilightPercent,
-            solarPeriodCalculatedAt: twilightCalculatedAt
+            solarPeriodCalculatedAt: twilightCalculatedAt,
+            tripEndpointOverride: tripEndpointOverride
         )
     }
 }

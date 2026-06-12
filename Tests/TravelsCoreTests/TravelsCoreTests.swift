@@ -78,6 +78,11 @@ final class TravelsCoreTests: XCTestCase {
         return EventDetail(event: event, geolocation: geolocation)
     }
 
+    func testSpeedDisplayTextShowsNotProvidedForUnavailableSpeed() {
+        XCTAssertEqual(EventDetailDisplayRules.speedDisplayText(-1), "Not provided")
+        XCTAssertEqual(EventDetailDisplayRules.speedDisplayText(.nan), "Not provided")
+    }
+
     private func createLegacyEventsDatabase(at url: URL) throws {
         let database = try SQLiteDatabase(path: url.path)
         try database.execute("""
@@ -1344,6 +1349,31 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(result.trackPoints.first?.geolocation?.areasOfInterest, ["One", "Two"])
     }
 
+    func testGPXImportParsesSpeedMetersPerSecondAndForcesImportedSource() throws {
+        let xml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
+          <trk>
+            <trkseg>
+              <trkpt lat="37.331700" lon="-122.030100">
+                <time>2026-05-31T12:00:00Z</time>
+                <src>Manual</src>
+                <extensions>
+                  <travels:source>Location Services</travels:source>
+                  <travels:speedMetersPerSecond>3.75</travels:speedMetersPerSecond>
+                </extensions>
+              </trkpt>
+            </trkseg>
+          </trk>
+        </gpx>
+        """
+
+        let result = try GPXImporter.parse(data: Data(xml.utf8))
+        XCTAssertEqual(result.events.count, 1)
+        XCTAssertEqual(result.events[0].source, .imported)
+        XCTAssertEqual(result.events[0].speed, 3.75, accuracy: 0.0001)
+    }
+
     func testGPXImportParsesLegacyReferenceDateTimestamps() throws {
         let legacyGPX = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -1733,6 +1763,30 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(latest?.timestamp.timeIntervalSinceReferenceDate, 1_100)
     }
 
+    func testSQLiteStorePersistsTripEndpointOverride() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let eventID = try store.saveEvent(
+            LocationEvent(
+                latitude: 37.0,
+                longitude: -122.0,
+                horizontalAccuracy: 20,
+                speed: 0,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1_000),
+                localizedDate: "2001-01-01",
+                source: .locationServices,
+                tripEndpointOverride: .tripEndpoint
+            )
+        )
+
+        XCTAssertEqual(try store.allEvents().first?.event.tripEndpointOverride, .tripEndpoint)
+
+        try store.updateTripEndpointOverride(eventID: eventID, tripEndpointOverride: .notTripEndpoint)
+        XCTAssertEqual(try store.allEvents().first?.event.tripEndpointOverride, .notTripEndpoint)
+    }
+
     func testSQLiteStoreCanDeleteAnEvent() throws {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
         defer { try? FileManager.default.removeItem(at: url) }
@@ -2060,6 +2114,30 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertTrue(xml.contains("<travels:areaOfInterest>Big Ben</travels:areaOfInterest>"))
         XCTAssertFalse(xml.contains("<travels:id>"))
         XCTAssertFalse(xml.contains("geolocationID"))
+    }
+
+    func testGPXExportAndImportRoundTripTripEndpointOverride() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 37.3317,
+                longitude: -122.0301,
+                timestamp: Date(timeIntervalSinceReferenceDate: 2_000),
+                localizedDate: "2001-01-01",
+                source: .imported,
+                note: "Endpoint",
+                tripEndpointOverride: .tripEndpoint
+            )
+        )
+
+        let exported = try GPXExporter.export(events: try store.allEvents(), title: "Endpoint Trip")
+        XCTAssertTrue(exported.contains("<travels:tripEndpointOverride>true</travels:tripEndpointOverride>"))
+
+        let imported = try GPXImporter.parse(data: Data(exported.utf8))
+        XCTAssertEqual(imported.events.first?.tripEndpointOverride, .tripEndpoint)
     }
 
     func testPhotoFilenameRoundTripsThroughStore() throws {

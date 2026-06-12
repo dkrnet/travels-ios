@@ -115,6 +115,7 @@ Events shall support storage of:
 - Optional tags.
 - Optional external reference.
 - Optional copied photo filename.
+- Optional trip-endpoint override used by trip detection.
 - Demo-data flag.
 - Solar/time-of-day period.
 - Solar/time-of-day period percent.
@@ -256,6 +257,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 
 - The user shall be able to inspect an event's timestamp, location, source, note, geolocation/place metadata, photo attachment when present, and time-of-day/solar classification when present.
 - The event detail view shall hide optional rows whose values are unavailable, empty, whitespace-only, or otherwise not meaningful for the selected event while continuing to show core event information such as timestamp, coordinates, and source.
+- The event detail view shall continue to show the speed row when a speed value is stored, and shall display unavailable speed as "Not provided" rather than hiding the row.
+- The event detail view shall allow the user to mark an event as an automatic trip candidate, a trip endpoint, or explicitly not a trip endpoint without changing the underlying event data model.
 - The user shall be able to edit an event note.
 - The user shall be able to request reverse address resolution for an event when supported.
 - The user shall be able to delete an event.
@@ -284,7 +287,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall import a user-selected `.gpx` file.
 - Import shall use security-scoped file access where iOS requires it.
 - Import shall parse GPX trackpoints with latitude, longitude, and timestamp.
-- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time zone, place metadata, area-of-interest metadata, notes, tags, demo flags, and cached solar values.
+- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time zone, place metadata, area-of-interest metadata, notes, tags, trip-endpoint overrides, demo flags, and cached solar values.
+- Import shall accept the Travels `speedMetersPerSecond` extension field as the canonical speed value and legacy `speed` aliases when present.
 - Import shall skip malformed or incomplete trackpoints and report skipped counts when meaningful.
 - Imported events shall use the imported source.
 - Imported events shall avoid duplicates.
@@ -308,6 +312,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Export shall include metadata name, export time, and bounds when available.
 - Export shall use GPX 1.1 standard elements where their semantics match.
 - Export shall include GPX 1.1 standard trackpoint fields for latitude, longitude, timestamp, name, comments, and source where available, plus namespaced Travels extensions for course/heading, speed, horizontal accuracy, time zone, place metadata, areas of interest, notes, tags, demo flags, and cached solar values.
+- Export shall include the optional trip-endpoint override when present so trip detection hints round-trip through GPX interchange.
 - Travels-specific metadata shall be exported under the versioned namespace documented in `docs/gpx-extension-v1.md`.
 - Internal database IDs shall not be exported.
 - Areas of interest shall export as repeated Travels extension elements and legacy joined areas-of-interest values shall remain import-compatible.
@@ -382,6 +387,7 @@ The active export scope is the complete set of exportable events selected by the
 - The app shall be able to derive stopped-location and trip-oriented presentation from event history where sufficient data exists.
 - Trip detection shall tolerate noisy GPS data.
 - Trip detection shall distinguish stationary clusters from movement where practical.
+- Trip detection shall honor an explicit per-event trip-endpoint override when present.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 
 ## UI presentation requirements

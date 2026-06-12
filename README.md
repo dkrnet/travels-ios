@@ -23,6 +23,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Hybrid tracking periodically rechecks Core Location when movement quiets down, and battery/low-power changes re-evaluate the active configuration without changing the Always-On policy
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
+- Per-event trip endpoint overrides for refining automatic trip detection
 - GPX import and export with GPX 1.1 standard fields, a documented Travels extension namespace, and legacy import compatibility
 - Legacy `travels.sqlite` migration with backup and duplicate skipping
 - Photo import from geotagged photo metadata with local attachment storage

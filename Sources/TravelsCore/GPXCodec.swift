@@ -135,6 +135,7 @@ public enum GPXExporter {
         appendTravelsText("timeZone", value: geolocation?.timeZoneIdentifier, to: &xml)
         appendTravelsText("localizedDateKey", value: event.localizedDate, to: &xml)
         appendTravelsText("source", value: event.source.displayName, to: &xml)
+        appendTravelsText("tripEndpointOverride", value: event.tripEndpointOverride?.gpxValue, to: &xml)
 
         if !event.tags.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let tags = tagTokens(from: event.tags)
@@ -339,6 +340,7 @@ private final class GPXTrackPointBuilder {
     private var eventLocalizedDateText: String?
     private var eventExternalReferenceText: String?
     private var eventPhotoFilenameText: String?
+    private var eventTripEndpointOverrideText: String?
     private var eventDemoDataText: String?
     private var eventSolarPeriodText: String?
     private var eventSolarPeriodPercentText: String?
@@ -409,6 +411,8 @@ private final class GPXTrackPointBuilder {
             store(text, in: &eventHeadingText, namespaced: isNamespaced)
         case "speed":
             store(text, in: &eventSpeedText, namespaced: isNamespaced)
+        case "speedMetersPerSecond":
+            store(text, in: &eventSpeedText, namespaced: isNamespaced)
         case "horizontalAccuracyMeters":
             if containsPlace {
                 store(text, in: &placeHorizontalAccuracyText, namespaced: isNamespaced)
@@ -468,6 +472,8 @@ private final class GPXTrackPointBuilder {
             store(text, in: &eventExternalReferenceText, namespaced: isNamespaced)
         case "photoFilename":
             store(text, in: &eventPhotoFilenameText, namespaced: isNamespaced)
+        case "tripEndpointOverride":
+            store(text, in: &eventTripEndpointOverrideText, namespaced: isNamespaced)
         case "demoData", "isDemo":
             store(text, in: &eventDemoDataText, namespaced: isNamespaced)
         case "period":
@@ -606,7 +612,9 @@ private final class GPXTrackPointBuilder {
         let localizedDate = firstNonEmpty(eventLocalizedDateText, eventTimeZoneIdentifier.map { TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: $0) })
         let eventTags = canonicalTags.isEmpty ? legacyTagsText ?? "" : canonicalTags.joined(separator: "\n")
         let solarPeriod = parseSolarPeriod(eventSolarPeriodText)
-        let source = parseEventSource(firstNonEmpty(eventSourceText, standardSourceText))
+        let tripEndpointOverride = parseTripEndpointOverride(eventTripEndpointOverrideText)
+        // BUGFIX: imported GPX events must always be recorded as imported, even when the file carries another source label for round-tripping.
+        let source = EventSource.imported
         let solarCalculatedAt = parseDate(eventSolarCalculatedAtText, formatter: formatter)
 
         let event = LocationEvent(
@@ -627,7 +635,8 @@ private final class GPXTrackPointBuilder {
             isDemo: parseBool(eventDemoDataText),
             solarPeriod: solarPeriod,
             solarPeriodPercent: parseDouble(eventSolarPeriodPercentText),
-            solarPeriodCalculatedAt: solarCalculatedAt
+            solarPeriodCalculatedAt: solarCalculatedAt,
+            tripEndpointOverride: tripEndpointOverride
         )
 
         return GPXTrackPoint(event: event, geolocation: geolocation(for: event, timeZoneIdentifier: eventTimeZoneIdentifier))
@@ -745,6 +754,20 @@ private final class GPXTrackPointBuilder {
             return SolarPeriod(twilightPhase: twilightPhase)
         }
         return .unknown
+    }
+
+    private func parseTripEndpointOverride(_ value: String?) -> TripEndpointOverride? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return nil
+        }
+        switch value.lowercased() {
+        case "1", "true", "yes", "y":
+            return .tripEndpoint
+        case "0", "false", "no", "n":
+            return .notTripEndpoint
+        default:
+            return nil
+        }
     }
 
     private func parseEventSource(_ value: String?) -> EventSource {

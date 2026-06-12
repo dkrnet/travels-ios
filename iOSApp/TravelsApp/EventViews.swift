@@ -485,7 +485,6 @@ struct EventMapView: View {
 
         let runs = detectedTrips.compactMap { trip -> [EventDetail]? in
             let tripEvents = trip.displayEventIDs.compactMap { id -> EventDetail? in
-                guard let id else { return nil }
                 return eventsByID[id]
             }
             guard !tripEvents.isEmpty else { return nil }
@@ -783,11 +782,13 @@ struct EventDetailView: View {
     @EnvironmentObject private var model: TravelsModel
     let detail: EventDetail
     @State private var note: String
+    @State private var tripEndpointOverrideSelectionValue: TripEndpointOverrideSelection
     @State private var confirmDelete = false
 
     init(detail: EventDetail) {
         self.detail = detail
         _note = State(initialValue: detail.event.note)
+        _tripEndpointOverrideSelectionValue = State(initialValue: TripEndpointOverrideSelection(tripEndpointOverride: detail.event.tripEndpointOverride) ?? .automatic)
     }
 
     var body: some View {
@@ -829,9 +830,7 @@ struct EventDetailView: View {
                     if EventDetailDisplayRules.hasMeaningfulCourse(detail.event.course) {
                         labeled("Course", formattedAngle(detail.event.course) ?? "")
                     }
-                    if EventDetailDisplayRules.hasMeaningfulSpeed(detail.event.speed) {
-                        labeled("Speed", formattedSpeed(detail.event.speed) ?? "")
-                    }
+                    labeled("Speed", EventDetailDisplayRules.speedDisplayText(detail.event.speed, measurementSystem: measurementSystem))
                     labeled("Timestamp", formattedTimestamp(detail.event.timestamp, timeZoneIdentifier: detail.geolocation?.timeZoneIdentifier))
                     if let localizedDate = EventDetailDisplayRules.normalizedDisplayText(detail.event.localizedDate) {
                         labeled("Localized Date", localizedDate)
@@ -840,6 +839,15 @@ struct EventDetailView: View {
                         labeled("Time of Day", timeOfDayText)
                     }
                     labeled("Source", detail.event.source.displayName)
+                    Picker("Trip Endpoint", selection: $tripEndpointOverrideSelectionValue) {
+                        ForEach(TripEndpointOverrideSelection.allCases) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: tripEndpointOverrideSelectionValue) { _, newValue in
+                        model.updateTripEndpointOverride(for: detail, tripEndpointOverride: newValue.tripEndpointOverride)
+                    }
                     if let tags = EventDetailDisplayRules.normalizedDisplayText(detail.event.tags) {
                         labeled("Tags", tags)
                     }
@@ -1047,19 +1055,6 @@ struct EventDetailView: View {
         return formatter.string(from: measurement)
     }
 
-    private func formattedSpeed(_ metersPerSecond: Double) -> String? {
-        guard metersPerSecond >= 0 else { return nil }
-        let formatter = measurementFormatter(unitOptions: .providedUnit)
-        let measurement: Measurement<UnitSpeed>
-        switch measurementSystem {
-        case .metric:
-            measurement = Measurement(value: metersPerSecond * 3.6, unit: .kilometersPerHour)
-        case .imperial:
-            measurement = Measurement(value: metersPerSecond * 2.236_936_292_054_4, unit: .milesPerHour)
-        }
-        return formatter.string(from: measurement)
-    }
-
     private func formattedAngle(_ degrees: Double) -> String? {
         guard degrees >= 0 else { return nil }
         return String(format: "%.2f°", degrees)
@@ -1074,6 +1069,47 @@ struct EventDetailView: View {
         formatter.numberFormatter.minimumFractionDigits = 2
         formatter.numberFormatter.maximumFractionDigits = 2
         return formatter
+    }
+}
+
+private enum TripEndpointOverrideSelection: String, CaseIterable, Identifiable {
+    case automatic
+    case tripEndpoint
+    case notTripEndpoint
+
+    var id: Self { self }
+
+    var displayName: String {
+        switch self {
+        case .automatic:
+            return "Automatic"
+        case .tripEndpoint:
+            return "Trip endpoint"
+        case .notTripEndpoint:
+            return "Not a trip endpoint"
+        }
+    }
+
+    var tripEndpointOverride: TripEndpointOverride? {
+        switch self {
+        case .automatic:
+            return nil
+        case .tripEndpoint:
+            return .tripEndpoint
+        case .notTripEndpoint:
+            return .notTripEndpoint
+        }
+    }
+
+    init?(tripEndpointOverride: TripEndpointOverride?) {
+        switch tripEndpointOverride {
+        case nil:
+            self = .automatic
+        case .tripEndpoint:
+            self = .tripEndpoint
+        case .notTripEndpoint:
+            self = .notTripEndpoint
+        }
     }
 }
 
@@ -1096,10 +1132,16 @@ private struct EventMapBadge: View {
         let color = color(for: detail)
         let rotation = badgeRotation(for: detail)
 
-        if let rotation {
-            DirectionPointer(color: color)
-                .scaleEffect(x: 0.92, y: 1.14)
-                .rotationEffect(.degrees(rotation))
+        if isMovingLocationEvent(detail.event) {
+            // BUGFIX: moving imported events can lack a usable course value, but they still need the moving-style badge instead of falling back to a source icon.
+            if let rotation {
+                DirectionPointer(color: color)
+                    .scaleEffect(x: 0.92, y: 1.14)
+                    .rotationEffect(.degrees(rotation))
+            } else {
+                DirectionPointer(color: color)
+                    .scaleEffect(x: 0.92, y: 1.14)
+            }
         } else {
             Image(systemName: symbol(for: detail.event.source))
                 .font(.system(size: 13, weight: .semibold))
