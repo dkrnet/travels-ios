@@ -32,6 +32,33 @@ public enum EventDetailDisplayRules {
         value.isFinite && value >= 0
     }
 
+    public static func speedDisplayText(
+        _ value: Double,
+        measurementSystem: MeasurementSystemPreference = .default
+    ) -> String {
+        guard value.isFinite, value >= 0 else {
+            // REGRESSION GUARD: unavailable speed should stay visible as an explicit "Not provided" value instead of disappearing from the detail view.
+            return "Not provided"
+        }
+
+        let formatter = MeasurementFormatter()
+        formatter.locale = .current
+        formatter.unitStyle = .short
+        formatter.unitOptions = .providedUnit
+        formatter.numberFormatter.numberStyle = .decimal
+        formatter.numberFormatter.minimumFractionDigits = 2
+        formatter.numberFormatter.maximumFractionDigits = 2
+
+        let measurement: Measurement<UnitSpeed>
+        switch measurementSystem {
+        case .metric:
+            measurement = Measurement(value: value * 3.6, unit: .kilometersPerHour)
+        case .imperial:
+            measurement = Measurement(value: value * 2.236_936_292_054_4, unit: .milesPerHour)
+        }
+        return formatter.string(from: measurement)
+    }
+
     public static func hasMeaningfulSolarPeriod(_ value: SolarPeriod) -> Bool {
         value != .unknown
     }

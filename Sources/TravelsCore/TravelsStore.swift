@@ -140,6 +140,7 @@ public final class TravelsStore: @unchecked Sendable {
             tags TEXT NOT NULL DEFAULT '',
             externalReference TEXT NOT NULL DEFAULT '',
             photoFilename TEXT NOT NULL DEFAULT '',
+            tripEndpointOverride INTEGER,
             isDemo INTEGER NOT NULL DEFAULT 0,
             solar_period TEXT NOT NULL DEFAULT 'unknown',
             solar_period_percent REAL,
@@ -163,6 +164,7 @@ public final class TravelsStore: @unchecked Sendable {
         try ensureColumnExists(table: "events", column: "solar_period", definition: "TEXT NOT NULL DEFAULT 'unknown'")
         try ensureColumnExists(table: "events", column: "solar_period_percent", definition: "REAL")
         try ensureColumnExists(table: "events", column: "solar_period_calculated_at", definition: "DATETIME")
+        try ensureColumnExists(table: "events", column: "tripEndpointOverride", definition: "INTEGER")
         try ensureColumnExists(table: "events", column: "twilight_phase", definition: "TEXT NOT NULL DEFAULT 'none'")
         try ensureColumnExists(table: "events", column: "twilight_percent", definition: "REAL")
         try ensureColumnExists(table: "events", column: "twilight_calculated_at", definition: "DATETIME")
@@ -281,8 +283,8 @@ public final class TravelsStore: @unchecked Sendable {
             INSERT INTO events (
                 latitude, longitude, horizontalAccuracy, verticalAccuracy, altitude, course, speed,
                 timestamp, localizedDate, source, geolocationID, note, tags, externalReference, photoFilename, isDemo,
-                solar_period, solar_period_percent, solar_period_calculated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tripEndpointOverride, solar_period, solar_period_percent, solar_period_calculated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             parameters: [
                 .real(event.latitude),
@@ -301,6 +303,7 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.externalReference),
                 .text(event.photoFilename),
                 .integer(demoFlag ? 1 : 0),
+                optionalInt(event.tripEndpointOverride?.rawValue),
                 .text(solar.period.rawValue),
                 optionalDouble(solar.percent),
                 optionalDate(solar.calculatedAt)
@@ -317,7 +320,7 @@ public final class TravelsStore: @unchecked Sendable {
                 latitude = ?, longitude = ?, horizontalAccuracy = ?, verticalAccuracy = ?,
                 altitude = ?, course = ?, speed = ?, timestamp = ?, localizedDate = ?,
                 source = ?, geolocationID = ?, note = ?, tags = ?, externalReference = ?,
-                photoFilename = ?, isDemo = ?, solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
+                photoFilename = ?, tripEndpointOverride = ?, isDemo = ?, solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
             WHERE id = ?
             """,
             parameters: [
@@ -336,6 +339,7 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.tags),
                 .text(event.externalReference),
                 .text(event.photoFilename),
+                optionalInt(event.tripEndpointOverride?.rawValue),
                 .integer(event.isDemo ? 1 : 0),
                 .text(solar.period.rawValue),
                 optionalDouble(solar.percent),
@@ -444,6 +448,16 @@ public final class TravelsStore: @unchecked Sendable {
 
     public func updateNote(eventID: Int64, note: String) throws {
         try database.execute("UPDATE events SET note = ? WHERE id = ?", parameters: [.text(note), .integer(eventID)])
+    }
+
+    public func updateTripEndpointOverride(eventID: Int64, tripEndpointOverride: TripEndpointOverride?) throws {
+        try database.execute(
+            "UPDATE events SET tripEndpointOverride = ? WHERE id = ?",
+            parameters: [
+                optionalInt(tripEndpointOverride?.rawValue),
+                .integer(eventID)
+            ]
+        )
     }
 
     public func deleteEvent(eventID: Int64) throws {
@@ -638,7 +652,7 @@ public final class TravelsStore: @unchecked Sendable {
                 e.timestamp AS event_timestamp, e.localizedDate AS event_localizedDate,
                 e.source AS event_source, e.geolocationID AS event_geolocationID, e.note AS event_note,
                 e.tags AS event_tags, e.externalReference AS event_externalReference, e.photoFilename AS event_photoFilename,
-                e.isDemo AS event_isDemo, e.solar_period AS event_solar_period,
+                e.tripEndpointOverride AS event_tripEndpointOverride, e.isDemo AS event_isDemo, e.solar_period AS event_solar_period,
                 e.solar_period_percent AS event_solar_period_percent, e.solar_period_calculated_at AS event_solar_period_calculated_at,
                 g.*
             FROM events e
@@ -699,52 +713,98 @@ public final class TravelsStore: @unchecked Sendable {
     }
 
     private func event(from row: [String: SQLiteValue]) -> LocationEvent {
-        LocationEvent(
-            id: row["id"]?.int64,
-            latitude: row["latitude"]?.double ?? 0,
-            longitude: row["longitude"]?.double ?? 0,
-            horizontalAccuracy: row["horizontalAccuracy"]?.double ?? -1,
-            verticalAccuracy: row["verticalAccuracy"]?.double ?? -1,
-            altitude: row["altitude"]?.double ?? 0,
-            course: row["course"]?.double ?? -1,
-            speed: row["speed"]?.double ?? -1,
-            timestamp: Date(timeIntervalSinceReferenceDate: row["timestamp"]?.double ?? 0),
-            localizedDate: row["localizedDate"]?.string,
-            source: EventSource(rawValue: Int(row["source"]?.int64 ?? 5)) ?? .invalid,
-            geolocationID: row["geolocationID"]?.int64,
-            note: row["note"]?.string ?? "",
-            tags: row["tags"]?.string ?? "",
-            externalReference: row["externalReference"]?.string ?? "",
-            photoFilename: row["photoFilename"]?.string ?? "",
-            isDemo: (row["isDemo"]?.int64 ?? 0) != 0,
-            solarPeriod: SolarPeriod(rawValue: row["solar_period"]?.string ?? "") ?? .unknown,
-            solarPeriodPercent: row["solar_period_percent"]?.double,
-            solarPeriodCalculatedAt: row["solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+        let id = row["id"]?.int64
+        let latitude = row["latitude"]?.double ?? 0
+        let longitude = row["longitude"]?.double ?? 0
+        let horizontalAccuracy = row["horizontalAccuracy"]?.double ?? -1
+        let verticalAccuracy = row["verticalAccuracy"]?.double ?? -1
+        let altitude = row["altitude"]?.double ?? 0
+        let course = row["course"]?.double ?? -1
+        let speed = row["speed"]?.double ?? -1
+        let timestamp = Date(timeIntervalSinceReferenceDate: row["timestamp"]?.double ?? 0)
+        let localizedDate = row["localizedDate"]?.string
+        let source = EventSource(rawValue: Int(row["source"]?.int64 ?? 5)) ?? .invalid
+        let geolocationID = row["geolocationID"]?.int64
+        let note = row["note"]?.string ?? ""
+        let tags = row["tags"]?.string ?? ""
+        let externalReference = row["externalReference"]?.string ?? ""
+        let photoFilename = row["photoFilename"]?.string ?? ""
+        let tripEndpointOverride = row["tripEndpointOverride"]?.int64.flatMap { TripEndpointOverride(rawValue: Int($0)) }
+        let isDemo = (row["isDemo"]?.int64 ?? 0) != 0
+        let solarPeriod = SolarPeriod(rawValue: row["solar_period"]?.string ?? "") ?? .unknown
+        let solarPeriodPercent = row["solar_period_percent"]?.double
+        let solarPeriodCalculatedAt = row["solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+
+        return LocationEvent(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            horizontalAccuracy: horizontalAccuracy,
+            verticalAccuracy: verticalAccuracy,
+            altitude: altitude,
+            course: course,
+            speed: speed,
+            timestamp: timestamp,
+            localizedDate: localizedDate,
+            source: source,
+            geolocationID: geolocationID,
+            note: note,
+            tags: tags,
+            externalReference: externalReference,
+            photoFilename: photoFilename,
+            isDemo: isDemo,
+            solarPeriod: solarPeriod,
+            solarPeriodPercent: solarPeriodPercent,
+            solarPeriodCalculatedAt: solarPeriodCalculatedAt,
+            tripEndpointOverride: tripEndpointOverride
         )
     }
 
     private func event(fromJoined row: [String: SQLiteValue]) -> LocationEvent {
-        LocationEvent(
-            id: row["event_id"]?.int64,
-            latitude: row["event_latitude"]?.double ?? 0,
-            longitude: row["event_longitude"]?.double ?? 0,
-            horizontalAccuracy: row["event_horizontalAccuracy"]?.double ?? -1,
-            verticalAccuracy: row["event_verticalAccuracy"]?.double ?? -1,
-            altitude: row["event_altitude"]?.double ?? 0,
-            course: row["event_course"]?.double ?? -1,
-            speed: row["event_speed"]?.double ?? -1,
-            timestamp: Date(timeIntervalSinceReferenceDate: row["event_timestamp"]?.double ?? 0),
-            localizedDate: row["event_localizedDate"]?.string,
-            source: EventSource(rawValue: Int(row["event_source"]?.int64 ?? 5)) ?? .invalid,
-            geolocationID: row["event_geolocationID"]?.int64,
-            note: row["event_note"]?.string ?? "",
-            tags: row["event_tags"]?.string ?? "",
-            externalReference: row["event_externalReference"]?.string ?? "",
-            photoFilename: row["event_photoFilename"]?.string ?? "",
-            isDemo: (row["event_isDemo"]?.int64 ?? 0) != 0,
-            solarPeriod: SolarPeriod(rawValue: row["event_solar_period"]?.string ?? "") ?? .unknown,
-            solarPeriodPercent: row["event_solar_period_percent"]?.double,
-            solarPeriodCalculatedAt: row["event_solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+        let id = row["event_id"]?.int64
+        let latitude = row["event_latitude"]?.double ?? 0
+        let longitude = row["event_longitude"]?.double ?? 0
+        let horizontalAccuracy = row["event_horizontalAccuracy"]?.double ?? -1
+        let verticalAccuracy = row["event_verticalAccuracy"]?.double ?? -1
+        let altitude = row["event_altitude"]?.double ?? 0
+        let course = row["event_course"]?.double ?? -1
+        let speed = row["event_speed"]?.double ?? -1
+        let timestamp = Date(timeIntervalSinceReferenceDate: row["event_timestamp"]?.double ?? 0)
+        let localizedDate = row["event_localizedDate"]?.string
+        let source = EventSource(rawValue: Int(row["event_source"]?.int64 ?? 5)) ?? .invalid
+        let geolocationID = row["event_geolocationID"]?.int64
+        let note = row["event_note"]?.string ?? ""
+        let tags = row["event_tags"]?.string ?? ""
+        let externalReference = row["event_externalReference"]?.string ?? ""
+        let photoFilename = row["event_photoFilename"]?.string ?? ""
+        let tripEndpointOverride = row["event_tripEndpointOverride"]?.int64.flatMap { TripEndpointOverride(rawValue: Int($0)) }
+        let isDemo = (row["event_isDemo"]?.int64 ?? 0) != 0
+        let solarPeriod = SolarPeriod(rawValue: row["event_solar_period"]?.string ?? "") ?? .unknown
+        let solarPeriodPercent = row["event_solar_period_percent"]?.double
+        let solarPeriodCalculatedAt = row["event_solar_period_calculated_at"]?.double.map { Date(timeIntervalSinceReferenceDate: $0) }
+
+        return LocationEvent(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            horizontalAccuracy: horizontalAccuracy,
+            verticalAccuracy: verticalAccuracy,
+            altitude: altitude,
+            course: course,
+            speed: speed,
+            timestamp: timestamp,
+            localizedDate: localizedDate,
+            source: source,
+            geolocationID: geolocationID,
+            note: note,
+            tags: tags,
+            externalReference: externalReference,
+            photoFilename: photoFilename,
+            isDemo: isDemo,
+            solarPeriod: solarPeriod,
+            solarPeriodPercent: solarPeriodPercent,
+            solarPeriodCalculatedAt: solarPeriodCalculatedAt,
+            tripEndpointOverride: tripEndpointOverride
         )
     }
 
@@ -788,6 +848,11 @@ public final class TravelsStore: @unchecked Sendable {
     private func optionalInt(_ value: Int64?) -> SQLiteValue {
         guard let value else { return .null }
         return .integer(value)
+    }
+
+    private func optionalInt(_ value: Int?) -> SQLiteValue {
+        guard let value else { return .null }
+        return .integer(Int64(value))
     }
 
     private func optionalDouble(_ value: Double?) -> SQLiteValue {

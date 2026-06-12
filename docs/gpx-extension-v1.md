@@ -66,6 +66,7 @@ Preferred trackpoint structure:
     <travels:timeZone>...</travels:timeZone>
     <travels:localizedDateKey>...</travels:localizedDateKey>
     <travels:source>...</travels:source>
+    <travels:tripEndpointOverride>...</travels:tripEndpointOverride>
     <travels:tags>
       <travels:tag>...</travels:tag>
     </travels:tags>
@@ -123,10 +124,11 @@ Optional elements are omitted when the corresponding value is not present.
 | `travels:horizontalAccuracyMeters` | `LocationEvent.horizontalAccuracy` | decimal | meters | No | Export when non-negative | Parse if present | `horizontalAccuracy` |
 | `travels:verticalAccuracyMeters` | `LocationEvent.verticalAccuracy` | decimal | meters | No | Export when non-negative | Parse if present | `verticalAccuracy` |
 | `travels:headingDegrees` | `LocationEvent.course` | decimal | degrees clockwise from true north | No | Export when non-negative | Parse if present | `heading`, `course` |
-| `travels:speedMetersPerSecond` | `LocationEvent.speed` | decimal | meters per second | No | Export when non-negative | Parse if present | `speed` |
+| `travels:speedMetersPerSecond` | `LocationEvent.speed` | decimal | meters per second | No | Export when non-negative | Parse if present; imported events normalize to `Imported` source | `speed` |
 | `travels:timeZone` | `Geolocation.timeZoneIdentifier` | string | IANA time-zone identifier | No | Export when available | Parse if present | `timeZoneIdentifier` |
 | `travels:localizedDateKey` | `LocationEvent.localizedDate` | string | app date key | No | Export when available | Parse if present | `localizedDate` |
-| `travels:source` | `LocationEvent.source` | string | display label | No | Export when useful | Parse if present | `src` |
+| `travels:source` | `LocationEvent.source` | string | display label | No | Export when useful | Parse if present; imported events normalize to `Imported` source | `src` |
+| `travels:tripEndpointOverride` | `LocationEvent.tripEndpointOverride` | boolean string | `true`, `false`, or omitted for automatic | No | Export when explicitly set | Parse boolean string if present | `tripEndpointOverride` |
 | `travels:tags` | `LocationEvent.tags` | wrapper | contains repeated `travels:tag` children | No | Export when tags exist | Parse wrapper and children | `tags` |
 | `travels:tag` | `LocationEvent.tags` | string | tag text | No | Export one child per logical tag token when structured tags are available; otherwise one child may contain the flat tag string | Parse repeated children and preserve order | `tags` |
 | `travels:externalReference` | `LocationEvent.externalReference` | string | app-specific identifier | No | Export when available | Parse if present | none |
@@ -200,6 +202,7 @@ The importer accepts the legacy direct child elements currently used by older Tr
 - `tags`
 - `externalReference`
 - `photoFilename`
+- `tripEndpointOverride`
 - `isDemo`
 - `solarPeriod`
 - `solarPeriodPercent`

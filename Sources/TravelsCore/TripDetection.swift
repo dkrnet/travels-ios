@@ -31,18 +31,18 @@ public struct DetectedTrip: Identifiable, Equatable, Sendable {
     public let id: String
     public let movingStartDate: Date
     public let movingEndDate: Date
-    public let movingEventIDs: Set<LocationEvent.ID>
-    public let endpointEventIDs: Set<LocationEvent.ID>
-    public let displayEventIDs: Set<LocationEvent.ID>
+    public let movingEventIDs: Set<Int64>
+    public let endpointEventIDs: Set<Int64>
+    public let displayEventIDs: Set<Int64>
     public let displayName: String
 
     public init(
         id: String,
         movingStartDate: Date,
         movingEndDate: Date,
-        movingEventIDs: Set<LocationEvent.ID>,
-        endpointEventIDs: Set<LocationEvent.ID>,
-        displayEventIDs: Set<LocationEvent.ID>,
+        movingEventIDs: Set<Int64>,
+        endpointEventIDs: Set<Int64>,
+        displayEventIDs: Set<Int64>,
         displayName: String
     ) {
         self.id = id
@@ -63,8 +63,11 @@ public enum MapDisplaySelection: Equatable, Sendable {
 
 public struct TripDetectionService: Sendable {
     public static let tripSeparationInterval: TimeInterval = 30 * 60
+    public var thresholds: LocationTrackingThresholds
 
-    public init() {}
+    public init(thresholds: LocationTrackingThresholds = .init()) {
+        self.thresholds = thresholds
+    }
 
     public func detectTrips(
         from events: [LocationEvent],
@@ -78,40 +81,93 @@ public struct TripDetectionService: Sendable {
         var currentTrip: PartialTrip?
         var pendingStartingEndpoint: LocationEvent?
 
-        for event in orderedEvents {
-            if isMovingLocationEvent(event) {
+        var pendingStationaryRun: [LocationEvent] = []
+        var pendingRunContainsForcedEndpoint = false
+
+        func flushPendingStationaryRun() {
+            guard !pendingStationaryRun.isEmpty else { return }
+
+            let isEndpointRun = pendingRunContainsForcedEndpoint || Self.isConfirmedStationaryRun(pendingStationaryRun, thresholds: thresholds)
+            defer {
+                pendingStationaryRun.removeAll()
+                pendingRunContainsForcedEndpoint = false
+            }
+
+            guard let first = pendingStationaryRun.first, let last = pendingStationaryRun.last else {
+                return
+            }
+
+            if isEndpointRun {
                 if var activeTrip = currentTrip {
-                    if let lastMovingEvent = activeTrip.lastMovingEvent,
-                       event.timestamp.timeIntervalSince(lastMovingEvent.timestamp) >= tripSeparationInterval {
-                        partialTrips.append(activeTrip)
-                        var newTrip = PartialTrip(startingEndpoint: pendingStartingEndpoint)
-                        newTrip.addMoving(event)
-                        currentTrip = newTrip
-                        pendingStartingEndpoint = nil
-                        continue
-                    }
-
-                    activeTrip.addMoving(event)
-                    currentTrip = activeTrip
-                    continue
+                    activeTrip.addEndingEndpoint(first)
+                    partialTrips.append(activeTrip)
+                    currentTrip = nil
                 }
-
-                var newTrip = PartialTrip(startingEndpoint: pendingStartingEndpoint)
-                newTrip.addMoving(event)
-                currentTrip = newTrip
-                pendingStartingEndpoint = nil
-                continue
+                pendingStartingEndpoint = last
+                return
             }
 
             if var activeTrip = currentTrip {
-                activeTrip.addEndingEndpoint(event)
-                partialTrips.append(activeTrip)
-                currentTrip = nil
-                pendingStartingEndpoint = event
-            } else {
-                pendingStartingEndpoint = event
+                activeTrip.addMoving(contentsOf: pendingStationaryRun)
+                currentTrip = activeTrip
+                return
+            }
+
+            pendingStartingEndpoint = last
+        }
+
+        for event in orderedEvents {
+            switch Self.role(for: event, thresholds: thresholds) {
+            case .stationaryCandidate(let forcedEndpoint):
+                if let lastMovingEvent = currentTrip?.lastMovingEvent,
+                   event.timestamp.timeIntervalSince(lastMovingEvent.timestamp) >= tripSeparationInterval {
+                    // BUGFIX: a long gap ending with a stationary sample still needs a visible break.
+                    // Close the current trip at the last moving sample, then let the stationary sample
+                    // become the start marker for the next trip.
+                    if var activeTrip = currentTrip {
+                        activeTrip.addEndingEndpoint(lastMovingEvent)
+                        partialTrips.append(activeTrip)
+                        currentTrip = nil
+                    }
+                    pendingStationaryRun.removeAll()
+                    pendingRunContainsForcedEndpoint = false
+                }
+                pendingStationaryRun.append(event)
+                pendingRunContainsForcedEndpoint = pendingRunContainsForcedEndpoint || forcedEndpoint
+
+            case .moving:
+                flushPendingStationaryRun()
+                if let lastMovingEvent = currentTrip?.lastMovingEvent,
+                   event.timestamp.timeIntervalSince(lastMovingEvent.timestamp) >= tripSeparationInterval {
+                    // BUGFIX: a long gap between moving samples should surface as a visible trip boundary.
+                    // Keep both boundary samples available as endpoint markers so trip views do not
+                    // collapse the gap into one uninterrupted looking run.
+                    if let activeTrip = currentTrip {
+                        var finalizedTrip = activeTrip
+                        finalizedTrip.addEndingEndpoint(lastMovingEvent)
+                        partialTrips.append(finalizedTrip)
+                        currentTrip = nil
+                    }
+                    var newTrip = PartialTrip(startingEndpoint: event)
+                    pendingStartingEndpoint = nil
+                    newTrip.addMoving(event)
+                    currentTrip = newTrip
+                    continue
+                }
+
+                if var activeTrip = currentTrip {
+                    activeTrip.addMoving(event)
+                    currentTrip = activeTrip
+                } else {
+                    var newTrip = PartialTrip(startingEndpoint: pendingStartingEndpoint)
+                    pendingStartingEndpoint = nil
+                    newTrip.addMoving(event)
+                    currentTrip = newTrip
+                }
             }
         }
+
+        flushPendingStationaryRun()
 
         if let currentTrip {
             partialTrips.append(currentTrip)
@@ -174,6 +230,84 @@ public struct TripDetectionService: Sendable {
             return lhs.horizontalAccuracy < rhs.horizontalAccuracy
         }
     }
+
+    private enum EventRole {
+        case moving
+        case stationaryCandidate(forcedEndpoint: Bool)
+    }
+
+    private static func role(for event: LocationEvent, thresholds: LocationTrackingThresholds) -> EventRole {
+        switch event.tripEndpointOverride {
+        case .tripEndpoint:
+            return .stationaryCandidate(forcedEndpoint: true)
+        case .notTripEndpoint:
+            return .moving
+        case nil:
+            return isAutomaticStationaryCandidate(event, thresholds: thresholds)
+                ? .stationaryCandidate(forcedEndpoint: false)
+                : .moving
+        }
+    }
+
+    private static func isAutomaticStationaryCandidate(_ event: LocationEvent, thresholds: LocationTrackingThresholds) -> Bool {
+        guard event.horizontalAccuracy.isFinite,
+              event.horizontalAccuracy >= 0,
+              event.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters
+        else {
+            return false
+        }
+        guard event.speed.isFinite, event.speed >= 0 else {
+            return true
+        }
+        return event.speed <= thresholds.stationarySpeedThreshold
+    }
+
+    private static func isConfirmedStationaryRun(_ events: [LocationEvent], thresholds: LocationTrackingThresholds) -> Bool {
+        guard !events.isEmpty else { return false }
+        if events.contains(where: { $0.tripEndpointOverride == .tripEndpoint }) {
+            return true
+        }
+        guard events.count > 1,
+              let first = events.first,
+              let last = events.last
+        else {
+            return false
+        }
+        guard last.timestamp.timeIntervalSince(first.timestamp) >= thresholds.stationaryDuration else {
+            return false
+        }
+        guard consecutiveSampleGapsAreWithinLimit(events, thresholds: thresholds) else {
+            return false
+        }
+        guard events.allSatisfy({ isAutomaticStationaryCandidate($0, thresholds: thresholds) }) else {
+            return false
+        }
+        return events.allSatisfy { distanceMeters(from: first, to: $0) <= thresholds.stationaryRadiusMeters }
+    }
+
+    private static func consecutiveSampleGapsAreWithinLimit(_ events: [LocationEvent], thresholds: LocationTrackingThresholds) -> Bool {
+        guard events.count > 1 else { return true }
+        for index in 1..<events.count {
+            let previous = events[index - 1]
+            let current = events[index]
+            if current.timestamp.timeIntervalSince(previous.timestamp) > thresholds.maximumStationarySampleGap {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static func distanceMeters(from lhs: LocationEvent, to rhs: LocationEvent) -> Double {
+        let radius = 6_371_000.0
+        let phi1 = lhs.latitude * .pi / 180
+        let phi2 = rhs.latitude * .pi / 180
+        let deltaPhi = (rhs.latitude - lhs.latitude) * .pi / 180
+        let deltaLambda = (rhs.longitude - lhs.longitude) * .pi / 180
+        let a = sin(deltaPhi / 2) * sin(deltaPhi / 2)
+            + cos(phi1) * cos(phi2) * sin(deltaLambda / 2) * sin(deltaLambda / 2)
+        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return radius * c
+    }
 }
 
 public func filteredEvents(
@@ -195,7 +329,7 @@ public func filteredEvents(
         let allowedIDs = Set(
             detectedTrips
                 .filter { tripIDs.contains($0.id) }
-                .flatMap { $0.displayEventIDs.compactMap { $0 } }
+                .flatMap(\.displayEventIDs)
         )
         guard !allowedIDs.isEmpty else { return [] }
         return events.filter { detail in
@@ -218,6 +352,10 @@ private struct PartialTrip {
         movingEvents.append(event)
     }
 
+    mutating func addMoving(contentsOf events: [LocationEvent]) {
+        movingEvents.append(contentsOf: events)
+    }
+
     mutating func addEndingEndpoint(_ event: LocationEvent) {
         endingEndpoint = event
     }
@@ -227,10 +365,14 @@ private struct PartialTrip {
             return nil
         }
 
-        let movingEventIDs = Set(movingEvents.map(\.id))
-        var endpointEventIDs = Set<LocationEvent.ID>()
-        endpointEventIDs.insert(startingEndpoint?.id)
-        endpointEventIDs.insert(endingEndpoint?.id)
+        let movingEventIDs = Set(movingEvents.compactMap(\.id))
+        var endpointEventIDs = Set<Int64>()
+        if let startingEndpointID = startingEndpoint?.id {
+            endpointEventIDs.insert(startingEndpointID)
+        }
+        if let endingEndpointID = endingEndpoint?.id {
+            endpointEventIDs.insert(endingEndpointID)
+        }
 
         let displayEventIDs = movingEventIDs.union(endpointEventIDs)
         let rawName = Self.displayName(
