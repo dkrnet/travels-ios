@@ -282,6 +282,22 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([2]))
     }
 
+    func testLongGapEndingWithStoppedSampleSplitsTripsAndKeepsBothBoundarySamples() {
+        let events = [
+            makeEvent(id: 1, hour: 13, minute: 59, speed: 2.5),
+            makeEvent(id: 2, hour: 18, minute: 4, speed: 0),
+            makeEvent(id: 3, hour: 18, minute: 21, speed: 10)
+        ]
+
+        let trips = detect(events)
+        XCTAssertEqual(trips.count, 2)
+        XCTAssertEqual(trips[0].movingEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[1].movingEventIDs, Set<Int64>([3]))
+        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([2]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([2, 3]))
+    }
+
     func testOutOfOrderEventsAreSortedBeforeDetection() {
         let events = [
             makeEvent(id: 3, hour: 8, minute: 20, speed: 5),

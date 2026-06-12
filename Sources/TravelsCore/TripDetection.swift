@@ -119,6 +119,19 @@ public struct TripDetectionService: Sendable {
         for event in orderedEvents {
             switch Self.role(for: event, thresholds: thresholds) {
             case .stationaryCandidate(let forcedEndpoint):
+                if let lastMovingEvent = currentTrip?.lastMovingEvent,
+                   event.timestamp.timeIntervalSince(lastMovingEvent.timestamp) >= tripSeparationInterval {
+                    // BUGFIX: a long gap ending with a stationary sample still needs a visible break.
+                    // Close the current trip at the last moving sample, then let the stationary sample
+                    // become the start marker for the next trip.
+                    if var activeTrip = currentTrip {
+                        activeTrip.addEndingEndpoint(lastMovingEvent)
+                        partialTrips.append(activeTrip)
+                        currentTrip = nil
+                    }
+                    pendingStationaryRun.removeAll()
+                    pendingRunContainsForcedEndpoint = false
+                }
                 pendingStationaryRun.append(event)
                 pendingRunContainsForcedEndpoint = pendingRunContainsForcedEndpoint || forcedEndpoint
 
