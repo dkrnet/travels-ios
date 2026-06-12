@@ -30,6 +30,12 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Always-On High Precision Location", isOn: $model.settings.alwaysOnHighPrecisionLocation)
+                        Text("Keeps high-accuracy location tracking active continuously. This improves route fidelity but may use more battery and may cause iOS to show the location indicator more often.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
                         Toggle("Resolve Addresses", isOn: $model.settings.resolveAddresses)
                         Text("Anonymously sends location data to Apple so Travels can look up place names.")
                             .font(.footnote)

@@ -8,6 +8,7 @@ state_dir="${project_dir}/.build"
 state_file="${state_dir}/travels-version-state"
 source_plist="${project_dir}/iOSApp/TravelsApp/Info.plist"
 generated_plist="${DERIVED_FILE_DIR:-${state_dir}}/TravelsStampedInfo.plist"
+product_plist="${TARGET_BUILD_DIR:-}/$(basename "${FULL_PRODUCT_NAME:-Travels.app}")/Info.plist"
 
 if ! command -v git >/dev/null 2>&1; then
   exit 0
@@ -56,6 +57,12 @@ if [[ -f "$source_plist" ]]; then
   /usr/bin/plutil -replace CFBundleVersion -string "$build_version" "$generated_plist" 2>/dev/null || \
     /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${build_version}" "$generated_plist" 2>/dev/null || \
     /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${build_version}" "$generated_plist"
+fi
+
+if [[ -f "$product_plist" ]]; then
+  /usr/bin/plutil -replace CFBundleVersion -string "$build_version" "$product_plist" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${build_version}" "$product_plist" 2>/dev/null || \
+    /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${build_version}" "$product_plist"
 fi
 
 echo "Stamped CFBundleVersion ${build_version}"

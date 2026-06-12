@@ -61,10 +61,14 @@ public enum LocationFiltering {
 
         if distance <= previous.horizontalAccuracy {
             let isMoreAccurate = candidate.horizontalAccuracy < previous.horizontalAccuracy
+            let candidateSpeedUnavailable = !candidate.speed.isFinite || candidate.speed < 0
+            let previousSpeedUnavailable = !previous.speed.isFinite || previous.speed < 0
             let isAtLeastAsAccurateAndSlower = candidate.horizontalAccuracy <= previous.horizontalAccuracy
-                && candidate.speed >= 0
-                && previous.speed >= 0
-                && candidate.speed < previous.speed
+                && (
+                    (candidate.speed >= 0 && previous.speed >= 0 && candidate.speed < previous.speed)
+                    || (candidateSpeedUnavailable && previous.speed <= 0)
+                    || (previousSpeedUnavailable && candidate.speed <= 0)
+                )
             if elapsed < improvementWindowSeconds && (isMoreAccurate || isAtLeastAsAccurateAndSlower) {
                 return .acceptAndReplacePrevious
             }
