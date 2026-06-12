@@ -126,11 +126,16 @@ public struct TripDetectionService: Sendable {
                 flushPendingStationaryRun()
                 if let lastMovingEvent = currentTrip?.lastMovingEvent,
                    event.timestamp.timeIntervalSince(lastMovingEvent.timestamp) >= tripSeparationInterval {
+                    // BUGFIX: a long gap between moving samples should surface as a visible trip boundary.
+                    // Keep both boundary samples available as endpoint markers so trip views do not
+                    // collapse the gap into one uninterrupted looking run.
                     if let activeTrip = currentTrip {
-                        partialTrips.append(activeTrip)
+                        var finalizedTrip = activeTrip
+                        finalizedTrip.addEndingEndpoint(lastMovingEvent)
+                        partialTrips.append(finalizedTrip)
                         currentTrip = nil
                     }
-                    var newTrip = PartialTrip(startingEndpoint: pendingStartingEndpoint)
+                    var newTrip = PartialTrip(startingEndpoint: event)
                     pendingStartingEndpoint = nil
                     newTrip.addMoving(event)
                     currentTrip = newTrip

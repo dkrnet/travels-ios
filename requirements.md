@@ -388,6 +388,7 @@ The active export scope is the complete set of exportable events selected by the
 - Trip detection shall tolerate noisy GPS data.
 - Trip detection shall distinguish stationary clusters from movement where practical.
 - Trip detection shall honor an explicit per-event trip-endpoint override when present.
+- Trip detection shall treat sufficiently separated moving samples as trip boundaries and preserve those boundary samples as endpoint markers for neighboring trips.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 
 ## UI presentation requirements

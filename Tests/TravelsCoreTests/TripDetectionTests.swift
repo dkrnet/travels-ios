@@ -254,7 +254,7 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(detect(events).count, 1)
     }
 
-    func testGapGreaterThanOrEqualToTripSeparationIntervalSplitsTrips() {
+    func testGapGreaterThanOrEqualToTripSeparationIntervalMarksBoundaryMovingEventsAsEndpoints() {
         let events = [
             makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 2, hour: 8, minute: 30, speed: 5)
@@ -262,10 +262,15 @@ final class TripDetectionTests: XCTestCase {
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
-        XCTAssertTrue(trips.allSatisfy { $0.endpointEventIDs.isEmpty })
+        XCTAssertEqual(trips[0].movingEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[0].displayEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[1].movingEventIDs, Set<Int64>([2]))
+        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([2]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([2]))
     }
 
-    func testLargeGapWithoutStoppedEventsDoesNotCreateEndpointMarkers() {
+    func testLargeGapWithoutStoppedEventsStillCreatesBoundaryEndpoints() {
         let events = [
             makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 2, hour: 9, minute: 0, speed: 5)
@@ -273,7 +278,8 @@ final class TripDetectionTests: XCTestCase {
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
-        XCTAssertTrue(trips.allSatisfy { $0.endpointEventIDs.isEmpty })
+        XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([1]))
+        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([2]))
     }
 
     func testOutOfOrderEventsAreSortedBeforeDetection() {
