@@ -218,6 +218,9 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Automatic hybrid tracking may miss the very beginning of a trip because significant-location-change monitoring is not immediate.
 - Always-On High Precision Location shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
 - The Always-On High Precision Location setting shall be separate from any future manual start/stop tracking feature.
+- While hybrid automatic tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
+- The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or the app switches to Always-On High Precision Location.
+- Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always-On High Precision Location or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
 - Automatic foreground location capture shall respect the automatic location setting.
 - Background location capture shall respect the background location setting and required iOS permissions.
 - The app shall apply distance, recency, and accuracy filtering to avoid noisy event spam.
@@ -241,6 +244,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall present events on a map and in a list.
 - The user shall be able to switch between map and list views.
 - The preferred view shall be persisted.
+- When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
 - Export actions that operate from the map/list context shall use the active export scope rather than the transient set of events physically visible on screen, unless the user explicitly chooses a viewport-only or visible-only export mode.

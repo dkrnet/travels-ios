@@ -214,6 +214,33 @@ final class TravelsCoreTests: XCTestCase {
         )
     }
 
+    func testLocationFilteringCanReplacePreviousWhenStationarySamplesHaveUnavailableSpeed() {
+        let previous = LocationEvent(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 12,
+            speed: -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 12,
+            speed: -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: 120)
+        )
+
+        XCTAssertEqual(
+            LocationFiltering.decision(
+                candidate: candidate,
+                previous: previous,
+                improvementWindowSeconds: 300
+            ),
+            .acceptAndReplacePrevious
+        )
+    }
+
     func testTwilightResultIsNoneDuringFullDaylight() throws {
         let timeZone = TimeZone(identifier: "America/Los_Angeles")!
         let date = makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: timeZone)

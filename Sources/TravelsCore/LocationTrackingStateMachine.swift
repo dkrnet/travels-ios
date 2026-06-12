@@ -15,17 +15,20 @@ public struct LocationTrackingThresholds: Equatable, Sendable {
     public var stationaryRadiusMeters: Double
     public var stationarySpeedThreshold: Double
     public var minimumUsableHorizontalAccuracyMeters: Double
+    public var maximumStationarySampleGap: TimeInterval
 
     public init(
         stationaryDuration: TimeInterval = 5 * 60,
         stationaryRadiusMeters: Double = 50,
         stationarySpeedThreshold: Double = 0.7,
-        minimumUsableHorizontalAccuracyMeters: Double = 100
+        minimumUsableHorizontalAccuracyMeters: Double = 100,
+        maximumStationarySampleGap: TimeInterval = 2 * 60
     ) {
         self.stationaryDuration = stationaryDuration
         self.stationaryRadiusMeters = stationaryRadiusMeters
         self.stationarySpeedThreshold = stationarySpeedThreshold
         self.minimumUsableHorizontalAccuracyMeters = minimumUsableHorizontalAccuracyMeters
+        self.maximumStationarySampleGap = maximumStationarySampleGap
     }
 }
 
@@ -55,6 +58,15 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         self.policy = policy
         self.thresholds = thresholds
         self.state = policy == .alwaysOnHighPrecision ? .activeTracking : .idleDetection
+    }
+
+    public var isHighPrecisionTrackingActive: Bool {
+        switch state {
+        case .idleDetection:
+            return false
+        case .activeTracking, .maybeStopped:
+            return true
+        }
     }
 
     @discardableResult
@@ -101,6 +113,15 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
                 return .none
             }
 
+            if let previousSample = samples.last,
+               sample.timestamp.timeIntervalSince(previousSample.timestamp) > thresholds.maximumStationarySampleGap {
+                // REGRESSION GUARD: a large timestamp jump can happen when simulator playback is
+                // replaced with a custom location or another source change. Do not let stale samples
+                // from before the gap immediately satisfy the stationary window.
+                state = .maybeStopped(anchor: sample, samples: [sample])
+                return .none
+            }
+
             if sample.speed > thresholds.stationarySpeedThreshold ||
                 distanceMeters(from: anchor, to: sample) > thresholds.stationaryRadiusMeters {
                 state = .activeTracking
@@ -128,20 +149,40 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         guard last.timestamp.timeIntervalSince(first.timestamp) >= thresholds.stationaryDuration else {
             return false
         }
+        guard consecutiveSampleGapsAreWithinLimit(samples) else {
+            return false
+        }
         guard samples.allSatisfy({ isUsableStationarySample($0) }) else {
             return false
         }
         return samples.allSatisfy { distanceMeters(from: anchor, to: $0) <= thresholds.stationaryRadiusMeters }
     }
 
+    private func consecutiveSampleGapsAreWithinLimit(_ samples: [LocationSample]) -> Bool {
+        guard samples.count > 1 else {
+            return true
+        }
+        for index in 1..<samples.count {
+            let previous = samples[index - 1]
+            let current = samples[index]
+            if current.timestamp.timeIntervalSince(previous.timestamp) > thresholds.maximumStationarySampleGap {
+                return false
+            }
+        }
+        return true
+    }
+
     private func isUsableStationarySample(_ sample: LocationSample) -> Bool {
         guard sample.horizontalAccuracy.isFinite,
               sample.horizontalAccuracy >= 0,
-              sample.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters,
-              sample.speed.isFinite,
-              sample.speed >= 0
+              sample.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters
         else {
             return false
+        }
+        // BUGFIX: treat invalid or unavailable speed as "not moving enough to rule out stationary"
+        // so the stationary detector can still converge using distance, time, and accuracy alone.
+        guard sample.speed.isFinite, sample.speed >= 0 else {
+            return true
         }
         return sample.speed <= thresholds.stationarySpeedThreshold
     }

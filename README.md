@@ -18,7 +18,9 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - SwiftUI iOS app with map and list browsing
 - Date navigation with previous-day context for continuity
 - Automatic and manual location capture, including hybrid significant-change tracking with an optional always-on high precision mode
+- A live `Precise Location Active` badge on the map and list screens while high-precision tracking is running
 - Background-location option with separate powered and battery distance thresholds
+- Hybrid tracking periodically rechecks Core Location when movement quiets down, and battery/low-power changes re-evaluate the active configuration without changing the Always-On policy
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
 - GPX import and export with GPX 1.1 standard fields, a documented Travels extension namespace, and legacy import compatibility

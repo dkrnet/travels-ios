@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import MapKit
 import SwiftUI
@@ -38,6 +39,17 @@ struct ContentView: View {
                     }
                 }
                 .blur(radius: model.isUnlocked ? 0 : 18)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if model.isHighPrecisionLocationActive {
+                    VStack {
+                        LocationPrecisionStatusBadge()
+                            .padding(.top, 8)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .allowsHitTesting(false)
+                }
 
                 if let message = model.locationAuthorizationMessage, model.isUnlocked {
                     VStack {

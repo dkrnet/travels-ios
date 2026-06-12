@@ -1,6 +1,7 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 
 import Foundation
 import LocalAuthentication
@@ -20,6 +21,7 @@ final class TravelsModel: ObservableObject {
     @Published var settings = AppSettings()
     @Published var isListView = false
     @Published var isUnlocked = true
+    @Published var isHighPrecisionLocationActive = false
     @Published private(set) var detectedTrips: [DetectedTrip] = []
     @Published private(set) var selectedMapDisplay: MapDisplaySelection = .all
     @Published var statusMessage: String?
@@ -73,9 +75,18 @@ final class TravelsModel: ObservableObject {
             locationService.onStatusMessage = { [weak self] message in
                 self?.statusMessage = message
             }
+            locationService.onTraceMessage = { [weak self] message in
+                guard let self else { return }
+                self.appendAddressResolutionLog("[Location] \(message)")
+            }
             locationService.onAuthorizationStateChanged = { [weak self] message in
                 guard let self else { return }
                 self.locationAuthorizationMessage = message
+            }
+            locationService.onTrackingModeChanged = { [weak self] isActive in
+                guard let self else { return }
+                self.isHighPrecisionLocationActive = isActive
+                self.appendDiagnosticsLog(isActive ? "[Location] Entered precise location mode" : "[Location] Exited precise location mode")
             }
             locationService.onTrackedEvent = { [weak self] in
                 guard let self else { return }
@@ -886,7 +897,6 @@ final class TravelsModel: ObservableObject {
         guard settings.resolveAddresses || settings.resolveMissingAddresses else { return }
         addressResolutionNeedsRerun = true
         addressResolutionStatus = "Queued"
-        appendAddressResolutionLog("Queued address resolution")
         guard addressResolutionTask == nil else { return }
         let store = self.store
         let includeDemoData = settings.includeDemoData
@@ -947,6 +957,7 @@ final class TravelsModel: ObservableObject {
                         await MainActor.run { [weak self] in
                             guard let self else { return }
                             self.addressResolutionCurrentTarget = currentTarget
+                            self.appendAddressResolutionLog("Queued address resolution for \(currentTarget)")
                             self.appendAddressResolutionLog("Resolving \(currentTarget)")
                         }
 
@@ -1197,6 +1208,10 @@ final class TravelsModel: ObservableObject {
         if addressResolutionLog.count > 100 {
             addressResolutionLog.removeFirst(addressResolutionLog.count - 100)
         }
+    }
+
+    func appendDiagnosticsLog(_ message: String) {
+        appendAddressResolutionLog(message)
     }
 }
 
