@@ -379,8 +379,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public init(
         autoAddLocations: Bool = true,
         backgroundLocationEnabled: Bool = false,
-        resolveAddresses: Bool = true,
-        resolveMissingAddresses: Bool = true,
+        resolveAddresses: Bool = false,
+        resolveMissingAddresses: Bool = false,
         includePreviousDayContext: Bool = true,
         includeDemoData: Bool = true,
         requireAuthentication: Bool = false,
@@ -423,8 +423,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.autoAddLocations = try container.decodeIfPresent(Bool.self, forKey: .autoAddLocations) ?? true
         self.backgroundLocationEnabled = try container.decodeIfPresent(Bool.self, forKey: .backgroundLocationEnabled) ?? false
-        self.resolveAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveAddresses) ?? true
-        self.resolveMissingAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveMissingAddresses) ?? true
+        self.resolveAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveAddresses) ?? false
+        self.resolveMissingAddresses = try container.decodeIfPresent(Bool.self, forKey: .resolveMissingAddresses) ?? false
         self.includePreviousDayContext = try container.decodeIfPresent(Bool.self, forKey: .includePreviousDayContext) ?? true
         self.includeDemoData = try container.decodeIfPresent(Bool.self, forKey: .includeDemoData) ?? true
         self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false

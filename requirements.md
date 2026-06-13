@@ -189,6 +189,10 @@ The app shall persist user settings including at least:
 
 Settings UI shall group related settings into understandable sections such as Tracking, Units, Display, and Privacy.
 
+- Address-resolution options, including reverse address resolution and resolve missing addresses, shall be disabled by default for new installs.
+- The app shall not perform reverse-geocoding or missing-address resolution unless the user has explicitly enabled the relevant setting.
+- App upgrades, migrations, restores, imports, and repairs shall preserve existing address-resolution preferences and shall not silently enable address resolution.
+
 ## Startup and bootstrap requirements
 
 On launch, the app shall:
@@ -220,6 +224,9 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Always-On High Precision Location shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
 - The Always-On High Precision Location setting shall be separate from any future manual start/stop tracking feature.
 - While hybrid automatic tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
+- When hybrid automatic tracking enters active high-precision mode, the app shall immediately request one automatic location sample so the first precise position is available without waiting for the next scheduled recheck.
+- When hybrid automatic tracking is about to return from active high-precision mode to idle detection because the stationary window has been satisfied, the app shall make one bounded best-effort automatic sample before leaving precise mode.
+- The immediate entry sample and bounded final-exit sample shall be automatic tracking samples rather than manual user captures, and the bounded final-exit sample shall not keep precise mode active indefinitely.
 - The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or the app switches to Always-On High Precision Location.
 - Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always-On High Precision Location or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
 - Automatic foreground location capture shall respect the automatic location setting.
@@ -281,6 +288,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Reverse geocoding shall support resolving missing addresses when enabled.
 - Reverse geocoding shall expose enough status or diagnostics for troubleshooting pending, successful, failed, or skipped work.
 - Reverse geocoding failures shall not corrupt event data or block normal app use.
+- Reverse-geocoding and missing-address resolution shall remain off for new installs unless the user turns them on.
 
 ## GPX import requirements
 
@@ -330,11 +338,13 @@ The active export scope is the complete set of exportable events selected by the
 ## Photo import requirements
 
 - The user shall be able to import a selected photo as an event when the photo has usable creation-date and location metadata.
-- The app shall copy imported photo data into app-owned storage using a generated filename.
+- The user shall be able to choose between importing photo and location data or importing location data only.
+- When importing photo and location data, the app shall copy imported photo data into app-owned storage using a generated filename.
+- When importing location data only, the app shall create an event from the selected photo's usable creation-date and location metadata without copying the photo data into app-owned storage and without storing a copied photo filename.
 - The created event shall use the photo source.
 - The event shall preserve the photo asset's local identifier or other stable reference when available.
-- The event shall reference the copied photo filename.
-- Photo import shall fail safely and explain when the selected asset lacks usable metadata or cannot be copied.
+- A location-only photo import shall be treated as a successful photo-source event import, not as a failed photo import.
+- Photo import shall fail safely and explain when the selected asset lacks usable creation-date or location metadata.
 
 ## Backup and restore requirements
 

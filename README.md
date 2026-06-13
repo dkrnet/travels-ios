@@ -20,7 +20,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Automatic and manual location capture, including hybrid significant-change tracking with an optional always-on high precision mode
 - A live `Precise Location Active` badge on the map and list screens while high-precision tracking is running
 - Background-location option with separate powered and battery distance thresholds
-- Hybrid tracking periodically rechecks Core Location when movement quiets down, and battery/low-power changes re-evaluate the active configuration without changing the Always-On policy
+- Hybrid tracking immediately requests a precise sample when it enters active mode, periodically rechecks Core Location when movement quiets down, and makes one bounded final precise sample before returning to idle detection; battery/low-power changes re-evaluate the active configuration without changing the Always-On policy
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
 - Per-event trip endpoint overrides for refining automatic trip detection
@@ -84,7 +84,7 @@ On first launch, the app checks for a legacy `Documents/travels.sqlite` database
 
 Travels is local-first. The database, notes, imported photo references, and photo attachments stay in app-controlled local storage unless the user explicitly exports or shares them.
 
-Reverse geocoding can send coordinates to Apple services when address resolution is enabled. Settings must clearly disclose this. GPX exports and database backups can contain precise location history and should be handled as sensitive files.
+Reverse geocoding can send coordinates to Apple services when address resolution is enabled. Address resolution is off by default and must be enabled by the user. Photo import can create an event from a photo's date and location metadata either with or without copying the photo into Travels storage. GPX exports and database backups can contain precise location history and should be handled as sensitive files.
 
 The optional authentication lock uses device-owner authentication to hide map/list content while locked. It is a convenience privacy layer on top of normal iOS device security.
 

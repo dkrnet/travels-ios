@@ -564,9 +564,9 @@ final class TravelsModel: ObservableObject {
         }
     }
 
-    func importPhoto(assetIdentifier: String?, data: Data, note: String = "") throws -> ImportedPhotoImportResult {
+    func importPhoto(assetIdentifier: String?, data: Data? = nil, note: String = "", mode: PhotoImportMode = .photoAndLocation) throws -> ImportedPhotoImportResult {
         do {
-            guard let store, let photoURL = makePhotoURL() else {
+            guard let store else {
                 throw TravelsError.photoImportFailed("Unable to prepare photo storage.")
             }
             guard let assetIdentifier, !assetIdentifier.isEmpty else {
@@ -583,30 +583,37 @@ final class TravelsModel: ObservableObject {
                 throw TravelsError.photoImportFailed("Unable to retrieve location information from image.")
             }
 
-            try data.write(to: photoURL, options: [.atomic])
-            let location = CLLocation(
-                coordinate: assetLocation.coordinate,
-                altitude: assetLocation.altitude,
+            let metadata = PhotoImportMetadata(
+                latitude: assetLocation.coordinate.latitude,
+                longitude: assetLocation.coordinate.longitude,
                 horizontalAccuracy: assetLocation.horizontalAccuracy,
                 verticalAccuracy: assetLocation.verticalAccuracy,
+                altitude: assetLocation.altitude,
                 course: assetLocation.course,
                 speed: assetLocation.speed,
                 timestamp: assetDate
             )
-            let event = LocationEvent(
-                latitude: location.coordinate.latitude,
-                longitude: location.coordinate.longitude,
-                horizontalAccuracy: location.horizontalAccuracy,
-                verticalAccuracy: location.verticalAccuracy,
-                altitude: location.altitude,
-                course: location.course,
-                speed: location.speed,
-                timestamp: assetDate,
-                localizedDate: TravelsDateTools.localizedDayString(for: assetDate, timeZoneIdentifier: nil),
-                source: .photo,
+
+            let copiedPhotoFilename: String
+            if mode == .photoAndLocation {
+                guard let photoURL = makePhotoURL() else {
+                    throw TravelsError.photoImportFailed("Unable to prepare photo storage.")
+                }
+                guard let data else {
+                    throw TravelsError.photoImportFailed("Unable to read image data.")
+                }
+                try data.write(to: photoURL, options: [.atomic])
+                copiedPhotoFilename = photoURL.lastPathComponent
+            } else {
+                copiedPhotoFilename = ""
+            }
+
+            let event = LocationEvent.photoImport(
+                metadata: metadata,
+                assetIdentifier: asset.localIdentifier,
                 note: note,
-                externalReference: asset.localIdentifier,
-                photoFilename: photoURL.lastPathComponent
+                mode: mode,
+                copiedPhotoFilename: copiedPhotoFilename
             )
             let eventID = try store.saveEvent(event)
             try reloadEvents()

@@ -8,6 +8,28 @@ import XCTest
 @testable import TravelsCore
 
 final class AppSettingsTests: XCTestCase {
+    func testFreshSettingsStoreDisablesAddressResolution() throws {
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let databaseURL = rootURL.appendingPathComponent("Travels.sqlite")
+        try FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: rootURL)
+        }
+
+        let store = try TravelsStore(url: databaseURL)
+        let settingsStore = SettingsStore(store: store)
+
+        let loaded = try settingsStore.load()
+        XCTAssertFalse(loaded.resolveAddresses)
+        XCTAssertFalse(loaded.resolveMissingAddresses)
+    }
+
+    func testDefaultSettingsDisableAddressResolution() {
+        let settings = AppSettings()
+        XCTAssertFalse(settings.resolveAddresses)
+        XCTAssertFalse(settings.resolveMissingAddresses)
+    }
+
     func testAlwaysOnHighPrecisionLocationDefaultsToOff() {
         XCTAssertFalse(AppSettings().alwaysOnHighPrecisionLocation)
     }

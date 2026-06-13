@@ -33,10 +33,13 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var pendingLocation: CLLocation?
     private nonisolated(unsafe) var locationProcessingTask: Task<Void, Never>?
     private nonisolated(unsafe) var hybridTrackingWatchdogTask: Task<Void, Never>?
+    private nonisolated(unsafe) var finalPreciseExitTask: Task<Void, Never>?
     private nonisolated(unsafe) var powerStateReevaluationTask: Task<Void, Never>?
     private var hybridTrackingWatchdog = HybridTrackingWatchdog()
     private var powerState = LocationTrackingPowerState()
     private var managerMode: ManagerMode = .stopped
+    private var isCompletingHybridPreciseExit = false
+    private var ignoreAutomaticLocationUpdatesUntil: Date?
 
     var onStatusMessage: ((String) -> Void)?
     var onTraceMessage: ((String) -> Void)?
@@ -72,6 +75,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         NotificationCenter.default.removeObserver(self)
         locationProcessingTask?.cancel()
         hybridTrackingWatchdogTask?.cancel()
+        finalPreciseExitTask?.cancel()
         powerStateReevaluationTask?.cancel()
     }
 
@@ -120,6 +124,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         pendingManualCapture = false
         pendingForcedStoppedCapture = false
         isPausing = false
+        cancelFinalPreciseExit()
         locationProcessingTask?.cancel()
         locationProcessingTask = nil
         cancelHybridTrackingWatchdog()
@@ -142,6 +147,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         guard settings.autoAddLocations else {
             pendingAlwaysAuthorization = false
             didScheduleAlwaysAuthorizationUpgrade = false
+            cancelFinalPreciseExit()
             cancelHybridTrackingWatchdog()
             powerStateReevaluationTask?.cancel()
             powerStateReevaluationTask = nil
@@ -182,6 +188,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         case .denied, .restricted:
             pendingAlwaysAuthorization = false
             didScheduleAlwaysAuthorizationUpgrade = false
+            cancelFinalPreciseExit()
             cancelHybridTrackingWatchdog()
             powerStateReevaluationTask?.cancel()
             powerStateReevaluationTask = nil
@@ -221,12 +228,14 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     private func syncTrackingMode() {
         guard settings.autoAddLocations else {
+            cancelFinalPreciseExit()
             cancelHybridTrackingWatchdog()
             stopTrackingManager()
             return
         }
 
         guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
+            cancelFinalPreciseExit()
             cancelHybridTrackingWatchdog()
             stopTrackingManager()
             return
@@ -239,6 +248,21 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         case .activeTracking, .maybeStopped:
             desiredMode = .activeTracking
         }
+
+        if desiredMode == .activeTracking, isCompletingHybridPreciseExit {
+            cancelFinalPreciseExit(keepActiveTracking: true)
+        } else if HybridPreciseLocationSamplingRules.shouldStartBoundedFinalPreciseExit(
+            currentManagerIsActive: managerMode == .activeTracking,
+            desiredIdleDetection: desiredMode == .idleDetection,
+            isHybridPolicy: trackingStateMachine.policy == .hybridAutomatic,
+            automaticLocationTrackingEnabled: settings.autoAddLocations,
+            hasLocationAuthorization: authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse,
+            isCompletingFinalPreciseExit: isCompletingHybridPreciseExit
+        ) {
+            beginFinalPreciseExit()
+            return
+        }
+
         applyTrackingMode(desiredMode)
     }
 
@@ -266,12 +290,25 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             locationManager.startUpdatingLocation()
             managerMode = .activeTracking
             updateLocationManagerConfiguration(for: mode)
+            traceLocationEvent("Entered precise location mode.")
+            if HybridPreciseLocationSamplingRules.shouldRequestImmediateAutomaticSample(
+                isEnteringActiveTracking: true,
+                automaticLocationTrackingEnabled: settings.autoAddLocations,
+                hasLocationAuthorization: authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse,
+                isCompletingFinalPreciseExit: isCompletingHybridPreciseExit
+            ) {
+                requestAutomaticLocationSample(
+                    reason: "Entered precise location mode; requesting an immediate automatic sample.",
+                    useCachedLocationFirst: false
+                )
+            }
             updateHybridTrackingWatchdog(for: mode)
             notifyTrackingModeChanged()
         }
     }
 
     private func stopTrackingManager() {
+        cancelFinalPreciseExit()
         cancelHybridTrackingWatchdog()
         locationManager.stopMonitoringSignificantLocationChanges()
         locationManager.stopUpdatingLocation()
@@ -316,7 +353,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
         isPausing = true
-        if settings.autoAddLocations {
+        if settings.autoAddLocations && !isCompletingHybridPreciseExit {
             locationManager.requestLocation()
         }
     }
@@ -344,6 +381,14 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return
         }
         traceLocationEvent("Core Location delivered \(locations.count) update(s); using the newest sample.")
+        if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, !pendingManualCapture {
+            if Date() <= ignoreUntil {
+                ignoreAutomaticLocationUpdatesUntil = nil
+                traceLocationEvent("Ignoring one late automatic sample after the bounded final precise exit completed.")
+                return
+            }
+            ignoreAutomaticLocationUpdatesUntil = nil
+        }
         guard settings.autoAddLocations || pendingManualCapture else {
             return
         }
@@ -404,6 +449,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private func updateHybridTrackingWatchdog(for mode: ManagerMode) {
         switch mode {
         case .activeTracking:
+            guard !isCompletingHybridPreciseExit else { return }
             startHybridTrackingWatchdogIfNeeded()
         default:
             cancelHybridTrackingWatchdog()
@@ -419,6 +465,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             cancelHybridTrackingWatchdog()
             return
         }
+        guard !isCompletingHybridPreciseExit else { return }
         guard managerMode == .activeTracking else { return }
         guard hybridTrackingWatchdogTask == nil else { return }
         hybridTrackingWatchdog.start(now: Date())
@@ -483,9 +530,82 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 enqueue(location: watchdogRecheckLocation(from: location))
                 continue
             }
-            traceLocationEvent("Hybrid watchdog fired; requesting a fresh location sample.")
-            locationManager.requestLocation()
+            requestAutomaticLocationSample(
+                reason: "Hybrid watchdog fired; requesting a fresh location sample.",
+                useCachedLocationFirst: false
+            )
         }
+    }
+
+    private func requestAutomaticLocationSample(reason: String, useCachedLocationFirst: Bool) {
+        guard settings.autoAddLocations else { return }
+        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else { return }
+        traceLocationEvent(reason)
+        if useCachedLocationFirst, let location = locationManager.location {
+            traceLocationEvent("Hybrid tracking is using the cached location sample first; the sample remains automatic.")
+            enqueue(location: watchdogRecheckLocation(from: location))
+            return
+        }
+        locationManager.requestLocation()
+    }
+
+    private func beginFinalPreciseExit() {
+        guard settings.autoAddLocations else { return }
+        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else { return }
+        guard trackingStateMachine.policy == .hybridAutomatic else { return }
+        guard managerMode == .activeTracking else { return }
+        guard !isCompletingHybridPreciseExit else { return }
+
+        isCompletingHybridPreciseExit = true
+        ignoreAutomaticLocationUpdatesUntil = nil
+        cancelHybridTrackingWatchdog()
+        traceLocationEvent("Hybrid final precise exit started; waiting up to 8s for one bounded automatic sample.")
+
+        if let location = locationManager.location {
+            traceLocationEvent("Hybrid final precise exit is using the cached location sample first; the sample remains automatic.")
+            enqueue(location: watchdogRecheckLocation(from: location))
+        } else {
+            requestAutomaticLocationSample(
+                reason: "Hybrid final precise exit requested a fresh automatic sample.",
+                useCachedLocationFirst: false
+            )
+        }
+
+        finalPreciseExitTask?.cancel()
+        finalPreciseExitTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: .seconds(8))
+            } catch {
+                return
+            }
+            await MainActor.run {
+                self?.completeFinalPreciseExit(afterTimeout: true)
+            }
+        }
+    }
+
+    private func cancelFinalPreciseExit(keepActiveTracking: Bool = false) {
+        guard isCompletingHybridPreciseExit || finalPreciseExitTask != nil else { return }
+        isCompletingHybridPreciseExit = false
+        finalPreciseExitTask?.cancel()
+        finalPreciseExitTask = nil
+        if !keepActiveTracking {
+            ignoreAutomaticLocationUpdatesUntil = nil
+        }
+    }
+
+    private func completeFinalPreciseExit(afterTimeout: Bool = false) {
+        guard isCompletingHybridPreciseExit else { return }
+        isCompletingHybridPreciseExit = false
+        finalPreciseExitTask?.cancel()
+        finalPreciseExitTask = nil
+        if afterTimeout {
+            ignoreAutomaticLocationUpdatesUntil = Date().addingTimeInterval(10)
+        }
+        traceLocationEvent(afterTimeout
+                           ? "Hybrid final precise exit timed out; returning to idle detection mode."
+                           : "Hybrid final precise exit completed; returning to idle detection mode.")
+        applyTrackingMode(.idleDetection)
     }
 
     private func watchdogRecheckLocation(from location: CLLocation) -> CLLocation {
@@ -523,6 +643,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let wasManualCapture = pendingManualCapture
         let forceStoppedCapture = pendingForcedStoppedCapture
         let forceCapture = pendingManualCapture
+        let wasCompletingFinalPreciseExit = isCompletingHybridPreciseExit
         pendingManualCapture = false
         pendingForcedStoppedCapture = false
         let sample = LocationSample(
@@ -534,10 +655,23 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             timestamp: location.timestamp
         )
 
+        var finalPreciseExitResumedMovement = false
+        if wasCompletingFinalPreciseExit, HybridPreciseLocationSamplingRules.sampleIndicatesMovementResumed(
+            sample: sample,
+            latestAcceptedEvent: latestAcceptedEvent,
+            stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
+            stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
+            minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
+        ) {
+            finalPreciseExitResumedMovement = true
+            traceLocationEvent("Final precise exit sample indicates movement resumed; staying in active tracking.")
+            cancelFinalPreciseExit(keepActiveTracking: true)
+        }
+
         traceLocationEvent("Received location sample speed=\(formatSpeed(sample.speed)) accuracy=\(formatDistance(sample.horizontalAccuracy)) manual=\(wasManualCapture) forcedStopped=\(forceStoppedCapture) trackedMode=\(trackingModeLabel())")
 
         let previousTrackingState = trackingStateMachine.state
-        if !wasManualCapture {
+        if !wasManualCapture && (!wasCompletingFinalPreciseExit || finalPreciseExitResumedMovement) {
             _ = trackingStateMachine.record(sample: sample)
             if let trackingStateMessage = trackingStateMessage(
                 previous: previousTrackingState,
@@ -559,6 +693,13 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent(locationDecisionMessage(for: decision, sample: sample, previous: latestAcceptedEvent, force: forceCapture, isPausing: isPausing))
 
         guard decision != .reject else {
+            if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
+                completeFinalPreciseExit()
+                if isPausing {
+                    isPausing = false
+                }
+                return
+            }
             if !wasManualCapture {
                 syncTrackingMode()
             }
@@ -581,6 +722,14 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             }
         } catch {
             onStatusMessage?(error.localizedDescription)
+        }
+
+        if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
+            completeFinalPreciseExit()
+            if isPausing {
+                isPausing = false
+            }
+            return
         }
 
         if !wasManualCapture {
