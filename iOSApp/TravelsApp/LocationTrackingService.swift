@@ -383,8 +383,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent("Core Location delivered \(locations.count) update(s); using the newest sample.")
         if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, !pendingManualCapture {
             if Date() <= ignoreUntil {
-                ignoreAutomaticLocationUpdatesUntil = nil
-                traceLocationEvent("Ignoring one late automatic sample after the bounded final precise exit completed.")
+                traceLocationEvent("Ignoring automatic location sample during post-precise-exit cooldown.")
                 return
             }
             ignoreAutomaticLocationUpdatesUntil = nil
@@ -562,8 +561,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent("Hybrid final precise exit started; waiting up to 8s for one bounded automatic sample.")
 
         if let location = locationManager.location {
-            traceLocationEvent("Hybrid final precise exit is using the cached location sample first; the sample remains automatic.")
-            enqueue(location: watchdogRecheckLocation(from: location))
+            traceLocationEvent("Hybrid final precise exit is evaluating the cached location sample first; the sample remains automatic.")
+            enqueue(location: location)
         } else {
             requestAutomaticLocationSample(
                 reason: "Hybrid final precise exit requested a fresh automatic sample.",
@@ -599,9 +598,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         isCompletingHybridPreciseExit = false
         finalPreciseExitTask?.cancel()
         finalPreciseExitTask = nil
-        if afterTimeout {
-            ignoreAutomaticLocationUpdatesUntil = Date().addingTimeInterval(10)
-        }
+        ignoreAutomaticLocationUpdatesUntil = Date().addingTimeInterval(10)
         traceLocationEvent(afterTimeout
                            ? "Hybrid final precise exit timed out; returning to idle detection mode."
                            : "Hybrid final precise exit completed; returning to idle detection mode.")
@@ -656,22 +653,43 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         )
 
         var finalPreciseExitResumedMovement = false
-        if wasCompletingFinalPreciseExit, HybridPreciseLocationSamplingRules.sampleIndicatesMovementResumed(
-            sample: sample,
-            latestAcceptedEvent: latestAcceptedEvent,
-            stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
-            stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
-            minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
-        ) {
-            finalPreciseExitResumedMovement = true
-            traceLocationEvent("Final precise exit sample indicates movement resumed; staying in active tracking.")
-            cancelFinalPreciseExit(keepActiveTracking: true)
+        if wasCompletingFinalPreciseExit {
+            traceLocationEvent("Final precise exit sample received.")
+            let assessment = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+                sample: sample,
+                latestAcceptedEvent: latestAcceptedEvent,
+                stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
+                stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
+                minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
+            )
+            switch assessment {
+            case .movementResumed(let reason):
+                finalPreciseExitResumedMovement = true
+                traceLocationEvent("Final precise exit sample proves movement resumed (\(reason)); staying in active tracking.")
+                cancelFinalPreciseExit(keepActiveTracking: true)
+            case .confirmsStop(let reason):
+                traceLocationEvent("Final precise exit sample accepted as stop confirmation (\(reason)).")
+            case .rejects(let reason):
+                traceLocationEvent("Final precise exit sample rejected as stale/low-accuracy/jitter (\(reason)); completing final precise exit.")
+                completeFinalPreciseExit()
+                if isPausing {
+                    isPausing = false
+                }
+                return
+            }
         }
 
         traceLocationEvent("Received location sample speed=\(formatSpeed(sample.speed)) accuracy=\(formatDistance(sample.horizontalAccuracy)) manual=\(wasManualCapture) forcedStopped=\(forceStoppedCapture) trackedMode=\(trackingModeLabel())")
 
         let previousTrackingState = trackingStateMachine.state
         if !wasManualCapture && (!wasCompletingFinalPreciseExit || finalPreciseExitResumedMovement) {
+            if case .idleDetection = previousTrackingState {
+                if trackingStateMachine.idleDetectionSampleIndicatesMovement(sample) {
+                    traceLocationEvent("Idle detection sample qualifies for active tracking.")
+                } else {
+                    traceLocationEvent("Idle detection sample does not qualify for active tracking.")
+                }
+            }
             _ = trackingStateMachine.record(sample: sample)
             if let trackingStateMessage = trackingStateMessage(
                 previous: previousTrackingState,

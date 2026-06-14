@@ -108,7 +108,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                     longitude: -118.0,
                     horizontalAccuracy: 10,
                     course: -1,
-                    speed: 1.2,
+                    speed: 2.0,
                     timestamp: Date(timeIntervalSinceReferenceDate: 1010)
                 ),
                 latestAcceptedEvent: previous,
@@ -151,5 +151,89 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 minimumUsableHorizontalAccuracyMeters: 100
             )
         )
+    }
+
+    func testFinalPreciseExitSampleRequiresFreshUsableMaterialMovement() {
+        let previous = LocationEvent(
+            id: 1,
+            latitude: 33.0,
+            longitude: -118.0,
+            horizontalAccuracy: 10,
+            verticalAccuracy: 10,
+            altitude: 0,
+            course: -1,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000),
+            source: .locationServices
+        )
+        let now = Date(timeIntervalSinceReferenceDate: 1020)
+
+        let nearStationary = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+            sample: LocationSample(
+                latitude: 33.0001,
+                longitude: -118.0001,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: 0.2,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            latestAcceptedEvent: previous,
+            stationarySpeedThreshold: 0.7,
+            stationaryRadiusMeters: 50,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: now
+        )
+        XCTAssertFalse(nearStationary.indicatesMovementResumed)
+
+        let stale = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+            sample: LocationSample(
+                latitude: 33.002,
+                longitude: -118.002,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: 3,
+                timestamp: Date(timeIntervalSinceReferenceDate: 900)
+            ),
+            latestAcceptedEvent: previous,
+            stationarySpeedThreshold: 0.7,
+            stationaryRadiusMeters: 50,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: now
+        )
+        XCTAssertEqual(stale, .rejects(reason: "sample is stale"))
+
+        let lowAccuracy = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+            sample: LocationSample(
+                latitude: 33.002,
+                longitude: -118.002,
+                horizontalAccuracy: 250,
+                course: -1,
+                speed: 3,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            latestAcceptedEvent: previous,
+            stationarySpeedThreshold: 0.7,
+            stationaryRadiusMeters: 50,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: now
+        )
+        XCTAssertEqual(lowAccuracy, .rejects(reason: "horizontal accuracy is too low"))
+
+        let realMovement = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+            sample: LocationSample(
+                latitude: 33.002,
+                longitude: -118.002,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: -1,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            latestAcceptedEvent: previous,
+            stationarySpeedThreshold: 0.7,
+            stationaryRadiusMeters: 50,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: now
+        )
+        XCTAssertTrue(realMovement.indicatesMovementResumed)
     }
 }
