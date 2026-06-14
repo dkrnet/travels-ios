@@ -30,8 +30,13 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Always-On High Precision Location", isOn: $model.settings.alwaysOnHighPrecisionLocation)
-                        Text("Keeps high-accuracy location tracking active continuously. This improves route fidelity but may use more battery and may cause iOS to show the location indicator more often.")
+                        Picker("Precise Location Mode", selection: $model.settings.preciseLocationMode) {
+                            ForEach(PreciseLocationMode.allCases, id: \.self) { mode in
+                                Text(mode.displayName).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        Text("Automatic uses precise location only while movement is being tracked. Always On keeps precise tracking active while automatic tracking is enabled. Always Off uses lower-power monitoring plus manual location capture.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }

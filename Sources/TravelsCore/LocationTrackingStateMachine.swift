@@ -8,6 +8,7 @@ import Foundation
 public enum LocationTrackingPolicy: String, Codable, CaseIterable, Sendable {
     case hybridAutomatic
     case alwaysOnHighPrecision
+    case alwaysOffHighPrecision
 }
 
 public struct LocationTrackingThresholds: Equatable, Sendable {
@@ -76,9 +77,14 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         policy = newPolicy
 
         switch (newPolicy, state) {
-        case (.alwaysOnHighPrecision, .idleDetection):
+        case (.alwaysOnHighPrecision, .idleDetection),
+             (.alwaysOnHighPrecision, .maybeStopped):
             state = .activeTracking
             return .enterActiveTracking
+        case (.alwaysOffHighPrecision, .activeTracking),
+             (.alwaysOffHighPrecision, .maybeStopped):
+            state = .idleDetection
+            return .enterIdleDetection
         case (.hybridAutomatic, .maybeStopped(let anchor, let samples)):
             if shouldStop(anchor: anchor, samples: samples) {
                 state = .idleDetection
@@ -100,6 +106,9 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
 
         switch state {
         case .idleDetection:
+            guard policy == .hybridAutomatic else {
+                return .none
+            }
             // BUGFIX: idle detection can receive late or cleanup Core Location samples immediately
             // after precise mode exits. Require real movement evidence before re-entering active mode.
             guard idleDetectionSampleIndicatesMovement(sample) else {

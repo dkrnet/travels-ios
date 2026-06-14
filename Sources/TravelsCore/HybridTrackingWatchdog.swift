@@ -33,7 +33,7 @@ public struct HybridTrackingWatchdog: Equatable, Sendable {
 
     public mutating func update(policy newPolicy: LocationTrackingPolicy) {
         policy = newPolicy
-        if newPolicy == .alwaysOnHighPrecision {
+        if newPolicy != .hybridAutomatic {
             cancel()
         }
     }

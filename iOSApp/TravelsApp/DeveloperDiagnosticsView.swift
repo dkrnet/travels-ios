@@ -42,7 +42,7 @@ struct DeveloperDiagnosticsView: View {
                     LabeledContent("Resolve Missing", value: model.settings.resolveMissingAddresses ? "On" : "Off")
                     LabeledContent("Demo Data", value: model.settings.includeDemoData ? "On" : "Off")
                     LabeledContent("Background", value: model.settings.backgroundLocationEnabled ? "On" : "Off")
-                    LabeledContent("Always-On High Precision", value: model.settings.alwaysOnHighPrecisionLocation ? "On" : "Off")
+                    LabeledContent("Precise Location Mode", value: model.settings.preciseLocationMode.displayName)
                 }
 
                 Section("Actions") {

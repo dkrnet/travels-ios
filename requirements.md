@@ -182,7 +182,7 @@ The app shall persist user settings including at least:
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
 - Preferred initial view, map or list.
-- Always-On High Precision Location enabled/disabled.
+- Precise Location Mode: Automatic, Always On, or Always Off.
 - Powered update distance threshold.
 - Battery update distance threshold.
 - Preferred measurement system.
@@ -217,21 +217,27 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall allow a user to add the current location manually for today's selected date.
 - The add-current-location button shall be enabled only for today's selected date.
 - When the add-current-location function is unavailable, disabled, or unsafe to perform, the Add button shall be visibly disabled or grayed out rather than appearing actionable. This includes, at minimum, non-today selected dates, unavailable location services, missing required permission, an active privacy lock state that blocks interaction, or any internal disabled state that prevents the function from running.
-- The app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
-- The app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval, unless Always-On High Precision Location is enabled.
-- The app shall support an Always-On High Precision Location setting that keeps active high-fidelity tracking enabled continuously and prevents automatic downgrading back to significant-location-change monitoring while the setting is on.
+- The app shall support a Precise Location Mode setting with Automatic, Always On, and Always Off choices.
+- New installs shall default Precise Location Mode to Automatic.
+- App settings decoded from the legacy Always-On High Precision Location boolean shall migrate false or missing values to Automatic and true values to Always On.
+- In Automatic Precise Location Mode, the app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
+- In Automatic Precise Location Mode, the app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval.
+- In Always On Precise Location Mode, when Automatic Location Tracking is enabled and location authorization allows tracking, the app shall keep active high-fidelity tracking enabled continuously and shall not automatically downgrade back to significant-location-change monitoring.
+- In Always Off Precise Location Mode, when Automatic Location Tracking is enabled, the app shall use idle/significant-change monitoring only and shall not automatically enter continuous precise/high-accuracy tracking because of movement detection or automatic location samples.
+- Always Off Precise Location Mode shall not disable Automatic Location Tracking entirely; it disables automatic precise/high-accuracy escalation. Manual Add Current Location and other manual user-triggered current-location captures shall remain available when otherwise permitted.
 - Automatic hybrid tracking may miss the very beginning of a trip because significant-location-change monitoring is not immediate.
-- Always-On High Precision Location shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
-- The Always-On High Precision Location setting shall be separate from any future manual start/stop tracking feature.
-- While hybrid automatic tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
-- When hybrid automatic tracking enters active high-precision mode, the app shall immediately request one automatic location sample so the first precise position is available without waiting for the next scheduled recheck.
-- When hybrid automatic tracking is about to return from active high-precision mode to idle detection because the stationary window has been satisfied, the app shall make one bounded best-effort automatic sample before leaving precise mode.
+- Always On Precise Location Mode shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
+- The Precise Location Mode setting shall be separate from any future manual start/stop tracking feature.
+- While Automatic Precise Location Mode hybrid tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
+- When Automatic Precise Location Mode hybrid tracking enters active high-precision mode, the app shall immediately request one automatic location sample so the first precise position is available without waiting for the next scheduled recheck.
+- When Automatic Precise Location Mode hybrid tracking is about to return from active high-precision mode to idle detection because the stationary window has been satisfied, the app shall make one bounded best-effort automatic sample before leaving precise mode.
 - The immediate entry sample and bounded final-exit sample shall be automatic tracking samples rather than manual user captures, and the bounded final-exit sample shall not keep precise mode active indefinitely.
 - A bounded final-exit sample shall be treated as a confirmation or cleanup sample, not as ordinary movement evidence. It shall cancel final exit and keep high-precision tracking active only when the sample is fresh, accurate enough, newer than the stationary reference when distance is used, and clearly indicates movement by meaningful speed or material distance from the stationary reference.
 - After a bounded final precise exit completes, the app shall ignore automatic non-manual Core Location samples for a short cooldown window so late final-exit or cached updates cannot immediately re-enter high-precision tracking. Manual captures shall not be suppressed by this cooldown.
 - While in idle detection, automatic samples shall re-enter high-precision active tracking only when they indicate real movement, such as meaningful speed or material distance from the stationary reference, not merely because an automatic sample arrived.
-- The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or the app switches to Always-On High Precision Location.
-- Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always-On High Precision Location or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
+- The hybrid watchdog, immediate precise-entry sample, and bounded final precise-exit sample shall apply only to Automatic Precise Location Mode and shall not run in Always On or Always Off Precise Location Mode.
+- The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or Precise Location Mode switches away from Automatic.
+- Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always On Precise Location Mode, switch Always Off Precise Location Mode into active high-fidelity tracking, or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
 - Automatic foreground location capture shall respect the automatic location setting.
 - Background location capture shall respect the background location setting and required iOS permissions.
 - The app shall apply distance, recency, and accuracy filtering to avoid noisy event spam.

@@ -17,10 +17,10 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
 - Date navigation with previous-day context for continuity
-- Automatic and manual location capture, including hybrid significant-change tracking with an optional always-on high precision mode
+- Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
 - A live `Precise Location Active` badge on the map and list screens while high-precision tracking is running
 - Background-location option with separate powered and battery distance thresholds
-- Hybrid tracking immediately requests a precise sample when it enters active mode, periodically rechecks Core Location when movement quiets down, and makes one bounded final precise sample before returning to idle detection; battery/low-power changes re-evaluate the active configuration without changing the Always-On policy
+- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, periodically rechecks Core Location when movement quiets down, and makes one bounded final precise sample before returning to idle detection; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
 - Per-event trip endpoint overrides for refining automatic trip detection

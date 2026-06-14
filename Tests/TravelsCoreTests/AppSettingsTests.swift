@@ -30,11 +30,11 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.resolveMissingAddresses)
     }
 
-    func testAlwaysOnHighPrecisionLocationDefaultsToOff() {
-        XCTAssertFalse(AppSettings().alwaysOnHighPrecisionLocation)
+    func testPreciseLocationModeDefaultsToAutomatic() {
+        XCTAssertEqual(AppSettings().preciseLocationMode, .automatic)
     }
 
-    func testAlwaysOnHighPrecisionLocationPersistsThroughSettingsStore() throws {
+    func testPreciseLocationModePersistsThroughSettingsStore() throws {
         let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let databaseURL = rootURL.appendingPathComponent("Travels.sqlite")
         try FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: true)
@@ -45,11 +45,48 @@ final class AppSettingsTests: XCTestCase {
         let store = try TravelsStore(url: databaseURL)
         let settingsStore = SettingsStore(store: store)
         var settings = AppSettings()
-        settings.alwaysOnHighPrecisionLocation = true
+        settings.preciseLocationMode = .alwaysOff
 
         try settingsStore.save(settings)
 
         let reloaded = try settingsStore.load()
-        XCTAssertTrue(reloaded.alwaysOnHighPrecisionLocation)
+        XCTAssertEqual(reloaded.preciseLocationMode, .alwaysOff)
+    }
+
+    func testMissingPreciseLocationModeDecodesAsAutomatic() throws {
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data("{}".utf8))
+
+        XCTAssertEqual(settings.preciseLocationMode, .automatic)
+    }
+
+    func testLegacyAlwaysOnHighPrecisionFalseMigratesToAutomatic() throws {
+        let json = #"{"alwaysOnHighPrecisionLocation":false}"#
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data(json.utf8))
+
+        XCTAssertEqual(settings.preciseLocationMode, .automatic)
+    }
+
+    func testLegacyAlwaysOnHighPrecisionTrueMigratesToAlwaysOn() throws {
+        let json = #"{"alwaysOnHighPrecisionLocation":true}"#
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data(json.utf8))
+
+        XCTAssertEqual(settings.preciseLocationMode, .alwaysOn)
+    }
+
+    func testPreciseLocationModeRawValuesDecode() throws {
+        let automatic = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"preciseLocationMode":"automatic"}"#.utf8))
+        let alwaysOn = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"preciseLocationMode":"alwaysOn"}"#.utf8))
+        let alwaysOff = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"preciseLocationMode":"alwaysOff"}"#.utf8))
+
+        XCTAssertEqual(automatic.preciseLocationMode, .automatic)
+        XCTAssertEqual(alwaysOn.preciseLocationMode, .alwaysOn)
+        XCTAssertEqual(alwaysOff.preciseLocationMode, .alwaysOff)
+    }
+
+    func testUnknownPreciseLocationModeFallsBackToAutomatic() throws {
+        let json = #"{"preciseLocationMode":"nearbyThunderstorm"}"#
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data(json.utf8))
+
+        XCTAssertEqual(settings.preciseLocationMode, .automatic)
     }
 }

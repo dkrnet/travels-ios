@@ -83,7 +83,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         self.store = store
         self.settings = settings
         self.latestAcceptedEvent = latestEvent
-        let policy: LocationTrackingPolicy = settings.alwaysOnHighPrecisionLocation ? .alwaysOnHighPrecision : .hybridAutomatic
+        let policy = settings.preciseLocationMode.locationTrackingPolicy
         self.trackingStateMachine = LocationTrackingStateMachine(policy: policy)
         self.hybridTrackingWatchdog.update(policy: policy)
         self.powerState = currentPowerState()
@@ -111,7 +111,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func update(settings: AppSettings) {
         self.settings = settings
-        let policy: LocationTrackingPolicy = settings.alwaysOnHighPrecisionLocation ? .alwaysOnHighPrecision : .hybridAutomatic
+        let policy = settings.preciseLocationMode.locationTrackingPolicy
         _ = trackingStateMachine.update(policy: policy)
         hybridTrackingWatchdog.update(policy: policy)
         powerState = currentPowerState()
@@ -242,11 +242,18 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         }
 
         let desiredMode: ManagerMode
-        switch trackingStateMachine.state {
-        case .idleDetection:
-            desiredMode = .idleDetection
-        case .activeTracking, .maybeStopped:
+        switch trackingStateMachine.policy {
+        case .alwaysOnHighPrecision:
             desiredMode = .activeTracking
+        case .alwaysOffHighPrecision:
+            desiredMode = .idleDetection
+        case .hybridAutomatic:
+            switch trackingStateMachine.state {
+            case .idleDetection:
+                desiredMode = .idleDetection
+            case .activeTracking, .maybeStopped:
+                desiredMode = .activeTracking
+            }
         }
 
         if desiredMode == .activeTracking, isCompletingHybridPreciseExit {
@@ -296,11 +303,13 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 automaticLocationTrackingEnabled: settings.autoAddLocations,
                 hasLocationAuthorization: authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse,
                 isCompletingFinalPreciseExit: isCompletingHybridPreciseExit
-            ) {
+            ), trackingStateMachine.policy == .hybridAutomatic {
                 requestAutomaticLocationSample(
                     reason: "Entered precise location mode; requesting an immediate automatic sample.",
                     useCachedLocationFirst: false
                 )
+            } else if trackingStateMachine.policy == .alwaysOffHighPrecision {
+                traceLocationEvent("Precise location mode entry skipped because Precise Location Mode is Always Off.")
             }
             updateHybridTrackingWatchdog(for: mode)
             notifyTrackingModeChanged()
@@ -539,6 +548,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private func requestAutomaticLocationSample(reason: String, useCachedLocationFirst: Bool) {
         guard settings.autoAddLocations else { return }
         guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else { return }
+        guard trackingStateMachine.policy != .alwaysOffHighPrecision else {
+            traceLocationEvent("Automatic location sample skipped because Precise Location Mode is Always Off.")
+            return
+        }
         traceLocationEvent(reason)
         if useCachedLocationFirst, let location = locationManager.location {
             traceLocationEvent("Hybrid tracking is using the cached location sample first; the sample remains automatic.")
@@ -684,7 +697,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let previousTrackingState = trackingStateMachine.state
         if !wasManualCapture && (!wasCompletingFinalPreciseExit || finalPreciseExitResumedMovement) {
             if case .idleDetection = previousTrackingState {
-                if trackingStateMachine.idleDetectionSampleIndicatesMovement(sample) {
+                if trackingStateMachine.policy == .alwaysOffHighPrecision {
+                    traceLocationEvent("Idle detection sample ignored for active tracking because Precise Location Mode is Always Off.")
+                } else if trackingStateMachine.idleDetectionSampleIndicatesMovement(sample) {
                     traceLocationEvent("Idle detection sample qualifies for active tracking.")
                 } else {
                     traceLocationEvent("Idle detection sample does not qualify for active tracking.")

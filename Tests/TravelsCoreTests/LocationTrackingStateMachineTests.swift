@@ -36,6 +36,12 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTAssertTrue(machine.isHighPrecisionTrackingActive)
     }
 
+    func testAlwaysOffPolicyDefaultsToIdleDetection() {
+        let machine = LocationTrackingStateMachine(policy: .alwaysOffHighPrecision)
+        XCTAssertEqual(machine.state, .idleDetection)
+        XCTAssertFalse(machine.isHighPrecisionTrackingActive)
+    }
+
     func testSignificantLocationChangeTransitionsFromIdleToActiveTracking() {
         var machine = LocationTrackingStateMachine()
 
@@ -44,6 +50,16 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTAssertEqual(transition, .enterActiveTracking)
         XCTAssertEqual(machine.state, .activeTracking)
         XCTAssertTrue(machine.isHighPrecisionTrackingActive)
+    }
+
+    func testAlwaysOffPolicyDoesNotEnterActiveTrackingForMovementSample() {
+        var machine = LocationTrackingStateMachine(policy: .alwaysOffHighPrecision)
+
+        let transition = machine.record(sample: sample(at: 1, speed: 5))
+
+        XCTAssertEqual(transition, .none)
+        XCTAssertEqual(machine.state, .idleDetection)
+        XCTAssertFalse(machine.isHighPrecisionTrackingActive)
     }
 
     func testIdleDetectionDoesNotEnterActiveTrackingForStationaryAutomaticSamples() {
@@ -181,6 +197,27 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         _ = machine.record(sample: sample(at: 75, speed: 0))
 
         let transition = machine.update(policy: .hybridAutomatic)
+
+        XCTAssertEqual(transition, .enterIdleDetection)
+        XCTAssertEqual(machine.state, .idleDetection)
+        XCTAssertFalse(machine.isHighPrecisionTrackingActive)
+    }
+
+    func testTurningAlwaysOnToAlwaysOffReturnsToIdleDetection() {
+        var machine = LocationTrackingStateMachine(policy: .alwaysOnHighPrecision)
+
+        let transition = machine.update(policy: .alwaysOffHighPrecision)
+
+        XCTAssertEqual(transition, .enterIdleDetection)
+        XCTAssertEqual(machine.state, .idleDetection)
+        XCTAssertFalse(machine.isHighPrecisionTrackingActive)
+    }
+
+    func testTurningHybridActiveTrackingToAlwaysOffReturnsToIdleDetection() {
+        var machine = LocationTrackingStateMachine()
+        _ = machine.record(sample: sample(at: 1, speed: 3))
+
+        let transition = machine.update(policy: .alwaysOffHighPrecision)
 
         XCTAssertEqual(transition, .enterIdleDetection)
         XCTAssertEqual(machine.state, .idleDetection)
