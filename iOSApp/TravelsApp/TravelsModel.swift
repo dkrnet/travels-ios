@@ -22,6 +22,7 @@ final class TravelsModel: ObservableObject {
     @Published var isListView = false
     @Published var isUnlocked = true
     @Published var isHighPrecisionLocationActive = false
+    @Published var adaptiveLocationDistanceMeters: Double = AdaptiveLocationDistanceCalculator().state.effectiveDistanceMeters
     @Published private(set) var detectedTrips: [DetectedTrip] = []
     @Published private(set) var selectedMapDisplay: MapDisplaySelection = .all
     @Published var statusMessage: String?
@@ -38,6 +39,8 @@ final class TravelsModel: ObservableObject {
     var mapVisibleEventIDs: [Int64] = []
     var listVisibleEventIDs: [Int64] = []
     @Published var listScrollTargetEventID: Int64?
+    @Published var listScrollTargetAnchor: UnitPoint = .top
+    @Published var listScrollTargetsContentTop = false
     @Published var listScrollCommandID = UUID()
     @Published var mapFocusEventIDs: [Int64]?
     @Published var mapCameraCommandID = UUID()
@@ -83,10 +86,17 @@ final class TravelsModel: ObservableObject {
                 guard let self else { return }
                 self.locationAuthorizationMessage = message
             }
-            locationService.onTrackingModeChanged = { [weak self] isActive in
+            locationService.onTrackingModeChanged = { [weak self] isActive, context in
                 guard let self else { return }
                 self.isHighPrecisionLocationActive = isActive
-                self.appendDiagnosticsLog(isActive ? "[Location] Entered precise location mode" : "[Location] Exited precise location mode")
+                self.appendDiagnosticsLog(
+                    isActive
+                    ? "[Location] Entered precise location mode; \(context)"
+                    : "[Location] Exited precise location mode; \(context)"
+                )
+            }
+            locationService.onAdaptiveDistanceChanged = { [weak self] distance in
+                self?.adaptiveLocationDistanceMeters = distance
             }
             locationService.onTrackedEvent = { [weak self] in
                 guard let self else { return }
@@ -180,6 +190,8 @@ final class TravelsModel: ObservableObject {
             mapVisibleEventIDs = []
             listVisibleEventIDs = []
             listScrollTargetEventID = nil
+            listScrollTargetAnchor = .top
+            listScrollTargetsContentTop = false
             mapFocusEventIDs = nil
         } catch {
             statusMessage = error.localizedDescription
@@ -314,8 +326,17 @@ final class TravelsModel: ObservableObject {
     }
 
     func prepareListScrollTargetFromMap() {
+        if case .all = selectedMapDisplay {
+            requestListScrollToContentTop()
+            return
+        }
+
         let visibleIDs = currentMapVisibleEventIDs()
-        requestListScrollTarget(visibleIDs.first ?? mapVisibleEventIDs.first ?? events.first?.id)
+        if let targetEventID = eventIDClosestToMapCenter()
+            ?? visibleIDs.first
+            ?? mapVisibleEventIDs.first {
+            requestListScrollTarget(targetEventID, anchor: .center)
+        }
     }
 
     func resetMapZoomToFullDay() {
@@ -330,13 +351,19 @@ final class TravelsModel: ObservableObject {
     }
 
     func scrollListToTop() {
-        // BUGFIX: scroll relative to the currently displayed subset so trip/filter views do not target hidden rows.
-        requestListScrollTarget(displayedEvents.first?.id)
+        requestListScrollToContentTop()
+    }
+
+    private func requestListScrollToContentTop() {
+        listScrollTargetEventID = nil
+        listScrollTargetAnchor = .top
+        listScrollTargetsContentTop = true
+        listScrollCommandID = UUID()
     }
 
     func scrollListToBottom() {
         // BUGFIX: scroll relative to the currently displayed subset so the bottom button reaches the last visible row.
-        requestListScrollTarget(displayedEvents.last?.id)
+        requestListScrollTarget(displayedEvents.last?.id, anchor: .bottom)
     }
 
     func addCurrentLocation(forceStopped: Bool = false) {
@@ -347,6 +374,8 @@ final class TravelsModel: ObservableObject {
         selectedMapDisplay = .all
         mapFocusEventIDs = nil
         listScrollTargetEventID = nil
+        listScrollTargetAnchor = .top
+        listScrollTargetsContentTop = false
         if !isListView {
             mapCameraCommandID = UUID()
         }
@@ -357,6 +386,8 @@ final class TravelsModel: ObservableObject {
         selectedMapDisplay = .stoppedOnly
         mapFocusEventIDs = nil
         listScrollTargetEventID = nil
+        listScrollTargetAnchor = .top
+        listScrollTargetsContentTop = false
         if !isListView {
             mapCameraCommandID = UUID()
         }
@@ -450,8 +481,10 @@ final class TravelsModel: ObservableObject {
         events.contains(where: { isStoppedLocationEvent($0.event) })
     }
 
-    func requestListScrollTarget(_ eventID: Int64?) {
+    func requestListScrollTarget(_ eventID: Int64?, anchor: UnitPoint = .center) {
         listScrollTargetEventID = eventID
+        listScrollTargetAnchor = anchor
+        listScrollTargetsContentTop = false
         listScrollCommandID = UUID()
     }
 
@@ -793,6 +826,7 @@ final class TravelsModel: ObservableObject {
 
     func clearAddressResolutionLog() {
         addressResolutionLog.removeAll()
+        clearMaintenanceLogFile()
     }
 #endif
 
@@ -1174,11 +1208,24 @@ final class TravelsModel: ObservableObject {
 
     private func mapVisibleEventIDs(in region: MKCoordinateRegion?) -> [Int64] {
         guard let region else { return mapVisibleEventIDs }
-        return events.compactMap { detail -> Int64? in
+        return displayedEvents.compactMap { detail -> Int64? in
             guard let id = detail.id else { return nil }
             guard isCoordinate(detail.coordinate, inside: region) else { return nil }
             return id
         }
+    }
+
+    private func eventIDClosestToMapCenter() -> Int64? {
+        guard let region = mapCameraRegion else { return nil }
+        return displayedEvents
+            .compactMap { detail -> (id: Int64, distanceSquared: Double)? in
+                guard let id = detail.id else { return nil }
+                let latitudeDelta = detail.coordinate.latitude - region.center.latitude
+                let longitudeDelta = detail.coordinate.longitude - region.center.longitude
+                return (id, latitudeDelta * latitudeDelta + longitudeDelta * longitudeDelta)
+            }
+            .min { lhs, rhs in lhs.distanceSquared < rhs.distanceSquared }?
+            .id
     }
 
     private func isCoordinate(_ coordinate: CLLocationCoordinate2D, inside region: MKCoordinateRegion) -> Bool {
@@ -1235,10 +1282,45 @@ final class TravelsModel: ObservableObject {
         if addressResolutionLog.count > 100 {
             addressResolutionLog.removeFirst(addressResolutionLog.count - 100)
         }
+        appendMaintenanceLogEntry(entry)
     }
 
     func appendDiagnosticsLog(_ message: String) {
         appendAddressResolutionLog(message)
+    }
+
+    private var maintenanceLogURL: URL? {
+        appSupportURL?.appendingPathComponent("Maintenance.log", isDirectory: false)
+    }
+
+    private func appendMaintenanceLogEntry(_ entry: String) {
+        guard let url = maintenanceLogURL else { return }
+        do {
+            let data = Data((entry + "\n").utf8)
+            if FileManager.default.fileExists(atPath: url.path) {
+                let handle = try FileHandle(forWritingTo: url)
+                defer {
+                    try? handle.close()
+                }
+                try handle.seekToEnd()
+                try handle.write(contentsOf: data)
+            } else {
+                try data.write(to: url, options: [.atomic])
+            }
+        } catch {
+            // Diagnostics logging must never interrupt app startup, tracking, or maintenance work.
+        }
+    }
+
+    private func clearMaintenanceLogFile() {
+        guard let url = maintenanceLogURL else { return }
+        do {
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
+            }
+        } catch {
+            // Clearing the visible diagnostics log should not fail because the backing file could not be removed.
+        }
     }
 }
 

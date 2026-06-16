@@ -3,6 +3,49 @@ import XCTest
 @testable import TravelsCore
 
 final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
+    func testInitialActiveTrackingGuardStaysActiveUntilFirstRecheckOrMinimumInterval() {
+        let enteredAt = Date(timeIntervalSinceReferenceDate: 100)
+
+        let waiting = HybridPreciseLocationSamplingRules.initialActiveTrackingGuardStatus(
+            enteredAt: enteredAt,
+            firstWatchdogRecheckCompleted: false,
+            minimumActiveInterval: 90,
+            now: enteredAt.addingTimeInterval(30)
+        )
+        XCTAssertTrue(waiting.isActive)
+        XCTAssertEqual(waiting.reason, "waiting for first watchdog recheck or minimum active interval")
+
+        let afterRecheck = HybridPreciseLocationSamplingRules.initialActiveTrackingGuardStatus(
+            enteredAt: enteredAt,
+            firstWatchdogRecheckCompleted: true,
+            minimumActiveInterval: 90,
+            now: enteredAt.addingTimeInterval(30)
+        )
+        XCTAssertFalse(afterRecheck.isActive)
+        XCTAssertEqual(afterRecheck.reason, "first watchdog recheck completed")
+
+        let afterMinimumInterval = HybridPreciseLocationSamplingRules.initialActiveTrackingGuardStatus(
+            enteredAt: enteredAt,
+            firstWatchdogRecheckCompleted: false,
+            minimumActiveInterval: 90,
+            now: enteredAt.addingTimeInterval(90)
+        )
+        XCTAssertFalse(afterMinimumInterval.isActive)
+        XCTAssertEqual(afterMinimumInterval.reason, "minimum active interval elapsed")
+    }
+
+    func testInitialActiveTrackingGuardIsInactiveWhenNotArmed() {
+        let status = HybridPreciseLocationSamplingRules.initialActiveTrackingGuardStatus(
+            enteredAt: nil,
+            firstWatchdogRecheckCompleted: false,
+            minimumActiveInterval: 90,
+            now: Date(timeIntervalSinceReferenceDate: 100)
+        )
+
+        XCTAssertFalse(status.isActive)
+        XCTAssertEqual(status.reason, "initial active tracking guard is not armed")
+    }
+
     func testImmediateAutomaticSampleIsRequestedOnlyForRealEntryTransitions() {
         XCTAssertTrue(
             HybridPreciseLocationSamplingRules.shouldRequestImmediateAutomaticSample(
@@ -235,5 +278,135 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
             now: now
         )
         XCTAssertTrue(realMovement.indicatesMovementResumed)
+    }
+
+    func testPostExitGuardSuppressesAmbiguousImmediateSamples() {
+        let exitSample = LocationSample(
+            latitude: 33.0,
+            longitude: -118.0,
+            horizontalAccuracy: 10,
+            course: -1,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
+        )
+        let assessment = HybridPreciseLocationSamplingRules.postExitPreciseReentryAssessment(
+            sample: LocationSample(
+                latitude: 33.0001,
+                longitude: -118.0001,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: -1,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            exitTimestamp: Date(timeIntervalSinceReferenceDate: 1005),
+            finalExitSample: exitSample,
+            cooldown: 180,
+            activeTrackingMinimumDistanceMeters: 50,
+            stationarySpeedThreshold: 0.7,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1020)
+        )
+
+        XCTAssertFalse(assessment.allowsReentry)
+    }
+
+    func testPostExitGuardAllowsReentryAfterCooldownExpires() {
+        let assessment = HybridPreciseLocationSamplingRules.postExitPreciseReentryAssessment(
+            sample: LocationSample(
+                latitude: 33.0,
+                longitude: -118.0,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: -1,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1200)
+            ),
+            exitTimestamp: Date(timeIntervalSinceReferenceDate: 1000),
+            finalExitSample: nil,
+            cooldown: 180,
+            activeTrackingMinimumDistanceMeters: 50,
+            stationarySpeedThreshold: 0.7,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1181)
+        )
+
+        XCTAssertTrue(assessment.allowsReentry)
+    }
+
+    func testPostExitGuardAllowsReliableSpeedButRejectsPoorAccuracySpeed() {
+        let exitSample = LocationSample(
+            latitude: 33.0,
+            longitude: -118.0,
+            horizontalAccuracy: 10,
+            course: -1,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
+        )
+        let poorAccuracySpeed = HybridPreciseLocationSamplingRules.postExitPreciseReentryAssessment(
+            sample: LocationSample(
+                latitude: 33.0,
+                longitude: -118.0,
+                horizontalAccuracy: 250,
+                course: -1,
+                speed: 4,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            exitTimestamp: Date(timeIntervalSinceReferenceDate: 1005),
+            finalExitSample: exitSample,
+            cooldown: 180,
+            activeTrackingMinimumDistanceMeters: 50,
+            stationarySpeedThreshold: 0.7,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1020)
+        )
+        XCTAssertFalse(poorAccuracySpeed.allowsReentry)
+
+        let reliableSpeed = HybridPreciseLocationSamplingRules.postExitPreciseReentryAssessment(
+            sample: LocationSample(
+                latitude: 33.0,
+                longitude: -118.0,
+                horizontalAccuracy: 25,
+                course: -1,
+                speed: 4,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            exitTimestamp: Date(timeIntervalSinceReferenceDate: 1005),
+            finalExitSample: exitSample,
+            cooldown: 180,
+            activeTrackingMinimumDistanceMeters: 50,
+            stationarySpeedThreshold: 0.7,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1020)
+        )
+        XCTAssertTrue(reliableSpeed.allowsReentry)
+    }
+
+    func testPostExitGuardAllowsMaterialDistance() {
+        let exitSample = LocationSample(
+            latitude: 33.0,
+            longitude: -118.0,
+            horizontalAccuracy: 10,
+            course: -1,
+            speed: -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
+        )
+        let assessment = HybridPreciseLocationSamplingRules.postExitPreciseReentryAssessment(
+            sample: LocationSample(
+                latitude: 33.003,
+                longitude: -118.003,
+                horizontalAccuracy: 10,
+                course: -1,
+                speed: -1,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1010)
+            ),
+            exitTimestamp: Date(timeIntervalSinceReferenceDate: 1005),
+            finalExitSample: exitSample,
+            cooldown: 180,
+            activeTrackingMinimumDistanceMeters: 50,
+            stationarySpeedThreshold: 0.7,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1020)
+        )
+
+        XCTAssertTrue(assessment.allowsReentry)
     }
 }

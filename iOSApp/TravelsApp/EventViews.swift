@@ -24,6 +24,7 @@ struct EventMapView: View {
     let day: Date
     let events: [EventDetail]
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
     private let minimumMarkerSpacing: CGFloat = 35
 
@@ -63,8 +64,18 @@ struct EventMapView: View {
                 updateCameraPosition()
             }
             .onMapCameraChange(frequency: .onEnd) { context in
+                scaleRegion = context.region
                 model.updateMapCameraRegion(context.region)
                 updateVisibleEventIDs(in: context.region)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                MapScaleMarker(
+                    region: scaleRegion ?? model.mapCameraRegion,
+                    viewportWidth: effectiveViewportSize.width,
+                    measurementSystem: model.settings.preferredMeasurementSystem
+                )
+                .padding(.trailing, 16)
+                .padding(.bottom, 16)
             }
         }
     }
@@ -154,6 +165,7 @@ struct EventMapView: View {
             withAnimation(.easeInOut(duration: 0.25)) {
                 cameraPosition = .region(region)
             }
+            scaleRegion = region
             model.updateMapVisibleEventIDs(visibleEvents.compactMap(\.id))
             model.mapFocusEventIDs = nil
             return
@@ -172,6 +184,7 @@ struct EventMapView: View {
         withAnimation(.easeInOut(duration: 0.25)) {
             cameraPosition = .region(region)
         }
+        scaleRegion = region
         model.updateMapVisibleEventIDs(visibleEvents.compactMap(\.id))
         model.mapFocusEventIDs = nil
     }
@@ -615,14 +628,127 @@ struct EventMapView: View {
     }
 }
 
+private struct MapScaleMarker: View {
+    let region: MKCoordinateRegion?
+    let viewportWidth: CGFloat
+    let measurementSystem: MeasurementSystemPreference
+
+    private let maximumBarWidth: CGFloat = 112
+
+    var body: some View {
+        if let scale = scaleValue {
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(scale.label)
+                    .font(.caption2.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+                ZStack(alignment: .bottomLeading) {
+                    Rectangle()
+                        .frame(width: scale.width, height: 2)
+                    HStack {
+                        Rectangle()
+                            .frame(width: 2, height: 8)
+                        Spacer(minLength: 0)
+                        Rectangle()
+                            .frame(width: 2, height: 8)
+                    }
+                    .frame(width: scale.width, height: 8)
+                }
+                .foregroundStyle(.primary)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Map scale \(scale.label)")
+        }
+    }
+
+    private var scaleValue: (label: String, width: CGFloat)? {
+        guard let region, viewportWidth > 0 else { return nil }
+        let centerLatitudeRadians = region.center.latitude * .pi / 180
+        let metersPerDegreeLongitude = 111_320.0 * max(cos(centerLatitudeRadians), 0.01)
+        let visibleWidthMeters = abs(region.span.longitudeDelta) * metersPerDegreeLongitude
+        guard visibleWidthMeters.isFinite, visibleWidthMeters > 0 else { return nil }
+        let metersPerPoint = visibleWidthMeters / Double(viewportWidth)
+        guard metersPerPoint.isFinite, metersPerPoint > 0 else { return nil }
+
+        let targetMeters = metersPerPoint * Double(maximumBarWidth)
+        let distanceMeters: Double
+        let label: String
+        switch measurementSystem {
+        case .metric:
+            distanceMeters = Self.niceValue(atMost: targetMeters)
+            label = Self.metricLabel(forMeters: distanceMeters)
+        case .imperial:
+            let feet = targetMeters * 3.280_839_895_013_123
+            if targetMeters >= 804.672 {
+                let miles = Self.niceValue(atMost: targetMeters / 1_609.344)
+                distanceMeters = miles * 1_609.344
+                label = Self.unitLabel(value: miles, unit: "mi")
+            } else {
+                let niceFeet = Self.niceValue(atMost: feet)
+                distanceMeters = niceFeet / 3.280_839_895_013_123
+                label = Self.unitLabel(value: niceFeet, unit: "ft")
+            }
+        }
+
+        let width = CGFloat(distanceMeters / metersPerPoint)
+        guard width.isFinite, width >= 24 else { return nil }
+        return (label, min(width, maximumBarWidth))
+    }
+
+    private static func niceValue(atMost value: Double) -> Double {
+        guard value.isFinite, value > 0 else { return 0 }
+        let exponent = floor(log10(value))
+        let magnitude = pow(10, exponent)
+        let normalized = value / magnitude
+        let multiplier: Double
+        if normalized >= 5 {
+            multiplier = 5
+        } else if normalized >= 2 {
+            multiplier = 2
+        } else {
+            multiplier = 1
+        }
+        return multiplier * magnitude
+    }
+
+    private static func metricLabel(forMeters meters: Double) -> String {
+        if meters >= 1_000 {
+            return unitLabel(value: meters / 1_000, unit: "km")
+        }
+        return unitLabel(value: meters, unit: "m")
+    }
+
+    private static func unitLabel(value: Double, unit: String) -> String {
+        let rounded = value.rounded()
+        if abs(value - rounded) < 0.0001 {
+            return "\(Int(rounded)) \(unit)"
+        }
+        return String(format: "%.1f %@", value, unit)
+    }
+}
+
 struct EventListView: View {
     @EnvironmentObject private var model: TravelsModel
     let events: [EventDetail]
+    let topContentInset: CGFloat
+    private let topAnchorID = "EventListTopAnchor"
+
+    init(events: [EventDetail], topContentInset: CGFloat = 0) {
+        self.events = events
+        self.topContentInset = topContentInset
+    }
 
     var body: some View {
         GeometryReader { geometry in
             ScrollViewReader { proxy in
                 List {
+                    Color.clear
+                        .frame(height: topContentInset)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .id(topAnchorID)
+
                     ForEach(events) { detail in
                         Button {
                             model.selectedEvent = detail
@@ -653,12 +779,21 @@ struct EventListView: View {
                 .onAppear {
                 }
                 .task(id: model.listScrollCommandID) {
-                    guard let target = model.listScrollTargetEventID else { return }
+                    let scrollsToContentTop = model.listScrollTargetsContentTop
+                    let target = model.listScrollTargetEventID
+                    let targetAnchor = model.listScrollTargetAnchor
+                    guard scrollsToContentTop || target != nil else { return }
                     await Task.yield()
                     await MainActor.run {
                         withAnimation(.easeInOut(duration: 0.25)) {
-                            proxy.scrollTo(target, anchor: .top)
+                            if scrollsToContentTop {
+                                proxy.scrollTo(topAnchorID, anchor: .top)
+                            } else if let target {
+                                proxy.scrollTo(target, anchor: targetAnchor)
+                            }
                         }
+                        model.listScrollTargetAnchor = .top
+                        model.listScrollTargetsContentTop = false
                         model.listScrollTargetEventID = nil
                     }
                 }

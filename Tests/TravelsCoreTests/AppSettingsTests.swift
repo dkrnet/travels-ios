@@ -34,6 +34,10 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(AppSettings().preciseLocationMode, .automatic)
     }
 
+    func testLocationDetailModeDefaultsToBalanced() {
+        XCTAssertEqual(AppSettings().locationDetailMode, .balanced)
+    }
+
     func testPreciseLocationModePersistsThroughSettingsStore() throws {
         let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let databaseURL = rootURL.appendingPathComponent("Travels.sqlite")
@@ -46,11 +50,13 @@ final class AppSettingsTests: XCTestCase {
         let settingsStore = SettingsStore(store: store)
         var settings = AppSettings()
         settings.preciseLocationMode = .alwaysOff
+        settings.locationDetailMode = .roadTrip
 
         try settingsStore.save(settings)
 
         let reloaded = try settingsStore.load()
         XCTAssertEqual(reloaded.preciseLocationMode, .alwaysOff)
+        XCTAssertEqual(reloaded.locationDetailMode, .roadTrip)
     }
 
     func testMissingPreciseLocationModeDecodesAsAutomatic() throws {

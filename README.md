@@ -16,13 +16,16 @@ The app is not intended to be a public tracking service, fleet-management platfo
 
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
+- Always-visible lower-right map scale marker
 - Date navigation with previous-day context for continuity
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
 - A live `Precise Location Active` badge on the map and list screens while high-precision tracking is running
-- Background-location option with separate powered and battery distance thresholds
-- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, periodically rechecks Core Location when movement quiets down, and makes one bounded final precise sample before returning to idle detection; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
+- Background-location option with adaptive Location Detail presets for High Detail, Balanced, Battery Saver, and Road Trip point density
+- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, makes one bounded final precise sample before returning to idle detection, and uses a short post-exit guard so queued or ambiguous samples do not bounce the app straight back into precise mode unless movement is clearly resumed; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
+- Adaptive automatic tracking distance grows conservatively during sustained highway speed, shrinks faster after sustained town-speed slowdowns, requests a bounded automatic transition sample near highway exits or town entries, and keeps stop detection independent of highway-sized distance filtering
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
+- Developer diagnostics mirrored to a local maintenance log file in app-controlled storage
 - Per-event trip endpoint overrides for refining automatic trip detection
 - GPX import and export with GPX 1.1 standard fields, a documented Travels extension namespace, and legacy import compatibility
 - Legacy `travels.sqlite` migration with backup and duplicate skipping
@@ -72,11 +75,11 @@ Open the repository in Xcode and use the `Travels` scheme for Simulator/device d
 xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build
 ```
 
-Real-device validation is required before release for background location, Always Location permission flow, photo metadata import, LocalAuthentication, and battery/powered distance behavior.
+Real-device validation is required before release for background location, Always Location permission flow, photo metadata import, LocalAuthentication, and adaptive Location Detail behavior.
 
 ## Data storage
 
-The modern app stores its primary database in the app's Application Support directory under the `Travels` subdirectory as `Travels.sqlite`. Photo attachments are stored in a `Photos` subdirectory under the same app support directory.
+The modern app stores its primary database in the app's Application Support directory under the `Travels` subdirectory as `Travels.sqlite`. Photo attachments are stored in a `Photos` subdirectory under the same app support directory. Developer maintenance diagnostics are mirrored to `Maintenance.log` under the same app support directory.
 
 On first launch, the app checks for a legacy `Documents/travels.sqlite` database. If present and not already imported, it copies a pre-modernization backup and imports legacy geolocations, events, and settings into the modern store.
 

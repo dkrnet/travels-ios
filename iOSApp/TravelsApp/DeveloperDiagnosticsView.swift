@@ -43,6 +43,8 @@ struct DeveloperDiagnosticsView: View {
                     LabeledContent("Demo Data", value: model.settings.includeDemoData ? "On" : "Off")
                     LabeledContent("Background", value: model.settings.backgroundLocationEnabled ? "On" : "Off")
                     LabeledContent("Precise Location Mode", value: model.settings.preciseLocationMode.displayName)
+                    LabeledContent("Location Detail", value: model.settings.locationDetailMode.displayName)
+                    LabeledContent("Adaptive Distance", value: formattedLengthText(model.adaptiveLocationDistanceMeters, measurementSystem: model.settings.preferredMeasurementSystem))
                 }
 
                 Section("Actions") {

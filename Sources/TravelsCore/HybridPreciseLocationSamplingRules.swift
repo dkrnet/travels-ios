@@ -18,8 +18,52 @@ public enum FinalPreciseExitSampleAssessment: Equatable, Sendable {
     }
 }
 
+public enum PostExitPreciseReentryAssessment: Equatable, Sendable {
+    case allowed(reason: String)
+    case suppressed(reason: String)
+
+    public var allowsReentry: Bool {
+        if case .allowed = self {
+            return true
+        }
+        return false
+    }
+}
+
+public struct InitialActiveTrackingGuardStatus: Equatable, Sendable {
+    public var isActive: Bool
+    public var reason: String
+
+    public init(isActive: Bool, reason: String) {
+        self.isActive = isActive
+        self.reason = reason
+    }
+}
+
 public enum HybridPreciseLocationSamplingRules {
     private static let finalExitMaximumSampleAge: TimeInterval = 30
+
+    public static func initialActiveTrackingGuardStatus(
+        enteredAt: Date?,
+        firstWatchdogRecheckCompleted: Bool,
+        minimumActiveInterval: TimeInterval,
+        now: Date = Date()
+    ) -> InitialActiveTrackingGuardStatus {
+        guard let enteredAt else {
+            return InitialActiveTrackingGuardStatus(isActive: false, reason: "initial active tracking guard is not armed")
+        }
+
+        if firstWatchdogRecheckCompleted {
+            return InitialActiveTrackingGuardStatus(isActive: false, reason: "first watchdog recheck completed")
+        }
+
+        let elapsed = now.timeIntervalSince(enteredAt)
+        guard elapsed < minimumActiveInterval else {
+            return InitialActiveTrackingGuardStatus(isActive: false, reason: "minimum active interval elapsed")
+        }
+
+        return InitialActiveTrackingGuardStatus(isActive: true, reason: "waiting for first watchdog recheck or minimum active interval")
+    }
 
     public static func shouldRequestImmediateAutomaticSample(
         isEnteringActiveTracking: Bool,
@@ -118,6 +162,65 @@ public enum HybridPreciseLocationSamplingRules {
         }
 
         return .confirmsStop(reason: "sample remains within the stationary reference area")
+    }
+
+    public static func postExitPreciseReentryAssessment(
+        sample: LocationSample,
+        exitTimestamp: Date,
+        finalExitSample: LocationSample?,
+        cooldown: TimeInterval,
+        activeTrackingMinimumDistanceMeters: Double,
+        stationarySpeedThreshold: Double,
+        minimumUsableHorizontalAccuracyMeters: Double,
+        now: Date = Date()
+    ) -> PostExitPreciseReentryAssessment {
+        let elapsed = now.timeIntervalSince(exitTimestamp)
+        if elapsed >= cooldown {
+            return .allowed(reason: "post-exit guard cooldown expired")
+        }
+
+        guard sample.horizontalAccuracy.isFinite, sample.horizontalAccuracy >= 0 else {
+            return .suppressed(reason: "horizontal accuracy is unavailable")
+        }
+
+        guard sample.horizontalAccuracy <= minimumUsableHorizontalAccuracyMeters else {
+            return .suppressed(reason: "horizontal accuracy is too low")
+        }
+
+        let referenceTimestamp = finalExitSample?.timestamp ?? exitTimestamp
+        guard sample.timestamp > referenceTimestamp else {
+            return .suppressed(reason: "sample is not newer than the final-exit reference")
+        }
+
+        let resumeSpeedThreshold = max(stationarySpeedThreshold * 2, stationarySpeedThreshold + 0.8)
+        if sample.speed.isFinite, sample.speed >= resumeSpeedThreshold {
+            return .allowed(reason: "speed is meaningfully above the resume threshold")
+        }
+
+        guard let finalExitSample else {
+            return .suppressed(reason: "no final-exit location is available for distance comparison")
+        }
+
+        let distance = haversineMeters(
+            fromLatitude: finalExitSample.latitude,
+            longitude: finalExitSample.longitude,
+            toLatitude: sample.latitude,
+            longitude: sample.longitude
+        )
+        let referenceAccuracy = finalExitSample.horizontalAccuracy.isFinite && finalExitSample.horizontalAccuracy >= 0
+            ? finalExitSample.horizontalAccuracy
+            : 0
+        let materialMovementThreshold = max(
+            activeTrackingMinimumDistanceMeters,
+            sample.horizontalAccuracy * 2,
+            referenceAccuracy * 2,
+            150
+        )
+        if distance >= materialMovementThreshold {
+            return .allowed(reason: "distance from final-exit location is material")
+        }
+
+        return .suppressed(reason: "sample did not prove movement resumed")
     }
 
     private static func haversineMeters(

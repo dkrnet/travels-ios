@@ -25,13 +25,14 @@ struct ContentView: View {
     @State private var datePickerSelection = Date()
     @State private var mapQuickActionShowsLatest = true
     @State private var listQuickActionShowsTop = false
+    @State private var topOverlayHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Group {
                     if model.isListView {
-                        EventListView(events: model.displayedEvents)
+                        EventListView(events: model.displayedEvents, topContentInset: listTopContentInset)
                             .id(model.selectedDate)
                     } else {
                         EventMapView(day: model.selectedDate, events: model.displayedEvents)
@@ -40,16 +41,6 @@ struct ContentView: View {
                 }
                 .blur(radius: model.isUnlocked ? 0 : 18)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                if model.isHighPrecisionLocationActive {
-                    VStack {
-                        LocationPrecisionStatusBadge()
-                            .padding(.top, 8)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .allowsHitTesting(false)
-                }
 
                 if let message = model.locationAuthorizationMessage, model.isUnlocked {
                     VStack {
@@ -65,8 +56,33 @@ struct ContentView: View {
                 if !model.isUnlocked {
                     LockedView()
                 }
+
+                GeometryReader { geometry in
+                    VStack {
+                        VStack(spacing: 8) {
+                            DayTitleOverlay(title: title, availableWidth: geometry.size.width)
+                            if model.isHighPrecisionLocationActive {
+                                LocationPrecisionStatusBadge()
+                            }
+                        }
+                        .padding(.top, titleTopPadding)
+                        .background(
+                            GeometryReader { overlayGeometry in
+                                Color.clear.preference(
+                                    key: TopOverlayHeightKey.self,
+                                    value: overlayGeometry.size.height
+                                )
+                            }
+                        )
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .allowsHitTesting(false)
+                .zIndex(2)
             }
-            .navigationTitle(title)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Button {
@@ -282,6 +298,9 @@ struct ContentView: View {
             }
             .onAppear {
             }
+            .onPreferenceChange(TopOverlayHeightKey.self) { height in
+                topOverlayHeight = height
+            }
         }
     }
 
@@ -289,6 +308,17 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
+    }
+
+    private var titleTopPadding: CGFloat {
+        8
+    }
+
+    private var listTopContentInset: CGFloat {
+        let measuredInset = model.isHighPrecisionLocationActive
+            ? topOverlayHeight
+            : topOverlayHeight + 10
+        return max(24, measuredInset)
     }
 
     @ViewBuilder
@@ -299,6 +329,36 @@ struct ContentView: View {
     ) -> some View {
         Toggle(title, isOn: isOn)
         .disabled(!isEnabled)
+    }
+}
+
+private struct TopOverlayHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct DayTitleOverlay: View {
+    let title: String
+    let availableWidth: CGFloat
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: titleFontSize, weight: .semibold))
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.vertical, 5)
+            .padding(.horizontal, 12)
+            .background(.thinMaterial, in: Capsule())
+            .frame(maxWidth: max(availableWidth - 32, 0))
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private var titleFontSize: CGFloat {
+        min(max(availableWidth * 0.055, 20), 26)
     }
 }
 
