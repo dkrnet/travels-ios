@@ -182,12 +182,25 @@ The app shall persist user settings including at least:
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
 - Preferred initial view, map or list.
-- Always-On High Precision Location enabled/disabled.
-- Powered update distance threshold.
-- Battery update distance threshold.
+- Precise Location Mode: Automatic, Always On, or Always Off.
+- Location Detail: High Detail, Balanced, Battery Saver, or Road Trip.
+- Powered update distance threshold, retained for compatibility or fallback behavior.
+- Battery update distance threshold, retained for compatibility or fallback behavior.
 - Preferred measurement system.
 
 Settings UI shall group related settings into understandable sections such as Tracking, Units, Display, and Privacy.
+
+- New installs shall default Location Detail to Balanced.
+- Existing settings that do not contain a Location Detail value, or that contain an unknown Location Detail value, shall decode safely as Balanced.
+- The Location Detail setting shall be the primary user-facing control for automatic location point density.
+- Location Detail shall be presented without exposing raw distance scaling values, formulas, speed thresholds, minimum distances, maximum distances, or sensitivity controls.
+- High Detail shall save more automatic points and be appropriate for walking, local driving, and detailed history.
+- Balanced shall provide normal adaptive behavior and remain the default.
+- Battery Saver shall save fewer automatic points, especially at sustained higher speeds.
+- Road Trip shall save much fewer sustained-highway points while still capturing exits, towns, and stops.
+- Address-resolution options, including reverse address resolution and resolve missing addresses, shall be disabled by default for new installs.
+- The app shall not perform reverse-geocoding or missing-address resolution unless the user has explicitly enabled the relevant setting.
+- App upgrades, migrations, restores, imports, and repairs shall preserve existing address-resolution preferences and shall not silently enable address resolution.
 
 ## Startup and bootstrap requirements
 
@@ -213,17 +226,57 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall allow a user to add the current location manually for today's selected date.
 - The add-current-location button shall be enabled only for today's selected date.
 - When the add-current-location function is unavailable, disabled, or unsafe to perform, the Add button shall be visibly disabled or grayed out rather than appearing actionable. This includes, at minimum, non-today selected dates, unavailable location services, missing required permission, an active privacy lock state that blocks interaction, or any internal disabled state that prevents the function from running.
-- The app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
-- The app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval, unless Always-On High Precision Location is enabled.
-- The app shall support an Always-On High Precision Location setting that keeps active high-fidelity tracking enabled continuously and prevents automatic downgrading back to significant-location-change monitoring while the setting is on.
+- The app shall support a Precise Location Mode setting with Automatic, Always On, and Always Off choices.
+- New installs shall default Precise Location Mode to Automatic.
+- App settings decoded from the legacy Always-On High Precision Location boolean shall migrate false or missing values to Automatic and true values to Always On.
+- In Automatic Precise Location Mode, the app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
+- When Automatic Location Tracking and Background Location are enabled in Automatic or Always On Precise Location Mode, the app shall establish and retain a Core Location background activity session while the app is in use so location delivery can continue or resume after background suspension.
+- The app shall promptly rejoin an existing background location activity session when Core Location relaunches or resumes the app in the background, and shall replace a session first created during a background launch after the app next becomes active.
+- Active high-fidelity tracking shall use Core Location automotive live updates and shall feed those updates through the existing filtering, persistence, geolocation, display, and export pipeline.
+- Significant-location-change monitoring shall remain registered as a low-power wake/relaunch fallback while active live updates are running.
+- Always Off Precise Location Mode shall not retain a background activity session or start automotive live updates.
+- In Automatic Precise Location Mode, the app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval.
+- In Always On Precise Location Mode, when Automatic Location Tracking is enabled and location authorization allows tracking, the app shall keep active high-fidelity tracking enabled continuously and shall not automatically downgrade back to significant-location-change monitoring.
+- In Always Off Precise Location Mode, when Automatic Location Tracking is enabled, the app shall use idle/significant-change monitoring only and shall not automatically enter continuous precise/high-accuracy tracking because of movement detection or automatic location samples.
+- Always Off Precise Location Mode shall not disable Automatic Location Tracking entirely; it disables automatic precise/high-accuracy escalation. Manual Add Current Location and other manual user-triggered current-location captures shall remain available when otherwise permitted.
 - Automatic hybrid tracking may miss the very beginning of a trip because significant-location-change monitoring is not immediate.
-- Always-On High Precision Location shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
-- The Always-On High Precision Location setting shall be separate from any future manual start/stop tracking feature.
-- While hybrid automatic tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
-- The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or the app switches to Always-On High Precision Location.
-- Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always-On High Precision Location or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
+- Always On Precise Location Mode shall improve route fidelity but may use more battery and may cause the iOS location indicator to appear more often.
+- Automatic Precise Location Mode with Background Location enabled may also cause the iOS location indicator to remain visible while the retained background activity session is active, including during low-power idle detection.
+- The Precise Location Mode setting shall be separate from any future manual start/stop tracking feature.
+- While Automatic Precise Location Mode hybrid tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
+- The hybrid watchdog shall be treated as an in-process diagnostic and recovery aid rather than the mechanism that guarantees background execution; background continuity shall rely on Core Location's retained session and live-update lifecycle.
+- When Automatic Precise Location Mode hybrid tracking enters active high-precision mode, the app shall immediately request one automatic location sample so the first precise position is available without waiting for the next scheduled recheck.
+- When Automatic Precise Location Mode hybrid tracking enters active high-precision mode, the app shall keep active tracking alive until the first hybrid watchdog recheck completes or a short minimum active interval elapses. A single immediate, stale, rejected, nearby, or ambiguous automatic sample shall not immediately downgrade the app back to idle detection or cancel the initial watchdog. Explicit stop, disabled Automatic Location Tracking, insufficient authorization, and Precise Location Mode changes may still stop or downgrade tracking immediately.
+- When active high-precision tracking receives no fresh Core Location deliveries for a sustained period and repeated watchdog rechecks can only see stale cached data, the app shall first make a bounded attempt to restart the active Core Location stream and request a fresh sample. If the stream remains silent, the app shall start the bounded final precise-exit flow without treating the stale cached location as stop confirmation or movement-resumed evidence.
+- When Automatic Precise Location Mode hybrid tracking is about to return from active high-precision mode to idle detection because the stationary window has been satisfied, the app shall make one bounded best-effort automatic sample before leaving precise mode.
+- The immediate entry sample and bounded final-exit sample shall be automatic tracking samples rather than manual user captures, and the bounded final-exit sample shall not keep precise mode active indefinitely.
+- A bounded final-exit sample shall be treated as a confirmation or cleanup sample, not as ordinary movement evidence. It shall cancel final exit and keep high-precision tracking active only when the sample is fresh, accurate enough, newer than the stationary reference when distance is used, and clearly indicates movement by meaningful speed or material distance from the stationary reference.
+- After a bounded final precise exit completes, the app shall ignore automatic non-manual Core Location samples for a short cooldown window so late final-exit or cached updates cannot immediately re-enter high-precision tracking. Manual captures shall not be suppressed by this cooldown.
+- After Automatic Precise Location Mode exits active high-precision tracking because the user appears stopped or idle, the app shall arm a short post-exit precise guard that records the exit time, final-exit location when available, final-exit sample timestamp when available, and diagnostic reason.
+- While the post-exit precise guard is active, automatic samples may still be filtered and saved normally, but they shall not restart active high-precision tracking unless the guard cooldown has expired, the sample is materially distant from the final-exit location, or the sample has reliable horizontal accuracy and meaningfully moving speed. Stale, low-accuracy, or ambiguous samples shall not restart precise tracking.
+- The post-exit precise guard shall not block manual Add Current Location or other manual current-location captures, shall not force Always On Precise Location Mode out of active high-precision tracking, and shall not cause Always Off Precise Location Mode to enter active high-precision tracking.
+- While in idle detection, automatic samples shall re-enter high-precision active tracking only when they indicate real movement, such as meaningful speed or material distance from the stationary reference, not merely because an automatic sample arrived.
+- While in idle detection, a fresh automatic sample with unavailable speed may still re-enter high-precision active tracking when it is accurate enough and materially distant from the most recent stationary reference or durable accepted event; stale, low-accuracy, or jitter-sized samples shall remain idle.
+- The hybrid watchdog, immediate precise-entry sample, and bounded final precise-exit sample shall apply only to Automatic Precise Location Mode and shall not run in Always On or Always Off Precise Location Mode.
+- The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or Precise Location Mode switches away from Automatic.
+- Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always On Precise Location Mode, switch Always Off Precise Location Mode into active high-fidelity tracking, or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
 - Automatic foreground location capture shall respect the automatic location setting.
 - Background location capture shall respect the background location setting and required iOS permissions.
+- Automatic and manual location captures shall not be reported as saved, update the latest accepted event, or trigger saved-event side effects until the database write returns a valid durable event identifier.
+- During active precise automatic tracking, the app shall apply an adaptive effective distance derived from Location Detail, recent sustained speed, timestamp, and horizontal accuracy to reduce noisy event spam and reduce excessive highway-speed event density.
+- During active precise automatic tracking, the app shall keep Core Location delivery configured for relatively frequent active-trip samples while using the adaptive Location Detail distance separately for event persistence decisions. The Core Location delivery distance shall not grow to highway-sized event-save distances while active tracking is expected to maintain route continuity.
+- During active precise automatic tracking, the app shall log enough Core Location manager configuration and lifecycle diagnostics to determine whether background route gaps were caused by missing Core Location delivery, app suspension, paused updates, request failures, watchdog delay, or event filtering.
+- The adaptive effective distance shall grow conservatively after sustained higher speed rather than after a single noisy high-speed sample.
+- The adaptive effective distance shall shrink faster than it grows after a sustained slowdown from highway speed to town speed.
+- When sustained recent speed is in the town/local range, the adaptive effective distance shall be capped so Battery Saver and Road Trip do not lose an entire 10-minute town segment after a sustained highway trip.
+- A sustained highway-to-town speed drop shall request or process at most one automatic non-manual transition sample within a cooldown window so exits, town entries, and similar transitions can be captured without repeated transition requests.
+- Transition samples shall not set pending manual capture state or pending forced stopped capture state.
+- Transition sample requests shall be suppressed while stop-detection, maybe-stopped, or final precise-exit flow is already handling the same period of movement.
+- Adaptive distance shall not control stop detection. Stop detection shall continue to use its own stationary thresholds, watchdog/recheck samples, speed, distance, and time behavior.
+- A large highway adaptive distance shall not require the user to travel that distance before stop detection can run.
+- In Always On Precise Location Mode, adaptive distance may affect active precise distance filtering but shall never downgrade the app out of precise tracking.
+- In Always Off Precise Location Mode, adaptive distance changes shall not cause the app to enter active precise tracking or request transition samples that require active precise tracking.
+- The current adaptive effective distance shall be used consistently for automatic event save/reject distance decisions. Active Core Location delivery may use a smaller distance filter so route continuity and stop detection are not delayed by highway-sized event-save distances.
 - The app shall apply distance, recency, and accuracy filtering to avoid noisy event spam.
 - The first valid location in a capture session may be accepted to establish context.
 - A forced manual add shall be able to bypass normal distance filtering when appropriate.
@@ -233,7 +286,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 ## Date browsing requirements
 
 - The user shall be able to browse events by selected calendar day.
-- The selected day shall be shown in the navigation title together with the event count.
+- The selected day shall be shown with the event count in a full-width banner below the date navigation toolbar.
+- When high-precision tracking is active, the selected-day banner shall include a trailing `Precise Location` indicator with the location glyph; the indicator text shall be visually smaller than the selected-day/count text and shall fit on narrow phone screens without obscuring the date or count.
 - The user shall be able to move to the previous day and next day.
 - The user shall be able to choose a date from a date picker.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
@@ -248,6 +302,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
+- The map shall show an always-visible scale marker near the lower-right corner.
+- The map scale marker shall update as the user pans or zooms, shall use the user's preferred measurement system, and shall avoid an opaque background so it does not unnecessarily cover map content.
 - Export actions that operate from the map/list context shall use the active export scope rather than the transient set of events physically visible on screen, unless the user explicitly chooses a viewport-only or visible-only export mode.
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
@@ -281,6 +337,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Reverse geocoding shall support resolving missing addresses when enabled.
 - Reverse geocoding shall expose enough status or diagnostics for troubleshooting pending, successful, failed, or skipped work.
 - Reverse geocoding failures shall not corrupt event data or block normal app use.
+- Reverse-geocoding and missing-address resolution shall remain off for new installs unless the user turns them on.
 
 ## GPX import requirements
 
@@ -330,11 +387,13 @@ The active export scope is the complete set of exportable events selected by the
 ## Photo import requirements
 
 - The user shall be able to import a selected photo as an event when the photo has usable creation-date and location metadata.
-- The app shall copy imported photo data into app-owned storage using a generated filename.
+- The user shall be able to choose between importing photo and location data or importing location data only.
+- When importing photo and location data, the app shall copy imported photo data into app-owned storage using a generated filename.
+- When importing location data only, the app shall create an event from the selected photo's usable creation-date and location metadata without copying the photo data into app-owned storage and without storing a copied photo filename.
 - The created event shall use the photo source.
 - The event shall preserve the photo asset's local identifier or other stable reference when available.
-- The event shall reference the copied photo filename.
-- Photo import shall fail safely and explain when the selected asset lacks usable metadata or cannot be copied.
+- A location-only photo import shall be treated as a successful photo-source event import, not as a failed photo import.
+- Photo import shall fail safely and explain when the selected asset lacks usable creation-date or location metadata.
 
 ## Backup and restore requirements
 
@@ -406,6 +465,15 @@ The active export scope is the complete set of exportable events selected by the
 - Import/export errors shall report enough detail to explain what failed without exposing unnecessary internal details.
 - Database, migration, backup, restore, and repair errors shall avoid silent data loss.
 - Debug diagnostics may expose more detail in development builds than in release builds.
+- Maintenance and developer diagnostics log entries shown in the developer diagnostics view shall also be mirrored to a local file in the app's Application Support `Travels` directory for troubleshooting across app launches.
+- The maintenance diagnostics log file shall remain local to the device unless the user explicitly exports, backs up, or shares app data.
+- The developer diagnostics view shall provide a user-initiated way to share or save a snapshot copy of the maintenance diagnostics log without modifying or deleting the active database.
+- Clearing the developer diagnostics log shall also clear the local maintenance diagnostics log file.
+- The repository shall provide an offline maintenance utility that can parse complete saved-location recovery records from an exported maintenance log, audit them against a copied Travels database using the application location filtering rules, and recover eligible missing events.
+- The offline location-recovery utility shall default to a non-writing audit, require an explicit apply option before changing the supplied database, preserve a backup before applying changes, tolerate the display precision used by logged timestamps and coordinates when detecting existing events, and produce a per-record audit report.
+- The offline location-recovery utility shall require a valid `YYYYMMDD` date and shall process only recovery records from that logged local calendar date.
+- The offline location-recovery utility shall provide a mutually exclusive non-writing option that prints each selected record's accepted or rejected result and reason to standard output instead of adding or replacing database rows.
+- The offline location-recovery utility shall operate only on paths supplied by the user and shall not connect to a device or replace an on-device database.
 
 ## Build and development requirements
 
@@ -413,6 +481,8 @@ The active export scope is the complete set of exportable events selected by the
 - The project shall build through the Xcode project and Travels scheme for the iOS app.
 - The standard package test command shall be `swift test`.
 - The standard iOS build command shall be equivalent to `xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build`, with simulator destination updated only when intentionally changed.
+- Repository scripts may wrap the standard regression-test, physical-device build, and non-destructive physical-device install commands so they can be run consistently outside an AI/LLM-assisted session.
+- Physical-device install scripts shall install over the existing app bundle without uninstalling the app or deleting the app data container.
 - Background location, permission prompts, Photos metadata import, LocalAuthentication, and real device behavior shall be validated on-device before release.
 - Non-simulator device installs shall not be performed unless explicitly directed when the install, reinstall, upgrade, migration, signing change, bundle-identifier change, data-container change, or test workflow could overwrite, remove, migrate, corrupt, or otherwise risk live user data on the device.
 - Build process changes shall update this requirements document, README, and contributor instructions when applicable.
@@ -442,7 +512,8 @@ The project shall support AI/LLM-assisted development without allowing documenta
 - Tests shall use temporary directories and temporary databases rather than the user's real app data.
 - Tests shall not require network access.
 - Tests shall use fixed dates, time zones, and coordinates where solar/time-of-day behavior is verified.
-- Tests shall cover database creation, migrations, indexes, settings, duplicate detection, event persistence, geolocation persistence, search, GPX import, GPX export, XML escaping, legacy import, backup/restore seams, repair behavior, location filtering, trip/stopped-location logic, and solar/time-of-day color behavior where implemented.
+- Tests shall cover database creation, migrations, indexes, settings, duplicate detection, event persistence, geolocation persistence, search, GPX import, GPX export, XML escaping, legacy import, backup/restore seams, repair behavior, location filtering, adaptive Location Detail distance behavior, trip/stopped-location logic, and solar/time-of-day color behavior where implemented.
+- Adaptive Location Detail tests shall cover default and unknown-value migration to Balanced, stable raw values, invalid or poor-accuracy speed handling, spike rejection, sustained high-speed distance growth, mode scaling, min/max clamps, sustained highway-to-town slowdown shrinkage, town-speed caps, transition-sample cooldown, non-oscillation near speed thresholds, and scenario behavior for highway-to-town-to-stop-to-highway travel.
 - Tests shall cover both success and failure paths for import/export and repair behavior.
 - Any bug fix shall add a regression test where feasible.
 - If a behavior cannot be tested automatically because it depends on iOS hardware or system permission prompts, the required manual validation shall be documented in the pull request.

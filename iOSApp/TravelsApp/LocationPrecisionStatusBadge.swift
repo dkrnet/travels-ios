@@ -10,7 +10,7 @@ struct LocationPrecisionStatusBadge: View {
         HStack(spacing: 8) {
             Image(systemName: "location.fill")
                 .font(.system(size: 13, weight: .semibold))
-            Text("Precise Location Active")
+            Text("Precise Location")
         }
         .font(.subheadline.weight(.semibold))
         .foregroundStyle(.primary)
@@ -23,7 +23,7 @@ struct LocationPrecisionStatusBadge: View {
         )
         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Precise Location Active")
+        .accessibilityLabel("Precise Location")
         .accessibilityHint("Travels is currently using high-accuracy location tracking.")
     }
 }

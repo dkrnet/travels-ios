@@ -8,6 +8,7 @@ import Foundation
 public enum LocationTrackingPolicy: String, Codable, CaseIterable, Sendable {
     case hybridAutomatic
     case alwaysOnHighPrecision
+    case alwaysOffHighPrecision
 }
 
 public struct LocationTrackingThresholds: Equatable, Sendable {
@@ -50,6 +51,7 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
     public private(set) var state: LocationTrackingState
 
     private var lastSampleTimestamp: Date?
+    private var idleReferenceSample: LocationSample?
 
     public init(
         policy: LocationTrackingPolicy = .hybridAutomatic,
@@ -75,12 +77,18 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         policy = newPolicy
 
         switch (newPolicy, state) {
-        case (.alwaysOnHighPrecision, .idleDetection):
+        case (.alwaysOnHighPrecision, .idleDetection),
+             (.alwaysOnHighPrecision, .maybeStopped):
             state = .activeTracking
             return .enterActiveTracking
+        case (.alwaysOffHighPrecision, .activeTracking),
+             (.alwaysOffHighPrecision, .maybeStopped):
+            state = .idleDetection
+            return .enterIdleDetection
         case (.hybridAutomatic, .maybeStopped(let anchor, let samples)):
             if shouldStop(anchor: anchor, samples: samples) {
                 state = .idleDetection
+                idleReferenceSample = samples.last ?? anchor
                 return .enterIdleDetection
             }
             return .none
@@ -90,7 +98,7 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
     }
 
     @discardableResult
-    public mutating func record(sample: LocationSample) -> LocationTrackingTransition {
+    public mutating func record(sample: LocationSample, idleFallbackReference: LocationSample? = nil) -> LocationTrackingTransition {
         if let lastSampleTimestamp, sample.timestamp < lastSampleTimestamp {
             return .none
         }
@@ -98,6 +106,15 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
 
         switch state {
         case .idleDetection:
+            guard policy == .hybridAutomatic else {
+                return .none
+            }
+            // BUGFIX: idle detection can receive late or cleanup Core Location samples immediately
+            // after precise mode exits. Require real movement evidence before re-entering active mode.
+            guard idleDetectionSampleIndicatesMovement(sample, fallbackReference: idleFallbackReference) else {
+                return .none
+            }
+            idleReferenceSample = nil
             state = .activeTracking
             return .enterActiveTracking
 
@@ -109,6 +126,11 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             return .none
 
         case .maybeStopped(let anchor, var samples):
+            if sampleIndicatesMovementFromStationaryAnchor(anchor, sample) {
+                state = .activeTracking
+                return .none
+            }
+
             guard isUsableStationarySample(sample) else {
                 return .none
             }
@@ -122,20 +144,17 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
                 return .none
             }
 
-            if sample.speed > thresholds.stationarySpeedThreshold ||
-                distanceMeters(from: anchor, to: sample) > thresholds.stationaryRadiusMeters {
-                state = .activeTracking
-                return .none
-            }
-
             samples.append(sample)
             if shouldStop(anchor: anchor, samples: samples) {
                 // REGRESSION GUARD: Only leave active tracking after a sustained stationary window. A single
                 // low-speed sample is not enough, and always-on high precision must not downgrade to idle.
                 if policy == .hybridAutomatic {
                     state = .idleDetection
+                    idleReferenceSample = samples.last ?? anchor
                     return .enterIdleDetection
                 }
+                state = .maybeStopped(anchor: anchor, samples: samples)
+                return .none
             }
             state = .maybeStopped(anchor: anchor, samples: trimmed(samples))
             return .none
@@ -185,6 +204,50 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             return true
         }
         return sample.speed <= thresholds.stationarySpeedThreshold
+    }
+
+    public func idleDetectionSampleIndicatesMovement(_ sample: LocationSample, fallbackReference: LocationSample? = nil) -> Bool {
+        if sample.speed.isFinite, sample.speed > thresholds.stationarySpeedThreshold {
+            return true
+        }
+
+        guard sample.horizontalAccuracy.isFinite,
+              sample.horizontalAccuracy >= 0,
+              sample.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters
+        else {
+            return false
+        }
+
+        guard let referenceSample = idleReferenceSample ?? fallbackReference else {
+            return false
+        }
+
+        // BUGFIX: significant-change style idle delivery often has unavailable speed.
+        // Use a durable stationary/reference point when available so real movement can
+        // bootstrap precise mode even without Core Location speed.
+        guard sample.timestamp > referenceSample.timestamp else {
+            return false
+        }
+        let referenceAccuracy = referenceSample.horizontalAccuracy.isFinite && referenceSample.horizontalAccuracy >= 0
+            ? referenceSample.horizontalAccuracy
+            : 0
+        let materialMovementThreshold = thresholds.stationaryRadiusMeters + max(sample.horizontalAccuracy, referenceAccuracy, 10)
+        return distanceMeters(from: referenceSample, to: sample) > materialMovementThreshold
+    }
+
+    private func sampleIndicatesMovementFromStationaryAnchor(_ anchor: LocationSample, _ sample: LocationSample) -> Bool {
+        if sample.speed.isFinite, sample.speed > thresholds.stationarySpeedThreshold {
+            return true
+        }
+
+        guard sample.horizontalAccuracy.isFinite,
+              sample.horizontalAccuracy >= 0,
+              sample.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters
+        else {
+            return false
+        }
+
+        return distanceMeters(from: anchor, to: sample) > thresholds.stationaryRadiusMeters
     }
 
     private func trimmed(_ samples: [LocationSample]) -> [LocationSample] {

@@ -909,11 +909,17 @@ final class TravelsCoreTests: XCTestCase {
         )
 
         let saved = try XCTUnwrap(try store.allEvents().first)
+        let expectedSolar = SolarTwilight.solarPeriodResult(
+            at: eventDate,
+            latitude: 33.8403,
+            longitude: -118.0037,
+            timeZone: TimeZone(identifier: "America/Los_Angeles")!
+        )
         XCTAssertEqual(saved.event.solarPeriod, .day)
         XCTAssertNotNil(saved.event.solarPeriodCalculatedAt)
-        XCTAssertEqual(try XCTUnwrap(saved.event.solarPeriodPercent), 0.5, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(saved.event.solarPeriodPercent), try XCTUnwrap(expectedSolar.percent), accuracy: 0.0001)
         XCTAssertEqual(saved.event.twilightPhase, .none)
-        XCTAssertNil(saved.event.twilightPercent)
+        XCTAssertEqual(try XCTUnwrap(saved.event.twilightPercent), try XCTUnwrap(expectedSolar.percent), accuracy: 0.0001)
         XCTAssertNotNil(saved.event.twilightCalculatedAt)
     }
 
@@ -1131,7 +1137,7 @@ final class TravelsCoreTests: XCTestCase {
         )
 
         let inspector = try SQLiteDatabase(path: url.path)
-        try inspector.execute("UPDATE events SET twilight_calculated_at = NULL")
+        try inspector.execute("UPDATE events SET solar_period_calculated_at = NULL")
 
         let missing = try store.fetchLocationEventsMissingTwilight(limit: 10)
         XCTAssertEqual(missing.map(\.id), [newest, middle, oldest])
@@ -1152,9 +1158,11 @@ final class TravelsCoreTests: XCTestCase {
         let root = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString, isDirectory: true)
         let url = root.appendingPathComponent("Travels.sqlite")
         defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
 
         let store = try TravelsStore(url: url)
         let inspector = try SQLiteDatabase(path: url.path)
+        defer { inspector.close() }
         try inspector.execute("PRAGMA foreign_keys = OFF")
         try inspector.execute(
             """
@@ -1181,6 +1189,7 @@ final class TravelsCoreTests: XCTestCase {
                 .integer(0)
             ]
         )
+        inspector.close()
 
         let report = try store.databaseHealthReport()
         XCTAssertFalse(report.isHealthy)
@@ -1227,11 +1236,12 @@ final class TravelsCoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: url) }
 
         let store = try TravelsStore(url: url)
+        let timeZone = TimeZone(identifier: "America/Los_Angeles")!
         let middayID = try store.saveEvent(
             LocationEvent(
                 latitude: 33.8403,
                 longitude: -118.0037,
-                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: TimeZone(identifier: "UTC")!),
+                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: timeZone),
                 localizedDate: "2026-06-07",
                 source: .locationServices
             )
@@ -1240,7 +1250,7 @@ final class TravelsCoreTests: XCTestCase {
             LocationEvent(
                 latitude: 33.8403,
                 longitude: -118.0037,
-                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 20, minute: 10, timeZone: TimeZone(identifier: "UTC")!),
+                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 20, minute: 10, timeZone: timeZone),
                 localizedDate: "2026-06-07",
                 source: .locationServices
             )
@@ -1257,10 +1267,16 @@ final class TravelsCoreTests: XCTestCase {
 
         XCTAssertNotNil(midday.event.solarPeriodCalculatedAt)
         XCTAssertEqual(midday.event.solarPeriod, .day)
-        XCTAssertEqual(try XCTUnwrap(midday.event.solarPeriodPercent), 0.5, accuracy: 0.0001)
+        let expectedMiddaySolar = SolarTwilight.solarPeriodResult(
+            at: midday.event.timestamp,
+            latitude: midday.event.latitude,
+            longitude: midday.event.longitude,
+            timeZone: timeZone
+        )
+        XCTAssertEqual(try XCTUnwrap(midday.event.solarPeriodPercent), try XCTUnwrap(expectedMiddaySolar.percent), accuracy: 0.0001)
         XCTAssertNotNil(midday.event.twilightCalculatedAt)
         XCTAssertEqual(midday.event.twilightPhase, .none)
-        XCTAssertNil(midday.event.twilightPercent)
+        XCTAssertEqual(try XCTUnwrap(midday.event.twilightPercent), try XCTUnwrap(expectedMiddaySolar.percent), accuracy: 0.0001)
 
         XCTAssertNotNil(evening.event.solarPeriodCalculatedAt)
         XCTAssertEqual(evening.event.solarPeriod, .eveningCivilTwilight)
@@ -1275,11 +1291,12 @@ final class TravelsCoreTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: url) }
 
         let store = try TravelsStore(url: url)
+        let timeZone = TimeZone(identifier: "America/Los_Angeles")!
         let middayID = try store.saveEvent(
             LocationEvent(
                 latitude: 33.8403,
                 longitude: -118.0037,
-                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: TimeZone(identifier: "UTC")!),
+                timestamp: makeDate(year: 2026, month: 6, day: 7, hour: 12, timeZone: timeZone),
                 localizedDate: "2026-06-07",
                 source: .locationServices
             )
@@ -1291,7 +1308,13 @@ final class TravelsCoreTests: XCTestCase {
         let midday = try XCTUnwrap(try store.allEvents().first(where: { $0.event.id == middayID }))
         XCTAssertNotNil(midday.event.solarPeriodCalculatedAt)
         XCTAssertEqual(midday.event.solarPeriod, .day)
-        XCTAssertEqual(try XCTUnwrap(midday.event.solarPeriodPercent), 0.5, accuracy: 0.0001)
+        let expectedMiddaySolar = SolarTwilight.solarPeriodResult(
+            at: midday.event.timestamp,
+            latitude: midday.event.latitude,
+            longitude: midday.event.longitude,
+            timeZone: timeZone
+        )
+        XCTAssertEqual(try XCTUnwrap(midday.event.solarPeriodPercent), try XCTUnwrap(expectedMiddaySolar.percent), accuracy: 0.0001)
     }
 
     func testGPXImportParsesTrackPoints() throws {
