@@ -18,6 +18,7 @@ Do not include unredacted precise location history, home/work addresses, photo m
 - The app must remain local-first unless an explicit future requirement adds sync or server-backed behavior.
 - The app must not add analytics, advertising identifiers, remote logging, telemetry, cloud sync, or third-party network services without an explicit requirements change.
 - Reverse geocoding may send location data to Apple services when the user enables address resolution; this must remain disclosed in settings and App Store privacy copy.
+- When Automatic Location Tracking and Background Location are enabled in Automatic or Always On Precise Location Mode, the app retains an iOS background location activity so tracking can resume after suspension or relaunch. This may keep the system location indicator visible more often, including while the app is using low-power significant-change monitoring.
 - Photo import requires access to photo metadata and must fail safely when timestamp or location metadata is missing.
 - Authentication lock uses device-owner authentication through LocalAuthentication. It is a privacy lock for casual access, not a replacement for iOS device security or encrypted backups.
 - Database repair, backup, restore, and legacy import operations must avoid silent data loss.
