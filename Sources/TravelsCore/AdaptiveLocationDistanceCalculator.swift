@@ -260,10 +260,10 @@ public struct AdaptiveLocationDistanceCalculator: Equatable, Sendable {
             )
         case .balanced:
             Parameters(
-                minimumDistanceMeters: 500,
-                maximumDistanceMeters: 3_000,
-                townSpeedCapMeters: 900,
-                speedSensitivity: 1.5,
+                minimumDistanceMeters: 350,
+                maximumDistanceMeters: 2_500,
+                townSpeedCapMeters: 750,
+                speedSensitivity: 1.2,
                 smoothingAlpha: 0.35,
                 downwardSmoothingAlpha: 0.72,
                 increaseFraction: 0.35,

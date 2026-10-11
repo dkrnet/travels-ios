@@ -19,10 +19,10 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Always-visible lower-right map scale marker
 - Date navigation with previous-day context for continuity
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
-- A live `Precise Location Active` badge on the map and list screens while high-precision tracking is running
+- A full-width date/count banner on the map and list screens with a trailing `Precise Location` indicator while high-precision tracking is running
 - Background-location option with adaptive Location Detail presets for High Detail, Balanced, Battery Saver, and Road Trip point density
-- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, makes one bounded final precise sample before returning to idle detection, and uses a short post-exit guard so queued or ambiguous samples do not bounce the app straight back into precise mode unless movement is clearly resumed; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
-- Adaptive automatic tracking distance grows conservatively during sustained highway speed, shrinks faster after sustained town-speed slowdowns, requests a bounded automatic transition sample near highway exits or town entries, and keeps stop detection independent of highway-sized distance filtering
+- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, recovers from prolonged active-stream silence with a one-time stream restart followed by bounded final precise exit if no fresh sample arrives, and uses a short post-exit guard so queued or ambiguous samples do not bounce the app straight back into precise mode unless movement is clearly resumed; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
+- Adaptive automatic tracking distance grows conservatively during sustained highway speed, shrinks faster after sustained town-speed slowdowns, requests a bounded automatic transition sample near highway exits or town entries, keeps stop detection independent of highway-sized event-save filtering, and keeps active Core Location delivery more frequent than event persistence when preserving route continuity
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
 - Developer diagnostics mirrored to a local maintenance log file in app-controlled storage
@@ -69,10 +69,36 @@ Run the core package tests:
 swift test
 ```
 
+Or use the repository wrapper:
+
+```bash
+scripts/run_regression_tests.sh
+```
+
+The wrapper is quiet by default: it writes full output to `.build/test-logs/`, prints a compact pass summary, and summarizes failing tests without passed-test chatter. Pass `--failure-detail` for assertion-by-assertion failure lines or `--verbose` to show the normal XCTest output.
+
 Open the repository in Xcode and use the `Travels` scheme for Simulator/device development, or build from the command line when Xcode is available:
 
 ```bash
 xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build
+```
+
+Build for a connected physical iPhone:
+
+```bash
+scripts/build_device.sh
+```
+
+Build and install over the existing phone app without uninstalling or deleting the app data container:
+
+```bash
+scripts/install_device.sh --build
+```
+
+If more than one paired phone is available, pass the device identifier from `xcrun devicectl list devices`:
+
+```bash
+scripts/install_device.sh --build --device DEVICE_ID
 ```
 
 Real-device validation is required before release for background location, Always Location permission flow, photo metadata import, LocalAuthentication, and adaptive Location Detail behavior.
@@ -80,6 +106,29 @@ Real-device validation is required before release for background location, Alway
 ## Data storage
 
 The modern app stores its primary database in the app's Application Support directory under the `Travels` subdirectory as `Travels.sqlite`. Photo attachments are stored in a `Photos` subdirectory under the same app support directory. Developer maintenance diagnostics are mirrored to `Maintenance.log` under the same app support directory.
+
+For offline recovery work, `scripts/recover_location_events.py` can audit the
+full location-event recovery records in an exported `Maintenance.log` against
+a copied `Travels.sqlite` database. It performs a dry run unless `--apply` is
+provided, creates a timestamped database backup before applying changes, and
+writes a JSON action report. For example:
+
+```bash
+python3 scripts/recover_location_events.py \
+  --database /path/to/Travels.sqlite \
+  --log /path/to/Maintenance.log \
+  --date 20261010 \
+  --time-zone America/Los_Angeles \
+  --apply
+```
+
+The required `--date` argument uses `YYYYMMDD` and limits recovery to that
+logged local calendar day. Use `--print-events` instead of `--apply` to print
+the selected records and their accepted/rejected decisions without changing
+the database. `--apply` and `--print-events` cannot be used together.
+
+This maintenance tool operates only on the supplied files. It does not connect
+to a phone or replace the on-device database.
 
 On first launch, the app checks for a legacy `Documents/travels.sqlite` database. If present and not already imported, it copies a pre-modernization backup and imports legacy geolocations, events, and settings into the modern store.
 

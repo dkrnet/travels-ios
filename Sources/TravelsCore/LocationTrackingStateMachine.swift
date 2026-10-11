@@ -98,7 +98,7 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
     }
 
     @discardableResult
-    public mutating func record(sample: LocationSample) -> LocationTrackingTransition {
+    public mutating func record(sample: LocationSample, idleFallbackReference: LocationSample? = nil) -> LocationTrackingTransition {
         if let lastSampleTimestamp, sample.timestamp < lastSampleTimestamp {
             return .none
         }
@@ -111,7 +111,7 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             }
             // BUGFIX: idle detection can receive late or cleanup Core Location samples immediately
             // after precise mode exits. Require real movement evidence before re-entering active mode.
-            guard idleDetectionSampleIndicatesMovement(sample) else {
+            guard idleDetectionSampleIndicatesMovement(sample, fallbackReference: idleFallbackReference) else {
                 return .none
             }
             idleReferenceSample = nil
@@ -206,7 +206,7 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         return sample.speed <= thresholds.stationarySpeedThreshold
     }
 
-    public func idleDetectionSampleIndicatesMovement(_ sample: LocationSample) -> Bool {
+    public func idleDetectionSampleIndicatesMovement(_ sample: LocationSample, fallbackReference: LocationSample? = nil) -> Bool {
         if sample.speed.isFinite, sample.speed > thresholds.stationarySpeedThreshold {
             return true
         }
@@ -218,12 +218,21 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             return false
         }
 
-        guard let idleReferenceSample else {
+        guard let referenceSample = idleReferenceSample ?? fallbackReference else {
             return false
         }
 
-        return sample.timestamp > idleReferenceSample.timestamp
-            && distanceMeters(from: idleReferenceSample, to: sample) > thresholds.stationaryRadiusMeters
+        // BUGFIX: significant-change style idle delivery often has unavailable speed.
+        // Use a durable stationary/reference point when available so real movement can
+        // bootstrap precise mode even without Core Location speed.
+        guard sample.timestamp > referenceSample.timestamp else {
+            return false
+        }
+        let referenceAccuracy = referenceSample.horizontalAccuracy.isFinite && referenceSample.horizontalAccuracy >= 0
+            ? referenceSample.horizontalAccuracy
+            : 0
+        let materialMovementThreshold = thresholds.stationaryRadiusMeters + max(sample.horizontalAccuracy, referenceAccuracy, 10)
+        return distanceMeters(from: referenceSample, to: sample) > materialMovementThreshold
     }
 
     private func sampleIndicatesMovementFromStationaryAnchor(_ anchor: LocationSample, _ sample: LocationSample) -> Bool {

@@ -59,10 +59,10 @@ final class AdaptiveLocationDistanceCalculatorTests: XCTestCase {
         var calculator = AdaptiveLocationDistanceCalculator(mode: .balanced)
 
         _ = calculator.record(sample: sample(at: 0, speed: -1))
-        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 500)
+        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 350)
 
         _ = calculator.record(sample: sample(at: 30, speed: 35, accuracy: 500))
-        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 500)
+        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 350)
         XCTAssertNil(calculator.state.smoothedSpeedMetersPerSecond)
     }
 
@@ -72,7 +72,7 @@ final class AdaptiveLocationDistanceCalculatorTests: XCTestCase {
         let result = calculator.record(sample: sample(at: 0, speed: 35.8))
 
         XCTAssertFalse(result.shouldUpdateDistanceFilter)
-        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 500)
+        XCTAssertEqual(calculator.state.effectiveDistanceMeters, 350)
     }
 
     func testSustainedHighSpeedIncreasesEffectiveDistanceAndModesScale() {

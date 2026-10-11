@@ -93,12 +93,30 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         )
     }
 
+    private enum PersistenceFailure: LocalizedError {
+        case storeUnavailable
+        case invalidEventID(Int64)
+
+        var errorDescription: String? {
+            switch self {
+            case .storeUnavailable:
+                "Location database is unavailable."
+            case .invalidEventID(let eventID):
+                "Location database returned an invalid event ID: \(eventID)."
+            }
+        }
+    }
+
     private let locationManager = CLLocationManager()
-    private weak var store: TravelsStore?
+    // REGRESSION GUARD: automatic location callbacks may arrive long after initial
+    // configuration. The tracking service must keep the store alive and must not
+    // silently pretend an event was saved if persistence is unavailable.
+    private var store: TravelsStore?
     private var settings = AppSettings()
     private var trackingStateMachine = LocationTrackingStateMachine()
     private var latestAcceptedEvent: LocationEvent?
     private var isConfigured = false
+    private var hasConfiguredStore = false
     private var pendingAlwaysAuthorization = false
     private var didScheduleAlwaysAuthorizationUpgrade = false
     private var isPausing = false
@@ -124,10 +142,18 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var postExitPreciseGuard: PostExitPreciseGuard?
     private var pendingFinalPreciseExitSample: LocationSample?
     private var lastNotifiedTrackingModeIsActive: Bool?
+    private var lastCoreLocationDeliveryAt: Date?
+    private var activePreciseModeEntryAppState: UIApplication.State?
+    private var consecutiveStaleWatchdogFreshLocationRequests = 0
+    private var didRestartLocationManagerForActiveSilence = false
 
     private let postExitPreciseGuardCooldown: TimeInterval = 180
     private let minimumInitialActiveTrackingInterval: TimeInterval = 90
     private let maximumCachedWatchdogLocationAge: TimeInterval = 30
+    private let maximumActiveCoreLocationDistanceFilter: CLLocationDistance = 50
+    private let backgroundActiveTrackingSilenceThreshold: TimeInterval = 120
+    private let minimumActiveTrackingSilenceBeforeStopFallback: TimeInterval = 5 * 60
+    private let minimumStaleWatchdogRequestsBeforeSilenceFallback = 3
 
     var onStatusMessage: ((String) -> Void)?
     var onTraceMessage: ((String) -> Void)?
@@ -182,6 +208,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func configure(store: TravelsStore, settings: AppSettings, latestEvent: LocationEvent?) {
         self.store = store
+        self.hasConfiguredStore = true
         self.settings = settings
         self.latestAcceptedEvent = latestEvent
         let policy = settings.preciseLocationMode.locationTrackingPolicy
@@ -190,8 +217,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         self.adaptiveDistanceCalculator = AdaptiveLocationDistanceCalculator(mode: settings.locationDetailMode)
         self.powerState = currentPowerState()
         self.lastNotifiedTrackingModeIsActive = nil
-        locationManager.allowsBackgroundLocationUpdates = settings.backgroundLocationEnabled
-        locationManager.showsBackgroundLocationIndicator = settings.backgroundLocationEnabled
+        applyBackgroundLocationConfiguration(for: managerMode, reason: "service configured")
         locationManager.activityType = .automotiveNavigation
         UIDevice.current.isBatteryMonitoringEnabled = true
         if !isConfigured {
@@ -205,6 +231,24 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 self,
                 selector: #selector(powerStateDidChange(_:)),
                 name: Notification.Name.NSProcessInfoPowerStateDidChange,
+                object: nil
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(applicationDidBecomeActive(_:)),
+                name: UIApplication.didBecomeActiveNotification,
+                object: nil
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(applicationWillEnterForeground(_:)),
+                name: UIApplication.willEnterForegroundNotification,
+                object: nil
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(applicationDidEnterBackground(_:)),
+                name: UIApplication.didEnterBackgroundNotification,
                 object: nil
             )
             isConfigured = true
@@ -237,8 +281,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             traceLocationEvent("Location Detail changed to \(settings.locationDetailMode.displayName); adaptive distance is \(formatDistance(currentAdaptiveDistanceMeters)).")
         }
         powerState = currentPowerState()
-        locationManager.allowsBackgroundLocationUpdates = settings.backgroundLocationEnabled
-        locationManager.showsBackgroundLocationIndicator = settings.backgroundLocationEnabled
+        applyBackgroundLocationConfiguration(for: managerMode, reason: "settings updated")
         refreshAuthorization()
     }
 
@@ -357,11 +400,40 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func updateDistanceFilter() {
-        locationManager.distanceFilter = currentDistanceFilter()
+        // REGRESSION GUARD: Core Location delivery cadence is intentionally
+        // separate from event persistence density. During active tracking we ask
+        // iOS for relatively frequent updates, then the adaptive filter below
+        // decides which samples are worth saving as events.
+        locationManager.distanceFilter = managerMode == .activeTracking
+            ? activeCoreLocationDistanceFilter()
+            : currentDistanceFilter()
     }
 
     private func updatePauseBehavior() {
         locationManager.pausesLocationUpdatesAutomatically = false
+    }
+
+    private func applyBackgroundLocationConfiguration(for mode: ManagerMode, reason: String) {
+        let previousAllowsBackground = locationManager.allowsBackgroundLocationUpdates
+        let previousShowsIndicator = locationManager.showsBackgroundLocationIndicator
+        locationManager.allowsBackgroundLocationUpdates = settings.backgroundLocationEnabled
+        locationManager.showsBackgroundLocationIndicator = settings.backgroundLocationEnabled
+
+        guard previousAllowsBackground != locationManager.allowsBackgroundLocationUpdates
+                || previousShowsIndicator != locationManager.showsBackgroundLocationIndicator
+                || mode == .activeTracking
+        else {
+            return
+        }
+
+        if mode == .activeTracking, settings.backgroundLocationEnabled, !previousAllowsBackground {
+            traceLocationEvent("Active tracking background delivery repaired/enabled; reason=\(reason) previousAllowsBackground=false \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        } else if mode == .activeTracking, UIApplication.shared.applicationState == .background, !settings.backgroundLocationEnabled {
+            traceLocationEvent("Active tracking is running in the background without background delivery because Background Location is disabled; reason=\(reason) \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        } else if previousAllowsBackground != locationManager.allowsBackgroundLocationUpdates
+                    || previousShowsIndicator != locationManager.showsBackgroundLocationIndicator {
+            traceLocationEvent("Background location configuration changed; reason=\(reason) allowsBackground=\(locationManager.allowsBackgroundLocationUpdates) showsIndicator=\(locationManager.showsBackgroundLocationIndicator); \(hybridWatchdogContext()).")
+        }
     }
 
     private func syncTrackingMode() {
@@ -451,11 +523,16 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             )
         case .activeTracking:
             locationManager.stopMonitoringSignificantLocationChanges()
-            locationManager.startUpdatingLocation()
             managerMode = .activeTracking
             updateLocationManagerConfiguration(for: mode)
+            // REGRESSION GUARD: Apply the active Core Location configuration before
+            // starting updates so iOS does not begin a background session with the
+            // previous idle accuracy or distance filter.
+            locationManager.startUpdatingLocation()
             let enteredAt = Date()
             preciseModeEnteredAt = enteredAt
+            activePreciseModeEntryAppState = UIApplication.shared.applicationState
+            resetActiveTrackingSilenceFallback(reason: "entered precise location mode")
             ensureActiveTrackingEntryGuardArmedIfNeeded(
                 enteredAt: enteredAt,
                 reason: "tracking mode changed to active tracking"
@@ -467,6 +544,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 isCompletingFinalPreciseExit: isCompletingHybridPreciseExit
             ) && trackingStateMachine.policy == .hybridAutomatic
             traceLocationEvent("Entered precise location mode; reason=tracking mode changed to active tracking immediateSampleRequested=\(shouldRequestImmediateSample) watchdogStartWillBeRequested=true enteredAt=\(Self.traceDateFormatter.string(from: enteredAt)); \(hybridWatchdogContext()).")
+            traceLocationEvent("Active Core Location session started; \(locationManagerConfigurationDescription()); activeEntryAppState=\(applicationStateLabel(activePreciseModeEntryAppState)); \(hybridWatchdogContext()).")
             if shouldRequestImmediateSample {
                 pendingImmediatePreciseEntrySample = true
                 requestAutomaticLocationSample(
@@ -493,6 +571,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         preciseModeEnteredAt = nil
         activeTrackingEntryGuard = nil
         pendingImmediatePreciseEntrySample = false
+        activePreciseModeEntryAppState = nil
+        resetActiveTrackingSilenceFallback(reason: "tracking manager stopped")
         locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
         locationManager.distanceFilter = kCLDistanceFilterNone
         locationManager.pausesLocationUpdatesAutomatically = false
@@ -500,6 +580,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func updateLocationManagerConfiguration(for mode: ManagerMode) {
+        applyBackgroundLocationConfiguration(for: mode, reason: "manager configuration update for \(managerModeLabel(mode))")
+        locationManager.activityType = .automotiveNavigation
         switch mode {
         case .stopped:
             locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
@@ -510,14 +592,19 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             locationManager.distanceFilter = kCLDistanceFilterNone
             locationManager.pausesLocationUpdatesAutomatically = false
         case .activeTracking:
-            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
             updateDistanceFilter()
             updatePauseBehavior()
         }
+        traceLocationEvent("Core Location manager configuration applied for \(managerModeLabel(mode)); \(locationManagerConfigurationDescription()).")
     }
 
     private func currentDistanceFilter() -> CLLocationDistance {
         CLLocationDistance(currentAdaptiveDistanceMeters)
+    }
+
+    private func activeCoreLocationDistanceFilter() -> CLLocationDistance {
+        min(currentDistanceFilter(), maximumActiveCoreLocationDistanceFilter)
     }
 
     private var currentAdaptiveDistanceMeters: Double {
@@ -530,6 +617,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
         isPausing = true
+        traceLocationEvent("Core Location paused location updates; requesting one recovery sample if automatic tracking is active; \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
         if settings.autoAddLocations && !isCompletingHybridPreciseExit {
             locationManager.requestLocation()
         }
@@ -537,11 +625,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
         isPausing = false
+        traceLocationEvent("Core Location resumed location updates; \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if let clError = error as? CLError, clError.code == .locationUnknown {
-            traceLocationEvent("Core Location reported locationUnknown after a request; waiting for the next sample.")
+            traceLocationEvent("Core Location reported locationUnknown after a request; waiting for the next sample; \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
             return
         }
         if let clError = error as? CLError, clError.code == .denied {
@@ -550,6 +639,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             onAuthorizationStateChanged?("Location access is needed for Travels.")
             return
         }
+        traceLocationEvent("Core Location failed with error: \(error.localizedDescription); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
         onStatusMessage?(error.localizedDescription)
     }
 
@@ -557,11 +647,14 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         guard let location = locations.last else {
             return
         }
+        lastCoreLocationDeliveryAt = Date()
+        resetActiveTrackingSilenceFallback(reason: "Core Location delivered a fresh update")
         let isImmediatePreciseEntrySample = pendingImmediatePreciseEntrySample && !pendingManualCapture
         if isImmediatePreciseEntrySample {
             pendingImmediatePreciseEntrySample = false
         }
         traceLocationEvent("Core Location delivered \(locations.count) update(s); using the newest sample; manual=\(pendingManualCapture) immediatePreciseEntrySample=\(isImmediatePreciseEntrySample) elapsedSincePreciseEntry=\(preciseModeElapsedDescription()).")
+        evaluateOverdueHybridWatchdogIfNeeded(reason: "Core Location delivery")
         if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, !pendingManualCapture {
             if Date() <= ignoreUntil {
                 traceLocationEvent("Ignoring automatic location sample during post-precise-exit cooldown.")
@@ -589,6 +682,21 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     @objc private func powerStateDidChange(_ notification: Notification) {
         schedulePowerStateReevaluation()
+    }
+
+    @objc private func applicationWillEnterForeground(_ notification: Notification) {
+        traceLocationEvent("Application will enter foreground; \(activeBackgroundSilenceDescription(now: Date())); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        evaluateOverdueHybridWatchdogIfNeeded(reason: "application will enter foreground")
+    }
+
+    @objc private func applicationDidBecomeActive(_ notification: Notification) {
+        traceLocationEvent("Application became active; \(activeBackgroundSilenceDescription(now: Date())); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        evaluateOverdueHybridWatchdogIfNeeded(reason: "application became active")
+    }
+
+    @objc private func applicationDidEnterBackground(_ notification: Notification) {
+        applyBackgroundLocationConfiguration(for: managerMode, reason: "application entered background")
+        traceLocationEvent("Application entered background; \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
     }
 
     private func notifyTrackingModeChanged(callSite: String = #function, reason: String = "tracking mode changed") {
@@ -810,37 +918,90 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 traceLocationEvent("Hybrid watchdog #\(watchdogID) woke but no recheck was due; \(hybridWatchdogStateDescription()); \(hybridWatchdogContext()).")
                 continue
             }
-            markInitialActiveTrackingWatchdogRecheckCompleted(watchdogID: watchdogID)
-
-            let elapsed = max(0, firedAt.timeIntervalSince(nextRecheckAt.addingTimeInterval(-hybridTrackingWatchdog.interval)))
-            if let location = locationManager.location {
-                let cachedAge = max(0, firedAt.timeIntervalSince(location.timestamp))
-                if cachedAge <= maximumCachedWatchdogLocationAge {
-                    traceLocationEvent(
-                        "Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); using fresh-enough cached location sample; cachedAge=\(formatDuration(cachedAge)) timestamp=\(Self.traceDateFormatter.string(from: location.timestamp)) speed=\(formatSpeed(location.speed)) accuracy=\(formatDistance(location.horizontalAccuracy)); \(hybridWatchdogContext())."
-                    )
-                    enqueue(
-                        location: location,
-                        context: PendingLocationContext(
-                            reason: "Hybrid watchdog #\(watchdogID) fired and used fresh-enough cached location",
-                            source: "hybridWatchdog",
-                            isCachedLocation: true,
-                            isImmediatePreciseEntrySample: false
-                        )
-                    )
-                    continue
-                }
-                traceLocationEvent(
-                    "Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); cached location is stale, so requesting fresh location instead; cachedAge=\(formatDuration(cachedAge)) maxAllowedAge=\(formatDuration(maximumCachedWatchdogLocationAge)) timestamp=\(Self.traceDateFormatter.string(from: location.timestamp)) speed=\(formatSpeed(location.speed)) accuracy=\(formatDistance(location.horizontalAccuracy)); \(hybridWatchdogContext())."
-                )
+            if performHybridWatchdogRecheck(watchdogID: watchdogID, firedAt: firedAt, scheduledRecheckAt: nextRecheckAt, reason: "scheduled watchdog task") {
+                continue
             }
-            traceLocationEvent("Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); requesting fresh location with requestLocation(); \(hybridWatchdogContext()).")
-            requestAutomaticLocationSample(
-                reason: "Hybrid watchdog #\(watchdogID) fired; requesting a fresh location sample with requestLocation().",
-                useCachedLocationFirst: false
-            )
         }
         exitReason = "cancelled"
+    }
+
+    private func evaluateOverdueHybridWatchdogIfNeeded(reason: String) {
+        guard case .scheduled(let nextRecheckAt) = hybridTrackingWatchdog.state else { return }
+        let now = Date()
+        guard now >= nextRecheckAt else { return }
+        guard let watchdogID = activeHybridWatchdogID else {
+            traceLocationEvent("Hybrid watchdog overdue but no active watchdog ID is recorded; reason=\(reason); \(hybridWatchdogStateDescription()); \(hybridWatchdogContext()).")
+            return
+        }
+        traceLocationEvent("Hybrid watchdog #\(watchdogID) is overdue; evaluating missed recheck now; reason=\(reason) scheduledFire=\(Self.traceDateFormatter.string(from: nextRecheckAt)); \(hybridWatchdogContext()).")
+        guard settings.autoAddLocations else {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue recheck skipped; automatic tracking disabled; reason=\(reason); \(hybridWatchdogContext()).")
+            cancelHybridTrackingWatchdog(reason: .automaticTrackingDisabled)
+            return
+        }
+        guard managerMode == .activeTracking else {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue recheck skipped; manager mode is \(managerModeLabel()), not active tracking; reason=\(reason); \(hybridWatchdogContext()).")
+            cancelHybridTrackingWatchdog(reason: .managerModeChangedOutOfActiveTracking)
+            return
+        }
+        guard trackingStateMachine.policy == .hybridAutomatic else {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue recheck skipped; tracking policy is \(trackingStateMachine.policy.rawValue); reason=\(reason); \(hybridWatchdogContext()).")
+            cancelHybridTrackingWatchdog(reason: .trackingPolicyNotHybridAutomatic)
+            return
+        }
+        guard !isCompletingHybridPreciseExit else {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue recheck skipped; final precise-exit is in progress; reason=\(reason); \(hybridWatchdogContext()).")
+            cancelHybridTrackingWatchdog(reason: .finalPreciseExitStarted)
+            return
+        }
+        if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, now <= ignoreUntil {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue recheck skipped; post-exit automatic sample cooldown is active until \(Self.traceDateFormatter.string(from: ignoreUntil)); reason=\(reason); \(hybridWatchdogContext()).")
+            cancelHybridTrackingWatchdog(reason: .postExitGuardActive)
+            return
+        }
+        guard hybridTrackingWatchdog.shouldRequestRecheck(now: now) else {
+            traceLocationEvent("Hybrid watchdog #\(watchdogID) overdue evaluation found no recheck due after state refresh; reason=\(reason); \(hybridWatchdogStateDescription()); \(hybridWatchdogContext()).")
+            return
+        }
+        _ = performHybridWatchdogRecheck(watchdogID: watchdogID, firedAt: now, scheduledRecheckAt: nextRecheckAt, reason: "overdue watchdog recovery after \(reason)")
+    }
+
+    @discardableResult
+    private func performHybridWatchdogRecheck(watchdogID: Int, firedAt: Date, scheduledRecheckAt: Date, reason: String) -> Bool {
+        markInitialActiveTrackingWatchdogRecheckCompleted(watchdogID: watchdogID)
+
+        let elapsed = max(0, firedAt.timeIntervalSince(scheduledRecheckAt.addingTimeInterval(-hybridTrackingWatchdog.interval)))
+        if let location = locationManager.location {
+            let cachedAge = max(0, firedAt.timeIntervalSince(location.timestamp))
+            if cachedAge <= maximumCachedWatchdogLocationAge {
+                traceLocationEvent(
+                    "Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); using fresh-enough cached location sample; reason=\(reason) cachedAge=\(formatDuration(cachedAge)) timestamp=\(Self.traceDateFormatter.string(from: location.timestamp)) speed=\(formatSpeed(location.speed)) accuracy=\(formatDistance(location.horizontalAccuracy)); \(hybridWatchdogContext())."
+                )
+                enqueue(
+                    location: location,
+                    context: PendingLocationContext(
+                        reason: "Hybrid watchdog #\(watchdogID) fired and used fresh-enough cached location",
+                        source: "hybridWatchdog",
+                        isCachedLocation: true,
+                        isImmediatePreciseEntrySample: false
+                    )
+                )
+                return true
+            }
+            traceLocationEvent(
+                "Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); cached location is stale, so requesting fresh location instead; reason=\(reason) cachedAge=\(formatDuration(cachedAge)) maxAllowedAge=\(formatDuration(maximumCachedWatchdogLocationAge)) timestamp=\(Self.traceDateFormatter.string(from: location.timestamp)) speed=\(formatSpeed(location.speed)) accuracy=\(formatDistance(location.horizontalAccuracy)); \(hybridWatchdogContext())."
+            )
+        }
+        consecutiveStaleWatchdogFreshLocationRequests += 1
+        if handleActiveTrackingSilenceFallbackIfNeeded(watchdogID: watchdogID, firedAt: firedAt) {
+            return true
+        }
+        traceLocationEvent("Hybrid watchdog #\(watchdogID) fired after \(formatDuration(elapsed)); requesting fresh location with requestLocation(); reason=\(reason); \(hybridWatchdogContext()).")
+        requestAutomaticLocationSample(
+            reason: "Hybrid watchdog #\(watchdogID) fired; requesting a fresh location sample with requestLocation().",
+            useCachedLocationFirst: false
+        )
+        return true
     }
 
     private func requestAutomaticLocationSample(reason: String, useCachedLocationFirst: Bool) {
@@ -875,7 +1036,81 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         locationManager.requestLocation()
     }
 
-    private func beginFinalPreciseExit() {
+    private func resetActiveTrackingSilenceFallback(reason: String) {
+        guard consecutiveStaleWatchdogFreshLocationRequests > 0 || didRestartLocationManagerForActiveSilence else {
+            return
+        }
+        traceLocationEvent(
+            "Active tracking silence fallback reset; reason=\(reason) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests) didRestartLocationManager=\(didRestartLocationManagerForActiveSilence); \(activeBackgroundSilenceDescription(now: Date())); \(hybridWatchdogContext())."
+        )
+        consecutiveStaleWatchdogFreshLocationRequests = 0
+        didRestartLocationManagerForActiveSilence = false
+    }
+
+    private func handleActiveTrackingSilenceFallbackIfNeeded(watchdogID: Int, firedAt: Date) -> Bool {
+        guard settings.autoAddLocations,
+              managerMode == .activeTracking,
+              trackingStateMachine.policy == .hybridAutomatic,
+              !isCompletingHybridPreciseExit
+        else {
+            return false
+        }
+
+        guard consecutiveStaleWatchdogFreshLocationRequests >= minimumStaleWatchdogRequestsBeforeSilenceFallback else {
+            traceLocationEvent(
+                "Active tracking silence fallback not ready; watchdog #\(watchdogID) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests)/\(minimumStaleWatchdogRequestsBeforeSilenceFallback); \(activeBackgroundSilenceDescription(now: firedAt)); \(hybridWatchdogContext())."
+            )
+            return false
+        }
+
+        let latestDeliveryAt = lastCoreLocationDeliveryAt ?? preciseModeEnteredAt
+        guard let latestDeliveryAt else {
+            traceLocationEvent(
+                "Active tracking silence fallback skipped; no Core Location delivery or precise-entry timestamp is available; watchdog #\(watchdogID); \(hybridWatchdogContext())."
+            )
+            return false
+        }
+
+        let silence = firedAt.timeIntervalSince(latestDeliveryAt)
+        guard silence >= minimumActiveTrackingSilenceBeforeStopFallback else {
+            traceLocationEvent(
+                "Active tracking silence fallback not ready; watchdog #\(watchdogID) silence=\(formatDuration(silence))/\(formatDuration(minimumActiveTrackingSilenceBeforeStopFallback)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests); \(hybridWatchdogContext())."
+            )
+            return false
+        }
+
+        if !didRestartLocationManagerForActiveSilence {
+            didRestartLocationManagerForActiveSilence = true
+            traceLocationEvent(
+                "Active tracking silence fallback restarting Core Location once before stop exit; watchdog #\(watchdogID) silence=\(formatDuration(silence)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext())."
+            )
+            // REGRESSION GUARD: after a trip ends, iOS can stop delivering active updates without
+            // sending a final stationary sample. Restart once before falling back to timeout-based
+            // final precise exit so real movement still has a chance to produce fresh evidence.
+            locationManager.stopUpdatingLocation()
+            updateLocationManagerConfiguration(for: .activeTracking)
+            locationManager.startUpdatingLocation()
+            requestAutomaticLocationSample(
+                reason: "Active tracking silence fallback restarted Core Location; requesting one fresh sample before final exit.",
+                useCachedLocationFirst: false
+            )
+            return true
+        }
+
+        traceLocationEvent(
+            "Active tracking silence fallback starting final precise exit; watchdog #\(watchdogID) silence=\(formatDuration(silence)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests) lastCoreLocationDelivery=\(lastCoreLocationDeliveryDescription()); cached location will not be used as stop or movement evidence; \(hybridWatchdogContext())."
+        )
+        beginFinalPreciseExit(
+            reason: "active tracking silence fallback after stale watchdog requests",
+            evaluateCachedLocationFirst: false
+        )
+        return true
+    }
+
+    private func beginFinalPreciseExit(
+        reason: String = "stationary window satisfied",
+        evaluateCachedLocationFirst: Bool = true
+    ) {
         guard settings.autoAddLocations else { return }
         guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else { return }
         guard trackingStateMachine.policy == .hybridAutomatic else { return }
@@ -891,9 +1126,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         ignoreAutomaticLocationUpdatesUntil = nil
         pendingFinalPreciseExitSample = nil
         cancelHybridTrackingWatchdog(reason: .finalPreciseExitStarted)
-        traceLocationEvent("Hybrid final precise exit started; waiting up to 8s for one bounded automatic sample.")
+        traceLocationEvent("Hybrid final precise exit started; reason=\(reason) evaluateCachedLocationFirst=\(evaluateCachedLocationFirst); waiting up to 8s for one bounded automatic sample.")
 
-        if let location = locationManager.location {
+        if evaluateCachedLocationFirst, let location = locationManager.location {
             traceLocationEvent("Hybrid final precise exit is evaluating the cached location sample first; the sample remains automatic.")
             enqueue(
                 location: location,
@@ -906,7 +1141,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             )
         } else {
             requestAutomaticLocationSample(
-                reason: "Hybrid final precise exit requested a fresh automatic sample.",
+                reason: "Hybrid final precise exit requested a fresh automatic sample; reason=\(reason).",
                 useCachedLocationFirst: false
             )
         }
@@ -1070,6 +1305,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         locationManager.startMonitoringSignificantLocationChanges()
         managerMode = .idleDetection
         preciseModeEnteredAt = nil
+        activePreciseModeEntryAppState = nil
+        resetActiveTrackingSilenceFallback(reason: "precise mode exited to idle detection")
         clearActiveTrackingEntryGuard(callSite: callSite, reason: "precise mode exited to idle detection")
         pendingImmediatePreciseEntrySample = false
         updateLocationManagerConfiguration(for: .idleDetection)
@@ -1305,20 +1542,27 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 if trackingStateMachine.policy == .alwaysOffHighPrecision {
                     traceLocationEvent("Idle detection sample ignored for active tracking because Precise Location Mode is Always Off.")
                 } else {
-                    let qualifiesForActiveTracking = trackingStateMachine.idleDetectionSampleIndicatesMovement(sample)
+                    let fallbackReference = latestAcceptedEvent.map(locationSample)
+                    let qualifiesForActiveTracking = trackingStateMachine.idleDetectionSampleIndicatesMovement(sample, fallbackReference: fallbackReference)
                     if qualifiesForActiveTracking, !postExitPreciseGuardAllowsActiveReentry(for: sample) {
                         shouldRecordAutomaticTrackingSample = false
                     } else if qualifiesForActiveTracking {
-                        traceLocationEvent("Idle detection sample qualifies for active tracking.")
+                        traceLocationEvent("Idle detection sample qualifies for active tracking; fallbackReference=\(fallbackReference == nil ? "unavailable" : "latest accepted event").")
                     } else {
-                        traceLocationEvent("Idle detection sample does not qualify for active tracking.")
+                        traceLocationEvent("Idle detection sample does not qualify for active tracking; fallbackReference=\(fallbackReference == nil ? "unavailable" : "latest accepted event").")
                     }
                 }
             }
         }
         traceLocationEvent("Location sample usage decision; usedForTrackingState=\(shouldRecordAutomaticTrackingSample) usedForSavingDecision=true sampleContext=\(locationContextDescription(context)) previousTrackingState=\(trackingStateLabel(previousTrackingState)).")
         if shouldRecordAutomaticTrackingSample {
-            _ = trackingStateMachine.record(sample: sample)
+            let idleFallbackReference: LocationSample?
+            if case .idleDetection = previousTrackingState {
+                idleFallbackReference = latestAcceptedEvent.map(locationSample)
+            } else {
+                idleFallbackReference = nil
+            }
+            _ = trackingStateMachine.record(sample: sample, idleFallbackReference: idleFallbackReference)
             if let trackingStateMessage = trackingStateMessage(
                 previous: previousTrackingState,
                 current: trackingStateMachine.state
@@ -1363,18 +1607,37 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         if decision == .acceptAndReplacePrevious {
             event.geolocationID = latestAcceptedEvent?.geolocationID
         }
+        let savedKind = decision == .acceptAndReplacePrevious ? "replacement" : "new"
         do {
-            let savedKind = decision == .acceptAndReplacePrevious ? "replacement" : "new"
             let eventID = try await save(
                 event: event,
                 replacingEventID: decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil
             )
+            traceLocationEvent(savedLocationRecoveryDetails(eventID: eventID, event: event, savedKind: savedKind, context: context, manual: wasManualCapture, replacingEventID: decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil))
             traceLocationEvent("Saved location event #\(eventID) as \(savedKind) record.")
             if wasManualCapture, eventID > 0 {
                 onManualTrackedEvent?(eventID, event.timestamp)
             }
         } catch {
-            onStatusMessage?(error.localizedDescription)
+            traceLocationEvent("Location event save failed; kind=\(savedKind) timestamp=\(Self.traceDateFormatter.string(from: event.timestamp)) latitude=\(String(format: "%.6f", event.latitude)) longitude=\(String(format: "%.6f", event.longitude)) manual=\(wasManualCapture) source=\(context.source) replacingEventID=\((decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil).map(String.init) ?? "none") error=\(error.localizedDescription); sampleContext=\(locationContextDescription(context)); \(hybridWatchdogContext()).")
+            if let failure = error as? PersistenceFailure,
+               case .storeUnavailable = failure,
+               !hasConfiguredStore,
+               !wasManualCapture {
+                traceLocationEvent("Pre-configuration automatic location sample discarded during startup; database store has not been attached yet.")
+            } else {
+                onStatusMessage?(error.localizedDescription)
+            }
+            // REGRESSION GUARD: a persistence failure is not an accepted event.
+            // Do not update accepted-event side effects or resync tracking as if
+            // durable storage succeeded.
+            if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
+                completeFinalPreciseExit()
+            }
+            if isPausing {
+                isPausing = false
+            }
+            return
         }
 
         if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
@@ -1586,7 +1849,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func applicationStateLabel() -> String {
-        switch UIApplication.shared.applicationState {
+        applicationStateLabel(UIApplication.shared.applicationState)
+    }
+
+    private func applicationStateLabel(_ state: UIApplication.State?) -> String {
+        guard let state else { return "unknown" }
+        switch state {
         case .active:
             return "active"
         case .inactive:
@@ -1595,6 +1863,95 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return "background"
         @unknown default:
             return "unknown"
+        }
+    }
+
+    private func locationManagerConfigurationDescription() -> String {
+        [
+            "desiredAccuracy=\(formatLocationAccuracy(locationManager.desiredAccuracy))",
+            "distanceFilter=\(formatDistance(locationManager.distanceFilter))",
+            "adaptiveSaveDistance=\(formatDistance(currentAdaptiveDistanceMeters))",
+            "activityType=\(activityTypeLabel(locationManager.activityType))",
+            "allowsBackground=\(locationManager.allowsBackgroundLocationUpdates)",
+            "showsBackgroundIndicator=\(locationManager.showsBackgroundLocationIndicator)",
+            "pausesAutomatically=\(locationManager.pausesLocationUpdatesAutomatically)",
+            "authorization=\(authorizationStatusLabel(locationManager.authorizationStatus))",
+            "lastCoreLocationDelivery=\(lastCoreLocationDeliveryDescription())"
+        ].joined(separator: " ")
+    }
+
+    private func activeBackgroundSilenceDescription(now: Date) -> String {
+        guard managerMode == .activeTracking, let preciseModeEnteredAt else {
+            return "activeBackgroundSilence=not-active"
+        }
+        let reference = max(preciseModeEnteredAt, lastCoreLocationDeliveryAt ?? preciseModeEnteredAt)
+        let silence = max(0, now.timeIntervalSince(reference))
+        let entryState = applicationStateLabel(activePreciseModeEntryAppState)
+        guard silence >= backgroundActiveTrackingSilenceThreshold else {
+            return "activeBackgroundSilence=below-threshold elapsed=\(formatDuration(silence)) activeEntryAppState=\(entryState)"
+        }
+        return "activeBackgroundSilence=detected elapsed=\(formatDuration(silence)) activeEntryAt=\(Self.traceDateFormatter.string(from: preciseModeEnteredAt)) activeEntryAppState=\(entryState) lastCoreLocationDelivery=\(lastCoreLocationDeliveryDescription())"
+    }
+
+    private func lastCoreLocationDeliveryDescription() -> String {
+        guard let lastCoreLocationDeliveryAt else {
+            return "none"
+        }
+        return Self.traceDateFormatter.string(from: lastCoreLocationDeliveryAt)
+    }
+
+    private func authorizationStatusLabel(_ status: CLAuthorizationStatus) -> String {
+        switch status {
+        case .notDetermined:
+            return "notDetermined"
+        case .restricted:
+            return "restricted"
+        case .denied:
+            return "denied"
+        case .authorizedAlways:
+            return "authorizedAlways"
+        case .authorizedWhenInUse:
+            return "authorizedWhenInUse"
+        @unknown default:
+            return "unknown"
+        }
+    }
+
+    private func activityTypeLabel(_ activityType: CLActivityType) -> String {
+        switch activityType {
+        case .automotiveNavigation:
+            return "automotiveNavigation"
+        case .fitness:
+            return "fitness"
+        case .other:
+            return "other"
+        case .otherNavigation:
+            return "otherNavigation"
+        case .airborne:
+            return "airborne"
+        @unknown default:
+            return "unknown"
+        }
+    }
+
+    private func formatLocationAccuracy(_ value: CLLocationAccuracy) -> String {
+        switch value {
+        case kCLLocationAccuracyBestForNavigation:
+            return "bestForNavigation"
+        case kCLLocationAccuracyBest:
+            return "best"
+        case kCLLocationAccuracyNearestTenMeters:
+            return "nearestTenMeters"
+        case kCLLocationAccuracyHundredMeters:
+            return "hundredMeters"
+        case kCLLocationAccuracyKilometer:
+            return "kilometer"
+        case kCLLocationAccuracyThreeKilometers:
+            return "threeKilometers"
+        case kCLLocationAccuracyReduced:
+            return "reduced"
+        default:
+            return formatDistance(value)
         }
     }
 
@@ -1695,6 +2052,32 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         return String(format: "%.1fs", max(0, value))
     }
 
+    private func savedLocationRecoveryDetails(
+        eventID: Int64,
+        event: LocationEvent,
+        savedKind: String,
+        context: PendingLocationContext,
+        manual: Bool,
+        replacingEventID: Int64?
+    ) -> String {
+        [
+            "Saved location event recovery details;",
+            "eventID=\(eventID)",
+            "kind=\(savedKind)",
+            "timestamp=\(Self.traceDateFormatter.string(from: event.timestamp))",
+            "latitude=\(String(format: "%.6f", event.latitude))",
+            "longitude=\(String(format: "%.6f", event.longitude))",
+            "horizontalAccuracy=\(formatDistance(event.horizontalAccuracy))",
+            "speed=\(formatSpeed(event.speed))",
+            "course=\(event.course.isFinite ? String(format: "%.1f", event.course) : "unknown")",
+            "manual=\(manual)",
+            "source=\(context.source)",
+            "cached=\(context.isCachedLocation)",
+            "immediatePreciseEntry=\(context.isImmediatePreciseEntrySample)",
+            "replacingEventID=\(replacingEventID.map(String.init) ?? "none")"
+        ].joined(separator: " ")
+    }
+
     private func distanceMeters(from lhs: LocationSample, to rhs: LocationSample) -> Double {
         let radius = 6_371_000.0
         let phi1 = lhs.latitude * .pi / 180
@@ -1715,7 +2098,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }()
 
     private func save(event: LocationEvent, replacingEventID: Int64? = nil) async throws -> Int64 {
-        guard let store else { return 0 }
+        guard let store else {
+            traceLocationEvent("Location event save failed before database write; reason=location store unavailable timestamp=\(Self.traceDateFormatter.string(from: event.timestamp)) latitude=\(String(format: "%.6f", event.latitude)) longitude=\(String(format: "%.6f", event.longitude)).")
+            throw PersistenceFailure.storeUnavailable
+        }
         let eventID = try await Task.detached(priority: .utility) { [store, event] in
             if let replacingEventID {
                 try store.replaceEvent(eventID: replacingEventID, with: event)
@@ -1723,6 +2109,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             }
             return try store.saveEvent(event)
         }.value
+        guard eventID > 0 else {
+            traceLocationEvent("Location event save failed after database write; reason=invalid event ID eventID=\(eventID) timestamp=\(Self.traceDateFormatter.string(from: event.timestamp)) latitude=\(String(format: "%.6f", event.latitude)) longitude=\(String(format: "%.6f", event.longitude)).")
+            throw PersistenceFailure.invalidEventID(eventID)
+        }
         var storedEvent = event
         storedEvent.id = eventID
         latestAcceptedEvent = storedEvent

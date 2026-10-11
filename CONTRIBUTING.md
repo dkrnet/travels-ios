@@ -24,10 +24,25 @@ Run the package tests before submitting ordinary source changes:
 swift test
 ```
 
+The repo also provides a wrapper with optional focused filters:
+
+```bash
+scripts/run_regression_tests.sh
+scripts/run_regression_tests.sh --filter LocationTrackingStateMachineTests
+```
+
+The wrapper suppresses passed-test chatter by default, summarizes failing tests, and stores the full output in `.build/test-logs/`. Use `--failure-detail` for assertion-by-assertion failure lines or `--verbose` when you need the raw XCTest stream.
+
 When Xcode and an iOS Simulator are available, also build the app target from the Xcode project:
 
 ```bash
 xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build
+```
+
+For real-device checks, build and install without uninstalling the existing app:
+
+```bash
+scripts/install_device.sh --build
 ```
 
 When UI or platform integration behavior changes, run the applicable Simulator or device checks in Xcode. Real-device validation is required for background location behavior, permission prompts, Photos metadata import, LocalAuthentication, and App Store privacy copy.

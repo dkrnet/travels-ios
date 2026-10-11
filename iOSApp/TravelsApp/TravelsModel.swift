@@ -61,12 +61,9 @@ final class TravelsModel: ObservableObject {
     func bootstrap() async {
         do {
             let urls = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
-            let appSupport = urls[0].appendingPathComponent("Travels", isDirectory: true)
-            try FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
-            try FileManager.default.createDirectory(
-                at: appSupport.appendingPathComponent("Photos", isDirectory: true),
-                withIntermediateDirectories: true
-            )
+            let appSupportRoot = urls[0]
+            let appSupport = appSupportRoot.appendingPathComponent("Travels", isDirectory: true)
+            try repairAppSupportDirectory(root: appSupportRoot, appSupport: appSupport)
             appSupportURL = appSupport
             let storeURL = appSupport.appendingPathComponent("Travels.sqlite")
             let launch = try openOrRepairStore(storeURL: storeURL)
@@ -116,6 +113,15 @@ final class TravelsModel: ObservableObject {
                 guard let self else { return }
                 focusAfterCapture(eventID: eventID, timestamp: timestamp)
             }
+            // REGRESSION GUARD: Core Location can deliver callbacks during startup
+            // before the heavier event-loading task below finishes. Configure the
+            // tracking service as soon as the store and settings are available so
+            // early automatic samples do not look like database-unavailable errors.
+            locationService.configure(
+                store: launch.store,
+                settings: settings,
+                latestEvent: try? launch.store.latestEvent(includeDemo: settings.includeDemoData)
+            )
             if let repairMessage = launch.repairMessage {
                 self.statusMessage = repairMessage
             }
@@ -133,11 +139,6 @@ final class TravelsModel: ObservableObject {
                         self.selectedDate = startup.selectedDate
                         self.events = startup.events
                         self.refreshDetectedTrips()
-                        self.locationService.configure(
-                            store: launch.store,
-                            settings: settings,
-                            latestEvent: try? launch.store.latestEvent(includeDemo: settings.includeDemoData)
-                        )
                         self.refreshDateSelectionBounds()
                         self.locationService.configure(
                             store: launch.store,
@@ -786,6 +787,27 @@ final class TravelsModel: ObservableObject {
         return backupURL
     }
 
+    func createMaintenanceLogExport() throws -> URL {
+        guard let maintenanceLogURL else {
+            throw TravelsError.databaseOpenFailed("Maintenance log is unavailable.")
+        }
+        guard FileManager.default.fileExists(atPath: maintenanceLogURL.path) else {
+            throw TravelsError.databaseOpenFailed("Maintenance log has not been created yet.")
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let filename = "Travels-Maintenance-\(formatter.string(from: Date())).log"
+        let exportURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename, isDirectory: false)
+        if FileManager.default.fileExists(atPath: exportURL.path) {
+            try FileManager.default.removeItem(at: exportURL)
+        }
+        // REGRESSION GUARD: share a stable snapshot of the diagnostics log rather
+        // than the live file, which tracking may append to while the share sheet
+        // is open.
+        try FileManager.default.copyItem(at: maintenanceLogURL, to: exportURL)
+        return exportURL
+    }
+
     func restoreDatabase(from sourceURL: URL) throws {
         guard let storeURL else {
             throw TravelsError.databaseOpenFailed("Database is unavailable.")
@@ -1277,16 +1299,190 @@ final class TravelsModel: ObservableObject {
     private func appendAddressResolutionLog(_ message: String) {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
-        let entry = "[\(formatter.string(from: Date()))] \(message)"
-        addressResolutionLog.append(entry)
+        let timestamp = formatter.string(from: Date())
+        let detailedEntry = "[\(timestamp)] \(message)"
+        let displayEntry = "\(timestamp): \(diagnosticsDisplaySummary(for: message))"
+        addressResolutionLog.append(displayEntry)
         if addressResolutionLog.count > 100 {
             addressResolutionLog.removeFirst(addressResolutionLog.count - 100)
         }
-        appendMaintenanceLogEntry(entry)
+        appendMaintenanceLogEntry(detailedEntry)
     }
 
     func appendDiagnosticsLog(_ message: String) {
         appendAddressResolutionLog(message)
+    }
+
+    private func diagnosticsDisplaySummary(for message: String) -> String {
+        let rawMessage = message.removingPrefix("[Location] ")
+        let lowercasedMessage = rawMessage.lowercased()
+
+        if lowercasedMessage.hasPrefix("core location delivered") {
+            return "Location update received from Core Location."
+        }
+        if lowercasedMessage.contains("received location sample") {
+            return "Location event received from \(locationSampleSourceSummary(from: rawMessage))."
+        }
+        if lowercasedMessage.hasPrefix("location accepted and replaced previous event") {
+            return "Location event saved by replacing the previous event - \(locationDecisionReasonSummary(from: rawMessage))."
+        }
+        if lowercasedMessage.hasPrefix("location accepted") {
+            return "Location event saved - \(locationDecisionReasonSummary(from: rawMessage))."
+        }
+        if lowercasedMessage.hasPrefix("saved location event recovery details") {
+            return "Location event recovery details recorded."
+        }
+        if lowercasedMessage.hasPrefix("saved location event") {
+            return "Location event saved."
+        }
+        if lowercasedMessage.hasPrefix("location rejected") {
+            return "Location event rejected - \(locationDecisionReasonSummary(from: rawMessage))."
+        }
+        if lowercasedMessage.hasPrefix("entered precise location mode") {
+            return "Precise location mode entered."
+        }
+        if lowercasedMessage.hasPrefix("exited precise location mode") {
+            return "Precise location mode exited."
+        }
+        if lowercasedMessage.contains("hybrid watchdog"), lowercasedMessage.contains("scheduled") {
+            return "Hybrid watchdog scheduled."
+        }
+        if lowercasedMessage.contains("hybrid watchdog"), lowercasedMessage.contains("fired") {
+            return "Hybrid watchdog fired."
+        }
+        if lowercasedMessage.contains("hybrid watchdog"), lowercasedMessage.contains("cancel") {
+            return "Hybrid watchdog cancelled."
+        }
+        if lowercasedMessage.contains("hybrid watchdog"), lowercasedMessage.contains("requesting fresh location") {
+            return "Hybrid watchdog requested a fresh location."
+        }
+        if lowercasedMessage.contains("hybrid watchdog"), lowercasedMessage.contains("using cached location") {
+            return "Hybrid watchdog used a cached location."
+        }
+        if lowercasedMessage.hasPrefix("idle detection sample qualifies") {
+            return "Idle sample qualified for active tracking."
+        }
+        if lowercasedMessage.hasPrefix("idle detection sample does not qualify") {
+            return "Idle sample did not qualify for active tracking."
+        }
+        if lowercasedMessage.hasPrefix("possible stop detected") {
+            return "Possible stop detected."
+        }
+        if lowercasedMessage.hasPrefix("stationary window satisfied") {
+            return "Stationary window satisfied; leaving precise mode."
+        }
+        if lowercasedMessage.contains("final precise exit started") || lowercasedMessage.contains("final precise-exit started") {
+            return "Final precise-exit started."
+        }
+        if lowercasedMessage.contains("final precise exit completed") || lowercasedMessage.contains("final precise-exit completed") {
+            return "Final precise-exit completed."
+        }
+        if lowercasedMessage.contains("final precise"), lowercasedMessage.contains("movement resumed") {
+            return "Final precise-exit sample indicated movement resumed."
+        }
+        if lowercasedMessage.contains("final precise"), lowercasedMessage.contains("accepted") {
+            return "Final precise-exit sample accepted."
+        }
+        if lowercasedMessage.contains("final precise"), lowercasedMessage.contains("rejected") {
+            return "Final precise-exit sample rejected."
+        }
+        if lowercasedMessage.contains("post-precise-exit cooldown") {
+            return "Location update ignored during post-exit cooldown."
+        }
+        if lowercasedMessage.hasPrefix("application entered background") {
+            return "Application entered background."
+        }
+        if lowercasedMessage.hasPrefix("application became active") {
+            return "Application became active."
+        }
+        if lowercasedMessage.hasPrefix("application will enter foreground") {
+            return "Application will enter foreground."
+        }
+        if lowercasedMessage.contains("manager configuration applied for active") {
+            return "Location manager configured for active tracking."
+        }
+        if lowercasedMessage.contains("manager configuration applied for idle") {
+            return "Location manager configured for idle tracking."
+        }
+        if lowercasedMessage.hasPrefix("active tracking silence fallback") {
+            return "Active tracking silence fallback evaluated."
+        }
+        if lowercasedMessage.hasPrefix("queued address resolution") {
+            return "Address resolution queued."
+        }
+        if lowercasedMessage.hasPrefix("resolving event") {
+            return "Resolving address for event."
+        }
+        if lowercasedMessage.hasPrefix("event "), lowercasedMessage.contains(": resolved via") {
+            return "Address resolved."
+        }
+        if lowercasedMessage.hasPrefix("event "), lowercasedMessage.contains(": unresolved via") {
+            return "Address unresolved."
+        }
+        if lowercasedMessage.hasPrefix("queue failed:") {
+            return "Address resolution queue failed - \(rawMessage.removingPrefix("Queue failed:").diagnosticSentence())."
+        }
+
+        return rawMessage.diagnosticSentence()
+    }
+
+    private func locationSampleSourceSummary(from message: String) -> String {
+        if let token = message.diagnosticToken(after: "sampleContext=source=") {
+            return locationSourceDisplayName(for: token)
+        }
+        if let token = message.diagnosticToken(after: "source=") {
+            return locationSourceDisplayName(for: token)
+        }
+        return "automatic tracking"
+    }
+
+    private func locationSourceDisplayName(for source: String) -> String {
+        switch source {
+        case "coreLocation":
+            return "Core Location"
+        case "hybridWatchdog":
+            return "the hybrid watchdog"
+        case "finalPreciseExit":
+            return "final precise-exit"
+        case "automaticLocationRequest":
+            return "an automatic request"
+        case "manualCapture":
+            return "manual capture"
+        default:
+            return source.replacingCamelCaseBoundaries().lowercased()
+        }
+    }
+
+    private func locationDecisionReasonSummary(from message: String) -> String {
+        guard let reason = message.diagnosticTextAfterLastColon() else {
+            return "no reason provided"
+        }
+
+        let firstClause = reason.firstDiagnosticClause()
+        let lowercasedReason = firstClause.lowercased()
+        if lowercasedReason.contains("inside the previous event radius")
+            && lowercasedReason.contains("without a qualifying improvement") {
+            return "too similar to previous event"
+        }
+        if lowercasedReason.contains("inside the previous event radius") {
+            return "too similar to previous event"
+        }
+        if lowercasedReason.contains("did not meet the current filter rules") {
+            return "did not meet filter rules"
+        }
+        if lowercasedReason.contains("no previous event") {
+            return "no previous event was available"
+        }
+        if lowercasedReason.contains("meets") && lowercasedReason.contains("distance") {
+            return "moved enough from previous event"
+        }
+        if lowercasedReason.contains("more accurate") {
+            return "more accurate than previous event"
+        }
+        if lowercasedReason.contains("manual") {
+            return "manual capture"
+        }
+        return firstClause.diagnosticSentence(maxLength: 82, lowercasingFirstLetter: true)
     }
 
     private var maintenanceLogURL: URL? {
@@ -1382,11 +1578,45 @@ private func shouldIncludePreviousDayContext(store: TravelsStore, settings: AppS
         return !previousTail.event.isDemo
     } catch {
         return false
+        }
     }
-}
 
-private func openOrRepairStore(storeURL: URL) throws -> StoreLaunchResult {
-    do {
+    private func repairAppSupportDirectory(root: URL, appSupport: URL) throws {
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: appSupport.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+            NSLog("Travels app support path was a file; removing it so the data directory can be restored.")
+            try fileManager.removeItem(at: appSupport)
+        }
+
+        try fileManager.createDirectory(at: appSupport, withIntermediateDirectories: true)
+
+        let legacyStoreURL = root.appendingPathComponent("Travels.sqlite", isDirectory: false)
+        let storeURL = appSupport.appendingPathComponent("Travels.sqlite", isDirectory: false)
+        if !fileManager.fileExists(atPath: storeURL.path), fileManager.fileExists(atPath: legacyStoreURL.path) {
+            try fileManager.moveItem(at: legacyStoreURL, to: storeURL)
+            NSLog("Moved legacy parent-level Travels.sqlite into the Travels app support directory.")
+        }
+
+        let legacyMaintenanceLogURL = root.appendingPathComponent("Maintenance.log", isDirectory: false)
+        let maintenanceLogURL = appSupport.appendingPathComponent("Maintenance.log", isDirectory: false)
+        if !fileManager.fileExists(atPath: maintenanceLogURL.path), fileManager.fileExists(atPath: legacyMaintenanceLogURL.path) {
+            try fileManager.moveItem(at: legacyMaintenanceLogURL, to: maintenanceLogURL)
+            NSLog("Moved legacy parent-level Maintenance.log into the Travels app support directory.")
+        }
+
+        let legacyPhotosURL = root.appendingPathComponent("Photos", isDirectory: true)
+        let photosURL = appSupport.appendingPathComponent("Photos", isDirectory: true)
+        if !fileManager.fileExists(atPath: photosURL.path), fileManager.fileExists(atPath: legacyPhotosURL.path) {
+            try fileManager.moveItem(at: legacyPhotosURL, to: photosURL)
+            NSLog("Moved legacy parent-level Photos directory into the Travels app support directory.")
+        }
+
+        try fileManager.createDirectory(at: photosURL, withIntermediateDirectories: true)
+    }
+
+    private func openOrRepairStore(storeURL: URL) throws -> StoreLaunchResult {
+        do {
         let store = try TravelsStore(url: storeURL)
         if let outcome = try store.validateAndRepairIfNeeded() {
             return StoreLaunchResult(store: store, repairMessage: outcome.userFacingMessage)
@@ -1438,5 +1668,68 @@ private extension SearchCriteria {
             bodyOfWater: bodyOfWater ?? self.bodyOfWater,
             source: source
         )
+    }
+}
+
+private extension String {
+    func removingPrefix(_ prefix: String) -> String {
+        guard hasPrefix(prefix) else {
+            return trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return String(dropFirst(prefix.count)).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func diagnosticToken(after marker: String) -> String? {
+        guard let markerRange = range(of: marker) else { return nil }
+        let remainder = self[markerRange.upperBound...]
+        let token = remainder.prefix { character in
+            character.isLetter || character.isNumber || character == "_" || character == "-"
+        }
+        guard !token.isEmpty else { return nil }
+        return String(token)
+    }
+
+    func diagnosticTextAfterLastColon() -> String? {
+        guard let colonIndex = lastIndex(of: ":") else { return nil }
+        let text = self[index(after: colonIndex)...].trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : text
+    }
+
+    func firstDiagnosticClause() -> String {
+        let clause = split { character in
+            character == ";" || character.isNewline
+        }.first.map(String.init) ?? self
+        return clause.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func diagnosticSentence(maxLength: Int = 96, lowercasingFirstLetter: Bool = false) -> String {
+        var text = firstDiagnosticClause()
+        if lowercasingFirstLetter, let firstCharacter = text.first {
+            text = firstCharacter.lowercased() + text.dropFirst()
+        }
+        if text.count > maxLength {
+            let prefixLength = max(0, maxLength - 1)
+            text = String(text.prefix(prefixLength)).trimmingCharacters(in: .whitespacesAndNewlines) + "…"
+        }
+        guard let lastCharacter = text.last else {
+            return "Diagnostic event recorded."
+        }
+        if ".!?…".contains(lastCharacter) {
+            return text
+        }
+        return text + "."
+    }
+
+    func replacingCamelCaseBoundaries() -> String {
+        var result = ""
+        var previousWasLowercaseOrNumber = false
+        for character in self {
+            if character.isUppercase, previousWasLowercaseOrNumber {
+                result.append(" ")
+            }
+            result.append(character)
+            previousWasLowercaseOrNumber = character.isLowercase || character.isNumber
+        }
+        return result
     }
 }

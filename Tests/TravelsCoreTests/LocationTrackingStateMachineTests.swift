@@ -96,6 +96,57 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTAssertTrue(machine.isHighPrecisionTrackingActive)
     }
 
+    func testIdleDetectionMovementQualificationUsesFallbackReferenceWhenSpeedUnavailable() {
+        let machine = LocationTrackingStateMachine(
+            thresholds: LocationTrackingThresholds(
+                stationaryDuration: 60,
+                stationaryRadiusMeters: 50,
+                stationarySpeedThreshold: 0.7,
+                minimumUsableHorizontalAccuracyMeters: 100,
+                maximumStationarySampleGap: 120
+            )
+        )
+        let reference = sample(at: 1, accuracy: 15, speed: -1)
+        let movement = sample(at: 120, latitude: 37.004, longitude: -122.004, accuracy: 40, speed: -1)
+
+        XCTAssertTrue(machine.idleDetectionSampleIndicatesMovement(movement, fallbackReference: reference))
+    }
+
+    func testIdleDetectionRecordsActiveTransitionUsingFallbackReferenceWhenSpeedUnavailable() {
+        var machine = LocationTrackingStateMachine(
+            thresholds: LocationTrackingThresholds(
+                stationaryDuration: 60,
+                stationaryRadiusMeters: 50,
+                stationarySpeedThreshold: 0.7,
+                minimumUsableHorizontalAccuracyMeters: 100,
+                maximumStationarySampleGap: 120
+            )
+        )
+        let reference = sample(at: 1, accuracy: 15, speed: -1)
+        let movement = sample(at: 120, latitude: 37.004, longitude: -122.004, accuracy: 40, speed: -1)
+
+        let transition = machine.record(sample: movement, idleFallbackReference: reference)
+
+        XCTAssertEqual(transition, .enterActiveTracking)
+        XCTAssertEqual(machine.state, .activeTracking)
+    }
+
+    func testIdleDetectionMovementQualificationRejectsFallbackJitter() {
+        let machine = LocationTrackingStateMachine(
+            thresholds: LocationTrackingThresholds(
+                stationaryDuration: 60,
+                stationaryRadiusMeters: 50,
+                stationarySpeedThreshold: 0.7,
+                minimumUsableHorizontalAccuracyMeters: 100,
+                maximumStationarySampleGap: 120
+            )
+        )
+        let reference = sample(at: 1, accuracy: 15, speed: -1)
+        let jitter = sample(at: 120, latitude: 37.0002, longitude: -122.0002, accuracy: 40, speed: -1)
+
+        XCTAssertFalse(machine.idleDetectionSampleIndicatesMovement(jitter, fallbackReference: reference))
+    }
+
     func testActiveTrackingDoesNotStopAfterOneStationarySample() {
         var machine = LocationTrackingStateMachine()
 
@@ -274,7 +325,8 @@ final class LocationTrackingStateMachineTests: XCTestCase {
 
         _ = machine.record(sample: sample(at: 1, speed: 3))
         _ = machine.record(sample: sample(at: 91, speed: -1))
-        let transition = machine.record(sample: sample(at: 181, speed: -1))
+        _ = machine.record(sample: sample(at: 181, speed: -1))
+        let transition = machine.record(sample: sample(at: 271, speed: -1))
 
         XCTAssertEqual(transition, .enterIdleDetection)
         XCTAssertEqual(machine.state, .idleDetection)

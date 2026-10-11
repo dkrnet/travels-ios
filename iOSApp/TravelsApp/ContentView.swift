@@ -59,12 +59,11 @@ struct ContentView: View {
 
                 GeometryReader { geometry in
                     VStack {
-                        VStack(spacing: 8) {
-                            DayTitleOverlay(title: title, availableWidth: geometry.size.width)
-                            if model.isHighPrecisionLocationActive {
-                                LocationPrecisionStatusBadge()
-                            }
-                        }
+                        DayStatusBanner(
+                            title: title,
+                            isHighPrecisionLocationActive: model.isHighPrecisionLocationActive,
+                            availableWidth: geometry.size.width
+                        )
                         .padding(.top, titleTopPadding)
                         .background(
                             GeometryReader { overlayGeometry in
@@ -315,10 +314,7 @@ struct ContentView: View {
     }
 
     private var listTopContentInset: CGFloat {
-        let measuredInset = model.isHighPrecisionLocationActive
-            ? topOverlayHeight
-            : topOverlayHeight + 10
-        return max(24, measuredInset)
+        max(24, topOverlayHeight)
     }
 
     @ViewBuilder
@@ -337,6 +333,70 @@ private struct TopOverlayHeightKey: PreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+private struct DayStatusBanner: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    let title: String
+    let isHighPrecisionLocationActive: Bool
+    let availableWidth: CGFloat
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title)
+                .font(.system(size: titleFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+                .layoutPriority(2)
+                .accessibilityAddTraits(.isHeader)
+
+            Spacer(minLength: 8)
+
+            if isHighPrecisionLocationActive {
+                HStack(spacing: 5) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: preciseFontSize, weight: .semibold))
+                    Text("Precise Location")
+                        .font(.system(size: preciseFontSize, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                }
+                .foregroundStyle(.primary)
+                .layoutPriority(1)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Precise Location")
+                .accessibilityHint("Travels is currently using high-accuracy location tracking.")
+            }
+        }
+        .padding(.vertical, 7)
+        .padding(.horizontal, 14)
+        .frame(width: max(availableWidth, 0), alignment: .leading)
+        .background {
+            if reduceTransparency {
+                Rectangle()
+                    .fill(.background)
+            } else {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+        }
+        .shadow(color: .black.opacity(0.035), radius: 5, x: 0, y: 2)
+    }
+
+    private var preciseFontSize: CGFloat {
+        titleFontSize * 0.67
+    }
+
+    private var titleFontSize: CGFloat {
+        min(max(availableWidth * 0.05, 18), 24)
     }
 }
 

@@ -13,6 +13,7 @@ struct DeveloperDiagnosticsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingRestoreImporter = false
     @State private var backupShareItem: ShareItem?
+    @State private var maintenanceLogShareItem: ShareItem?
     @State private var solarPeriodRebuildTimeZoneIdentifier = TimeZone.current.identifier
 
     var body: some View {
@@ -60,6 +61,13 @@ struct DeveloperDiagnosticsView: View {
                     Button("Clear Log", role: .destructive) {
                         model.clearAddressResolutionLog()
                     }
+                    Button("Save Maintenance Log") {
+                        do {
+                            maintenanceLogShareItem = ShareItem(url: try model.createMaintenanceLogExport())
+                        } catch {
+                            model.statusMessage = error.localizedDescription
+                        }
+                    }
                 }
 
                 Section("Database") {
@@ -97,6 +105,9 @@ struct DeveloperDiagnosticsView: View {
                 }
             }
             .sheet(item: $backupShareItem) { item in
+                ShareSheet(items: [item.url])
+            }
+            .sheet(item: $maintenanceLogShareItem) { item in
                 ShareSheet(items: [item.url])
             }
             .fileImporter(
