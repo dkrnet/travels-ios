@@ -407,7 +407,7 @@ private final class GPXTrackPointBuilder {
             store(text, in: &standardSourceText, namespaced: isNamespaced)
         case "source":
             store(text, in: &eventSourceText, namespaced: isNamespaced)
-        case "heading", "course":
+        case "heading", "headingDegrees", "course":
             store(text, in: &eventHeadingText, namespaced: isNamespaced)
         case "speed":
             store(text, in: &eventSpeedText, namespaced: isNamespaced)

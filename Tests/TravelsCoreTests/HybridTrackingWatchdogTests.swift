@@ -30,11 +30,30 @@ final class HybridTrackingWatchdogTests: XCTestCase {
         XCTAssertEqual(watchdog.state, .idle)
     }
 
+    func testWatchdogDoesNotRunForAlwaysOffPolicy() {
+        var watchdog = HybridTrackingWatchdog(policy: .alwaysOffHighPrecision)
+
+        watchdog.start(now: Date(timeIntervalSinceReferenceDate: 100))
+
+        XCTAssertFalse(watchdog.isRunning)
+        XCTAssertEqual(watchdog.state, .idle)
+    }
+
     func testWatchdogCancelsWhenPolicyBecomesAlwaysOn() {
         var watchdog = HybridTrackingWatchdog()
         watchdog.start(now: Date(timeIntervalSinceReferenceDate: 100))
 
         watchdog.update(policy: .alwaysOnHighPrecision)
+
+        XCTAssertFalse(watchdog.isRunning)
+        XCTAssertEqual(watchdog.state, .idle)
+    }
+
+    func testWatchdogCancelsWhenPolicyBecomesAlwaysOff() {
+        var watchdog = HybridTrackingWatchdog()
+        watchdog.start(now: Date(timeIntervalSinceReferenceDate: 100))
+
+        watchdog.update(policy: .alwaysOffHighPrecision)
 
         XCTAssertFalse(watchdog.isRunning)
         XCTAssertEqual(watchdog.state, .idle)

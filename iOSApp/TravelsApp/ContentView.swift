@@ -25,13 +25,14 @@ struct ContentView: View {
     @State private var datePickerSelection = Date()
     @State private var mapQuickActionShowsLatest = true
     @State private var listQuickActionShowsTop = false
+    @State private var topOverlayHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Group {
                     if model.isListView {
-                        EventListView(events: model.displayedEvents)
+                        EventListView(events: model.displayedEvents, topContentInset: listTopContentInset)
                             .id(model.selectedDate)
                     } else {
                         EventMapView(day: model.selectedDate, events: model.displayedEvents)
@@ -40,16 +41,6 @@ struct ContentView: View {
                 }
                 .blur(radius: model.isUnlocked ? 0 : 18)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                if model.isHighPrecisionLocationActive {
-                    VStack {
-                        LocationPrecisionStatusBadge()
-                            .padding(.top, 8)
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .allowsHitTesting(false)
-                }
 
                 if let message = model.locationAuthorizationMessage, model.isUnlocked {
                     VStack {
@@ -65,8 +56,32 @@ struct ContentView: View {
                 if !model.isUnlocked {
                     LockedView()
                 }
+
+                GeometryReader { geometry in
+                    VStack {
+                        DayStatusBanner(
+                            title: title,
+                            isHighPrecisionLocationActive: model.isHighPrecisionLocationActive,
+                            availableWidth: geometry.size.width
+                        )
+                        .padding(.top, titleTopPadding)
+                        .background(
+                            GeometryReader { overlayGeometry in
+                                Color.clear.preference(
+                                    key: TopOverlayHeightKey.self,
+                                    value: overlayGeometry.size.height
+                                )
+                            }
+                        )
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .allowsHitTesting(false)
+                .zIndex(2)
             }
-            .navigationTitle(title)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Button {
@@ -282,6 +297,9 @@ struct ContentView: View {
             }
             .onAppear {
             }
+            .onPreferenceChange(TopOverlayHeightKey.self) { height in
+                topOverlayHeight = height
+            }
         }
     }
 
@@ -289,6 +307,14 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
+    }
+
+    private var titleTopPadding: CGFloat {
+        8
+    }
+
+    private var listTopContentInset: CGFloat {
+        max(24, topOverlayHeight)
     }
 
     @ViewBuilder
@@ -299,6 +325,100 @@ struct ContentView: View {
     ) -> some View {
         Toggle(title, isOn: isOn)
         .disabled(!isEnabled)
+    }
+}
+
+private struct TopOverlayHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct DayStatusBanner: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    let title: String
+    let isHighPrecisionLocationActive: Bool
+    let availableWidth: CGFloat
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(title)
+                .font(.system(size: titleFontSize, weight: .semibold))
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+                .layoutPriority(2)
+                .accessibilityAddTraits(.isHeader)
+
+            Spacer(minLength: 8)
+
+            if isHighPrecisionLocationActive {
+                HStack(spacing: 5) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: preciseFontSize, weight: .semibold))
+                    Text("Precise Location")
+                        .font(.system(size: preciseFontSize, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                }
+                .foregroundStyle(.primary)
+                .layoutPriority(1)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Precise Location")
+                .accessibilityHint("Travels is currently using high-accuracy location tracking.")
+            }
+        }
+        .padding(.vertical, 7)
+        .padding(.horizontal, 14)
+        .frame(width: max(availableWidth, 0), alignment: .leading)
+        .background {
+            if reduceTransparency {
+                Rectangle()
+                    .fill(.background)
+            } else {
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color(.separator))
+                .frame(height: 0.5)
+        }
+        .shadow(color: .black.opacity(0.035), radius: 5, x: 0, y: 2)
+    }
+
+    private var preciseFontSize: CGFloat {
+        titleFontSize * 0.67
+    }
+
+    private var titleFontSize: CGFloat {
+        min(max(availableWidth * 0.05, 18), 24)
+    }
+}
+
+private struct DayTitleOverlay: View {
+    let title: String
+    let availableWidth: CGFloat
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: titleFontSize, weight: .semibold))
+            .foregroundStyle(.primary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.vertical, 5)
+            .padding(.horizontal, 12)
+            .background(.thinMaterial, in: Capsule())
+            .frame(maxWidth: max(availableWidth - 32, 0))
+            .accessibilityAddTraits(.isHeader)
+    }
+
+    private var titleFontSize: CGFloat {
+        min(max(availableWidth * 0.055, 20), 26)
     }
 }
 
