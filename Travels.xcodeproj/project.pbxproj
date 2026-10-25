@@ -44,7 +44,6 @@
 		1D2A3B4C5D6E7F8100010063 /* Sources/TravelsCore/PhotoImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010064 /* Sources/TravelsCore/PhotoImport.swift */; };
 		1D2A3B4C5D6E7F8100010065 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */; };
 		1D2A3B4C5D6E7F8100010067 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */; };
-		1D2A3B4C5D6E7F8100010069 /* Sources/TravelsCore/BackgroundLocationSessionRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001006A /* Sources/TravelsCore/BackgroundLocationSessionRules.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,7 +88,6 @@
 		1D2A3B4C5D6E7F8100010064 /* Sources/TravelsCore/PhotoImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/PhotoImport.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift; sourceTree = SOURCE_ROOT; };
-		1D2A3B4C5D6E7F810001006A /* Sources/TravelsCore/BackgroundLocationSessionRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/BackgroundLocationSessionRules.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,7 +164,6 @@
 				1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */,
 				1D2A3B4C5D6E7F8100010064 /* Sources/TravelsCore/PhotoImport.swift */,
 				1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */,
-				1D2A3B4C5D6E7F810001006A /* Sources/TravelsCore/BackgroundLocationSessionRules.swift */,
 				1D2A3B4C5D6E7F8100010025 /* Sources/TravelsCore/Models.swift */,
 				1D2A3B4C5D6E7F8100010026 /* Sources/TravelsCore/SettingsStore.swift */,
 				1D2A3B4C5D6E7F8100010027 /* Sources/TravelsCore/SQLiteDatabase.swift */,
@@ -324,7 +321,6 @@
 				1D2A3B4C5D6E7F8100010065 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift in Sources */,
 				1D2A3B4C5D6E7F8100010063 /* Sources/TravelsCore/PhotoImport.swift in Sources */,
 				1D2A3B4C5D6E7F8100010067 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift in Sources */,
-				1D2A3B4C5D6E7F8100010069 /* Sources/TravelsCore/BackgroundLocationSessionRules.swift in Sources */,
 				1D2A3B4C5D6E7F810001000C /* Sources/TravelsCore/Models.swift in Sources */,
 				1D2A3B4C5D6E7F810001000D /* Sources/TravelsCore/SettingsStore.swift in Sources */,
 				1D2A3B4C5D6E7F810001000E /* Sources/TravelsCore/SQLiteDatabase.swift in Sources */,
