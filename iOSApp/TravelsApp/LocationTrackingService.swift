@@ -448,6 +448,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func updateBackgroundActivitySession(reason: String) {
+        // REGRESSION GUARD: this policy helper is shared with SwiftPM tests and must also
+        // remain a member of the Travels Xcode target so device builds exercise the same rules.
         let shouldRetainSession = BackgroundLocationSessionRules.shouldRetainSession(
             automaticTrackingEnabled: settings.autoAddLocations,
             backgroundLocationEnabled: settings.backgroundLocationEnabled,
