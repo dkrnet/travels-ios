@@ -53,7 +53,7 @@ struct SettingsView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Resolve Addresses", isOn: $model.settings.resolveAddresses)
-                        Text("Anonymously sends location data to Apple so Travels can look up place names.")
+                        Text("Address lookup is optional and sends coordinates to Apple only when enabled.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -62,6 +62,18 @@ struct SettingsView: View {
                         Text("Look up addresses for location history that still needs it.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section("Shortcuts Automations") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Travels provides silent actions to capture filtered, non-duplicate, stopped, and forced locations, plus actions to turn Automatic Location Tracking on or off. Non-Duplicate actions save only when the new location is more than 20 meters from the previous event. Stopped actions set the movement override without changing measured speed.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        Text("In Shortcuts, create a personal automation for Wi-Fi, Bluetooth, or Charger, choose Run Immediately, then add the preferred Travels location action. Enable or disable each trigger from the Automation tab in Shortcuts.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        Link("Open Shortcuts", destination: URL(string: "shortcuts://")!)
                     }
                 }
 
@@ -90,6 +102,9 @@ struct SettingsView: View {
                 }
 
                 Section("Privacy") {
+                    Text("Travels stores your location history locally and does not use accounts, advertising, analytics, or cloud tracking.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Require Authentication", isOn: $model.settings.requireAuthentication)
                         Text("Requires Face ID or Touch ID before opening your map and list.")

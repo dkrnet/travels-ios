@@ -35,7 +35,13 @@ struct ContentView: View {
                         EventListView(events: model.displayedEvents, topContentInset: listTopContentInset)
                             .id(model.selectedDate)
                     } else {
-                        EventMapView(day: model.selectedDate, events: model.displayedEvents)
+                        EventMapView(
+                            day: model.selectedDate,
+                            events: model.displayedEvents,
+                            onManualZoom: {
+                                mapQuickActionShowsLatest = false
+                            }
+                        )
                             .id(model.selectedDate)
                     }
                 }
@@ -473,6 +479,32 @@ struct AboutView: View {
                             .allowsTightening(true)
                     }
                     .frame(maxWidth: .infinity)
+
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Your location history. On your device.")
+                                .font(.headline)
+                            Text("Travels is a privacy-first location history app. It records and organizes your location history locally on your device, without accounts, advertising, analytics, or cloud tracking.")
+                            Label("Your location history is stored locally.", systemImage: "iphone")
+                            Label("Address lookup is optional and sends coordinates to Apple only when enabled.", systemImage: "mappin.and.ellipse")
+                            Label("Data leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.", systemImage: "square.and.arrow.up")
+                        }
+                        .font(.footnote)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    GroupBox {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("I created Travels because I wanted a privacy-first way to keep my own location history. It’s free because this is a niche app, and charging for it would add more complexity than value.")
+                            Text("You are not the product. Travels has no advertising, analytics, accounts, subscriptions, or business model based on selling your location data.")
+                                .fontWeight(.semibold)
+                        }
+                        .font(.footnote)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    } label: {
+                        Text("Why Travels Is Free")
+                            .font(.headline)
+                    }
 
                     GroupBox {
                         VStack(alignment: .leading, spacing: 12) {

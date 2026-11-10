@@ -67,6 +67,7 @@ Preferred trackpoint structure:
     <travels:localizedDateKey>...</travels:localizedDateKey>
     <travels:source>...</travels:source>
     <travels:tripEndpointOverride>...</travels:tripEndpointOverride>
+    <travels:movementStateOverride>...</travels:movementStateOverride>
     <travels:tags>
       <travels:tag>...</travels:tag>
     </travels:tags>
@@ -129,6 +130,7 @@ Optional elements are omitted when the corresponding value is not present.
 | `travels:localizedDateKey` | `LocationEvent.localizedDate` | string | app date key | No | Export when available | Parse if present | `localizedDate` |
 | `travels:source` | `LocationEvent.source` | string | display label | No | Export when useful | Parse if present; imported events normalize to `Imported` source | `src` |
 | `travels:tripEndpointOverride` | `LocationEvent.tripEndpointOverride` | boolean string | `true`, `false`, or omitted for automatic | No | Export when explicitly set | Parse boolean string if present | `tripEndpointOverride` |
+| `travels:movementStateOverride` | `LocationEvent.movementStateOverride` | enum string | `stopped`, `not_stopped`, or omitted for automatic | No | Export when explicitly set without changing speed | Parse enum string if present | `movementStateOverride` |
 | `travels:tags` | `LocationEvent.tags` | wrapper | contains repeated `travels:tag` children | No | Export when tags exist | Parse wrapper and children | `tags` |
 | `travels:tag` | `LocationEvent.tags` | string | tag text | No | Export one child per logical tag token when structured tags are available; otherwise one child may contain the flat tag string | Parse repeated children and preserve order | `tags` |
 | `travels:externalReference` | `LocationEvent.externalReference` | string | app-specific identifier | No | Export when available | Parse if present | none |
@@ -203,6 +205,7 @@ The importer accepts the legacy direct child elements currently used by older Tr
 - `externalReference`
 - `photoFilename`
 - `tripEndpointOverride`
+- `movementStateOverride`
 - `isDemo`
 - `solarPeriod`
 - `solarPeriodPercent`
@@ -233,7 +236,7 @@ GPX exports may contain sensitive personal location history, notes, photo refere
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
+<gpx version="1.1" creator="Travels - privacy-first location tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
   <trk>
     <trkseg>
       <trkpt lat="37.3317" lon="-122.0301">
@@ -251,7 +254,7 @@ GPX exports may contain sensitive personal location history, notes, photo refere
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
+<gpx version="1.1" creator="Travels - privacy-first location tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="https://github.com/dkrnet/travels-ios/gpx/extensions/1">
   <metadata>
     <name>Travels GPX v1 Example</name>
     <time>2026-06-01T00:00:00Z</time>

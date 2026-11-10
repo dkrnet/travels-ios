@@ -15,6 +15,9 @@ import TravelsCore
 
 @MainActor
 final class TravelsModel: ObservableObject {
+    static let shared = TravelsModel()
+    private static let shortcutNonDuplicateRadiusMeters = 20.0
+
     @Published var selectedDate = Calendar.current.startOfDay(for: Date())
     @Published var events: [EventDetail] = []
     @Published var selectedEvent: EventDetail?
@@ -57,8 +60,23 @@ final class TravelsModel: ObservableObject {
     private var addressResolutionTask: Task<Void, Never>?
     private var addressResolutionTimerTask: Task<Void, Never>?
     private var addressResolutionNeedsRerun = false
+    private var bootstrapTask: Task<Void, Never>?
 
     func bootstrap() async {
+        if let bootstrapTask {
+            await bootstrapTask.value
+            return
+        }
+
+        let task: Task<Void, Never> = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.performBootstrap()
+        }
+        bootstrapTask = task
+        await task.value
+    }
+
+    private func performBootstrap() async {
         do {
             let urls = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             let appSupportRoot = urls[0]
@@ -162,6 +180,43 @@ final class TravelsModel: ObservableObject {
         }
     }
 
+    func captureCurrentLocationFromShortcut() async -> ShortcutLocationCaptureResult {
+        await bootstrap()
+        return await locationService.requestShortcutAutomationLocation()
+    }
+
+    func captureStoppedLocationFromShortcut() async -> ShortcutLocationCaptureResult {
+        await bootstrap()
+        return await locationService.requestShortcutAutomationLocation(movementStateOverride: .stopped)
+    }
+
+    func captureNonDuplicateLocationFromShortcut(stopped: Bool = false) async -> ShortcutLocationCaptureResult {
+        await bootstrap()
+        return await locationService.requestShortcutAutomationLocation(
+            movementStateOverride: stopped ? .stopped : nil,
+            nonDuplicateRadiusMeters: Self.shortcutNonDuplicateRadiusMeters
+        )
+    }
+
+    func forceAddCurrentLocationFromShortcut() async -> ShortcutLocationCaptureResult {
+        await bootstrap()
+        return await locationService.requestShortcutAutomationLocation(force: true)
+    }
+
+    func forceAddStoppedLocationFromShortcut() async -> ShortcutLocationCaptureResult {
+        await bootstrap()
+        return await locationService.requestShortcutAutomationLocation(
+            force: true,
+            movementStateOverride: .stopped
+        )
+    }
+
+    func setAutomaticLocationTrackingFromShortcut(_ enabled: Bool) async {
+        await bootstrap()
+        settings.autoAddLocations = enabled
+        saveSettings()
+    }
+
     func reloadEvents(recenterSelectedTrips: Bool = false) throws {
         guard let store else { return }
         let selectedTripIDs: Set<DetectedTrip.ID>?
@@ -217,64 +272,36 @@ final class TravelsModel: ObservableObject {
         }
     }
 
-    func search(_ criteria: SearchCriteria) {
+    func search(_ criteria: SearchCriteria) async {
+        guard let store else {
+            searchResults = []
+            return
+        }
+        let includeDemo = settings.includeDemoData
+        lastSearchCriteria = criteria
         do {
-            lastSearchCriteria = criteria
-            searchResults = try store?.search(criteria, includeDemo: settings.includeDemoData) ?? []
+            let results = try await Task.detached(priority: .userInitiated) {
+                try store.search(criteria, includeDemo: includeDemo)
+            }.value
+            guard !Task.isCancelled else { return }
+            searchResults = results
         } catch {
+            guard !Task.isCancelled else { return }
             statusMessage = error.localizedDescription
         }
     }
 
-    func searchPlaceOptions() -> SearchPlaceOptions {
-        searchPlaceOptions(matching: SearchCriteria())
-    }
-
-    func searchPlaceOptions(matching criteria: SearchCriteria) -> SearchPlaceOptions {
+    func searchPlaceMetadata(matching criteria: SearchCriteria) async -> [TravelsStore.SearchPlaceMetadata] {
+        guard let store else { return [] }
+        let includeDemo = settings.includeDemoData
         do {
-            let baseCriteria = SearchCriteria(
-                term: criteria.term,
-                startDate: criteria.startDate,
-                endDate: criteria.endDate,
-                hasNote: criteria.hasNote,
-                source: criteria.source
-            )
-            let countryDetails = try searchDetails(matching: baseCriteria)
-            let countryOptions = uniquePlaceValues(countryDetails.compactMap { nonEmpty($0.geolocation?.country) })
-
-            let selectedCountry = validatedPlaceSelection(criteria.country, in: countryOptions)
-            let administrativeCriteria = baseCriteria.with(country: selectedCountry)
-            let administrativeDetails = try searchDetails(matching: administrativeCriteria)
-            let administrativeOptions = uniquePlaceValues(administrativeDetails.compactMap { nonEmpty($0.geolocation?.administrativeArea) })
-
-            let selectedAdministrativeArea = validatedPlaceSelection(criteria.administrativeArea, in: administrativeOptions)
-            let subAdministrativeCriteria = administrativeCriteria.with(administrativeArea: selectedAdministrativeArea)
-            let subAdministrativeDetails = try searchDetails(matching: subAdministrativeCriteria)
-            let subAdministrativeOptions = uniquePlaceValues(subAdministrativeDetails.compactMap { nonEmpty($0.geolocation?.subAdministrativeArea) })
-
-            let selectedSubAdministrativeArea = validatedPlaceSelection(criteria.subAdministrativeArea, in: subAdministrativeOptions)
-            let localityCriteria = subAdministrativeCriteria.with(subAdministrativeArea: selectedSubAdministrativeArea)
-            let localityDetails = try searchDetails(matching: localityCriteria)
-            let localityOptions = uniquePlaceValues(localityDetails.compactMap { nonEmpty($0.geolocation?.locality) })
-
-            let selectedLocality = validatedPlaceSelection(criteria.locality, in: localityOptions)
-            let bodyOfWaterCriteria = localityCriteria.with(locality: selectedLocality, bodyOfWater: nil)
-            let bodyOfWaterDetails = try searchDetails(matching: bodyOfWaterCriteria)
-            let bodyOfWaterOptions = uniquePlaceValues(bodyOfWaterDetails.compactMap {
-                nonEmpty($0.geolocation?.inlandWater) ?? nonEmpty($0.geolocation?.ocean)
-            })
-            _ = validatedPlaceSelection(criteria.bodyOfWater, in: bodyOfWaterOptions)
-
-            return SearchPlaceOptions(
-                countries: countryOptions,
-                administrativeAreas: administrativeOptions,
-                subAdministrativeAreas: subAdministrativeOptions,
-                localities: localityOptions,
-                bodyOfWaters: bodyOfWaterOptions
-            )
+            return try await Task.detached(priority: .userInitiated) {
+                try store.searchPlaceMetadata(matching: criteria, includeDemo: includeDemo)
+            }.value
         } catch {
+            guard !Task.isCancelled else { return [] }
             statusMessage = error.localizedDescription
-            return .empty
+            return []
         }
     }
 
@@ -289,16 +316,11 @@ final class TravelsModel: ObservableObject {
 
     func aboutStatistics() -> AboutStatistics {
         do {
-            let details = try store?.allEvents(includeDemo: settings.includeDemoData) ?? []
-            let uniqueLocations = Set(details.compactMap { $0.geolocation?.id }).count
-            let unaddressedLocations = details.filter { detail in
-                guard let geolocation = detail.geolocation else { return true }
-                return geolocation.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            }.count
+            let statistics = try store?.locationStatistics(includeDemo: settings.includeDemoData)
             return AboutStatistics(
-                totalLocations: details.count,
-                uniqueLocations: uniqueLocations,
-                unaddressedLocations: unaddressedLocations
+                totalLocations: statistics?.totalLocations ?? 0,
+                uniqueLocations: statistics?.uniqueLocations ?? 0,
+                unaddressedLocations: statistics?.unaddressedLocations ?? 0
             )
         } catch {
             statusMessage = error.localizedDescription
@@ -516,6 +538,17 @@ final class TravelsModel: ObservableObject {
         guard let id = detail.event.id else { return }
         do {
             try store?.updateTripEndpointOverride(eventID: id, tripEndpointOverride: tripEndpointOverride)
+            try reloadEvents(recenterSelectedTrips: true)
+        } catch {
+            statusMessage = error.localizedDescription
+        }
+    }
+
+    func updateMovementStateOverride(for detail: EventDetail, movementStateOverride: MovementStateOverride?) {
+        guard let id = detail.event.id else { return }
+        do {
+            // REQUIREMENTS: This override changes only how the saved event is interpreted; its recorded speed remains untouched.
+            try store?.updateMovementStateOverride(eventID: id, movementStateOverride: movementStateOverride)
             try reloadEvents(recenterSelectedTrips: true)
         } catch {
             statusMessage = error.localizedDescription
@@ -1030,6 +1063,27 @@ final class TravelsModel: ObservableObject {
                             break
                         }
 
+                        // REGRESSION GUARD: Reuse a narrowly matching local place before
+                        // queueing network work; otherwise repeated visits create needless lookups.
+                        if let cached = try store.suitableGeolocation(
+                            latitude: detail.event.latitude,
+                            longitude: detail.event.longitude
+                        ), let geolocationID = cached.id {
+                            try store.attachGeolocation(geolocationID, toEvent: eventID)
+                            processedEventIDs.insert(eventID)
+                            resolvedCount += 1
+                            processedThisRun += 1
+                            await MainActor.run { [weak self] in
+                                guard let self else { return }
+                                self.addressResolutionLastSuccessAt = Date()
+                                self.addressResolutionLastError = nil
+                                self.appendAddressResolutionLog(
+                                    "Attached saved geolocation #\(geolocationID) to Event \(eventID) without queueing an Apple lookup"
+                                )
+                            }
+                            continue
+                        }
+
                         let currentTarget = {
                             let dateFormatter = DateFormatter()
                             dateFormatter.dateStyle = .short
@@ -1131,19 +1185,6 @@ final class TravelsModel: ObservableObject {
         return value
     }
 
-    private func uniquePlaceValues(_ values: [String]) -> [String] {
-        Array(Set(values.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty })).sorted()
-    }
-
-    private func validatedPlaceSelection(_ value: String?, in options: [String]) -> String? {
-        guard let value else { return nil }
-        return options.contains(value) ? value : nil
-    }
-
-    private func searchDetails(matching criteria: SearchCriteria) throws -> [EventDetail] {
-        try store?.search(criteria, includeDemo: settings.includeDemoData) ?? []
-    }
-
     private func refreshSelectedEventIfNeeded() {
         guard let selectedEvent, let id = selectedEvent.id else { return }
         self.selectedEvent = displayedEvents.first(where: { $0.id == id }) ?? nil
@@ -1200,7 +1241,8 @@ final class TravelsModel: ObservableObject {
         detectedTrips = trips.sorted { $0.movingStartDate < $1.movingStartDate }
         switch selectedMapDisplay {
         case .all, .stoppedOnly:
-            clearTripFocus()
+            // REGRESSION GUARD: passive event/address reloads must not issue a camera command and interrupt the user's map position.
+            mapFocusEventIDs = nil
             break
         case .trips(let tripIDs):
             let validIDs = Set(trips.map(\.id)).intersection(tripIDs)
@@ -1564,21 +1606,7 @@ private func loadStartupState(store: TravelsStore, settings: AppSettings) throws
 }
 
 private func shouldIncludePreviousDayContext(store: TravelsStore, settings: AppSettings, date: Date) -> Bool {
-    guard settings.includePreviousDayContext else { return false }
-
-    let previousDate = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
-    do {
-        guard let previousTail = try store.events(
-            on: previousDate,
-            includePreviousDayContext: false,
-            includeDemo: true
-        ).last else {
-            return false
-        }
-        return !previousTail.event.isDemo
-    } catch {
-        return false
-        }
+    settings.includePreviousDayContext
     }
 
     private func repairAppSupportDirectory(root: URL, appSupport: URL) throws {
@@ -1646,29 +1674,6 @@ struct SearchPlaceOptions: Equatable {
         localities: [],
         bodyOfWaters: []
     )
-}
-
-private extension SearchCriteria {
-    func with(
-        country: String? = nil,
-        administrativeArea: String? = nil,
-        subAdministrativeArea: String? = nil,
-        locality: String? = nil,
-        bodyOfWater: String? = nil
-    ) -> SearchCriteria {
-        SearchCriteria(
-            term: term,
-            startDate: startDate,
-            endDate: endDate,
-            hasNote: hasNote,
-            country: country ?? self.country,
-            administrativeArea: administrativeArea ?? self.administrativeArea,
-            subAdministrativeArea: subAdministrativeArea ?? self.subAdministrativeArea,
-            locality: locality ?? self.locality,
-            bodyOfWater: bodyOfWater ?? self.bodyOfWater,
-            source: source
-        )
-    }
 }
 
 private extension String {

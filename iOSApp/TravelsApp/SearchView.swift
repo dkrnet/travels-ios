@@ -19,13 +19,14 @@ struct SearchView: View {
     @State private var startDate: Date
     @State private var useEndDate: Bool
     @State private var endDate: Date
-    @State private var placeOptions = SearchPlaceOptions.empty
+    @State private var placeMetadata: [TravelsStore.SearchPlaceMetadata] = []
     @State private var country: String?
     @State private var administrativeArea: String?
     @State private var subAdministrativeArea: String?
     @State private var locality: String?
     @State private var bodyOfWater: String?
     @State private var searchResultsScrollCommandID = UUID()
+    @State private var isSearching = false
 
     init(initialCriteria: SearchCriteria = SearchCriteria()) {
         // REGRESSION GUARD: restore the last confirmed search criteria so the form does not fall back to blank "Any" defaults every time the sheet opens.
@@ -133,13 +134,19 @@ struct SearchView: View {
                 }
                 .listStyle(.plain)
                 .navigationTitle("Search")
-                .task(id: filterSignature) {
-                    refreshPlaceOptions()
+                .task(id: placeMetadataQuerySignature) {
+                    do {
+                        try await Task.sleep(for: .milliseconds(100))
+                    } catch {
+                        return
+                    }
+                    await refreshPlaceMetadata()
                 }
-                .task(id: placeOptionsDataSignature) {
-                    // REGRESSION GUARD: reload the place filter options when the underlying event data finishes loading so the menus do not stay stuck on the initial empty state.
-                    refreshPlaceOptions()
-                }
+                .onChange(of: country) { _, _ in normalizePlaceSelections() }
+                .onChange(of: administrativeArea) { _, _ in normalizePlaceSelections() }
+                .onChange(of: subAdministrativeArea) { _, _ in normalizePlaceSelections() }
+                .onChange(of: locality) { _, _ in normalizePlaceSelections() }
+                .onChange(of: bodyOfWater) { _, _ in normalizePlaceSelections() }
                 .task(id: searchResultsScrollCommandID) {
                     guard !model.searchResults.isEmpty else { return }
                     await Task.yield()
@@ -156,9 +163,15 @@ struct SearchView: View {
                     ToolbarItem(placement: .confirmationAction) {
                         // REGRESSION GUARD: keep search as a visible button on the search screen so the user can run the query directly without hiding it inside an overflow menu.
                         Button("Search") {
-                            model.search(searchCriteria)
-                            searchResultsScrollCommandID = UUID()
+                            let criteria = searchCriteria
+                            Task {
+                                isSearching = true
+                                await model.search(criteria)
+                                isSearching = false
+                                searchResultsScrollCommandID = UUID()
+                            }
                         }
+                        .disabled(isSearching)
                     }
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button("Reset") {
@@ -166,7 +179,6 @@ struct SearchView: View {
                         }
                     }
                 }
-                .onAppear { refreshPlaceOptions() }
             }
         }
     }
@@ -188,7 +200,7 @@ struct SearchView: View {
         )
     }
 
-    private var filterSignature: String {
+    private var placeMetadataQuerySignature: String {
         [
             term,
             hasNote ? "1" : "0",
@@ -197,54 +209,85 @@ struct SearchView: View {
             startDate.formatted(.dateTime.year().month().day()),
             useEndDate ? "1" : "0",
             endDate.formatted(.dateTime.year().month().day()),
-            country ?? "",
-            administrativeArea ?? "",
-            subAdministrativeArea ?? "",
-            locality ?? "",
-            bodyOfWater ?? ""
+            model.settings.includeDemoData ? "1" : "0",
+            String(model.events.count)
         ].joined(separator: "|")
     }
 
-    private var placeOptionsDataSignature: String {
-        "\(model.events.count)|\(model.settings.includeDemoData ? 1 : 0)"
+    private var placeOptions: SearchPlaceOptions {
+        let countries = uniquePlaceValues(placeMetadata.map(\.country))
+        let selectedCountry = validatedSelection(country, in: countries)
+        let countryRows = placeMetadata.filter { selectedCountry == nil || $0.country == selectedCountry }
+        let administrativeAreas = uniquePlaceValues(countryRows.map(\.administrativeArea))
+        let selectedAdministrativeArea = validatedSelection(administrativeArea, in: administrativeAreas)
+        let administrativeRows = countryRows.filter {
+            selectedAdministrativeArea == nil || $0.administrativeArea == selectedAdministrativeArea
+        }
+        let subAdministrativeAreas = uniquePlaceValues(administrativeRows.map(\.subAdministrativeArea))
+        let selectedSubAdministrativeArea = validatedSelection(subAdministrativeArea, in: subAdministrativeAreas)
+        let subAdministrativeRows = administrativeRows.filter {
+            selectedSubAdministrativeArea == nil || $0.subAdministrativeArea == selectedSubAdministrativeArea
+        }
+        let localities = uniquePlaceValues(subAdministrativeRows.map(\.locality))
+        let selectedLocality = validatedSelection(locality, in: localities)
+        let localityRows = subAdministrativeRows.filter { selectedLocality == nil || $0.locality == selectedLocality }
+        let bodyOfWaters = uniquePlaceValues(localityRows.map { row in
+            meaningfulText(row.inlandWater) ?? meaningfulText(row.ocean) ?? ""
+        })
+
+        return SearchPlaceOptions(
+            countries: countries,
+            administrativeAreas: administrativeAreas,
+            subAdministrativeAreas: subAdministrativeAreas,
+            localities: localities,
+            bodyOfWaters: bodyOfWaters
+        )
     }
 
-    private func refreshPlaceOptions() {
-        let options = model.searchPlaceOptions(matching: searchCriteria)
-        placeOptions = options
+    private func refreshPlaceMetadata() async {
+        let metadata = await model.searchPlaceMetadata(matching: searchCriteria)
+        guard !Task.isCancelled else { return }
+        placeMetadata = metadata
+        normalizePlaceSelections()
+    }
 
-        var needsRefresh = false
-
+    private func normalizePlaceSelections() {
+        let options = placeOptions
         if let selected = country, !options.countries.contains(selected) {
             country = nil
             administrativeArea = nil
             subAdministrativeArea = nil
             locality = nil
             bodyOfWater = nil
-            needsRefresh = true
         } else if let selected = administrativeArea, !options.administrativeAreas.contains(selected) {
             administrativeArea = nil
             subAdministrativeArea = nil
             locality = nil
             bodyOfWater = nil
-            needsRefresh = true
         } else if let selected = subAdministrativeArea, !options.subAdministrativeAreas.contains(selected) {
             subAdministrativeArea = nil
             locality = nil
             bodyOfWater = nil
-            needsRefresh = true
         } else if let selected = locality, !options.localities.contains(selected) {
             locality = nil
             bodyOfWater = nil
-            needsRefresh = true
         } else if let selected = bodyOfWater, !options.bodyOfWaters.contains(selected) {
             bodyOfWater = nil
-            needsRefresh = true
         }
+    }
 
-        if needsRefresh {
-            refreshPlaceOptions()
-        }
+    private func uniquePlaceValues(_ values: [String]) -> [String] {
+        Array(Set(values.compactMap(meaningfulText))).sorted()
+    }
+
+    private func meaningfulText(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private func validatedSelection(_ value: String?, in options: [String]) -> String? {
+        guard let value, options.contains(value) else { return nil }
+        return value
     }
 
     private func clearFilters() {

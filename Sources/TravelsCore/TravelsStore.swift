@@ -41,6 +41,43 @@ public final class TravelsStore: @unchecked Sendable {
         }
     }
 
+    public struct LocationStatistics: Equatable, Sendable {
+        public let totalLocations: Int
+        public let uniqueLocations: Int
+        public let unaddressedLocations: Int
+
+        public init(totalLocations: Int, uniqueLocations: Int, unaddressedLocations: Int) {
+            self.totalLocations = totalLocations
+            self.uniqueLocations = uniqueLocations
+            self.unaddressedLocations = unaddressedLocations
+        }
+    }
+
+    public struct SearchPlaceMetadata: Equatable, Sendable {
+        public let country: String
+        public let administrativeArea: String
+        public let subAdministrativeArea: String
+        public let locality: String
+        public let inlandWater: String
+        public let ocean: String
+
+        public init(
+            country: String,
+            administrativeArea: String,
+            subAdministrativeArea: String,
+            locality: String,
+            inlandWater: String,
+            ocean: String
+        ) {
+            self.country = country
+            self.administrativeArea = administrativeArea
+            self.subAdministrativeArea = subAdministrativeArea
+            self.locality = locality
+            self.inlandWater = inlandWater
+            self.ocean = ocean
+        }
+    }
+
     public init(path: String) throws {
         databaseURL = URL(fileURLWithPath: path)
         database = try SQLiteDatabase(path: path)
@@ -141,6 +178,7 @@ public final class TravelsStore: @unchecked Sendable {
             externalReference TEXT NOT NULL DEFAULT '',
             photoFilename TEXT NOT NULL DEFAULT '',
             tripEndpointOverride INTEGER,
+            movementStateOverride INTEGER,
             isDemo INTEGER NOT NULL DEFAULT 0,
             solar_period TEXT NOT NULL DEFAULT 'unknown',
             solar_period_percent REAL,
@@ -165,6 +203,7 @@ public final class TravelsStore: @unchecked Sendable {
         try ensureColumnExists(table: "events", column: "solar_period_percent", definition: "REAL")
         try ensureColumnExists(table: "events", column: "solar_period_calculated_at", definition: "DATETIME")
         try ensureColumnExists(table: "events", column: "tripEndpointOverride", definition: "INTEGER")
+        try ensureColumnExists(table: "events", column: "movementStateOverride", definition: "INTEGER")
         try ensureColumnExists(table: "events", column: "twilight_phase", definition: "TEXT NOT NULL DEFAULT 'none'")
         try ensureColumnExists(table: "events", column: "twilight_percent", definition: "REAL")
         try ensureColumnExists(table: "events", column: "twilight_calculated_at", definition: "DATETIME")
@@ -174,6 +213,7 @@ public final class TravelsStore: @unchecked Sendable {
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_twilight_calculated_at_timestamp ON events(twilight_calculated_at, timestamp DESC)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_events_solar_period_calculated_at_timestamp ON events(solar_period_calculated_at, timestamp DESC)")
         try database.execute("CREATE INDEX IF NOT EXISTS idx_geolocations_place ON geolocations(country, administrativeArea, subAdministrativeArea, locality)")
+        try database.execute("CREATE INDEX IF NOT EXISTS idx_geolocations_coordinate ON geolocations(latitude, longitude)")
     }
 
     @discardableResult
@@ -283,8 +323,8 @@ public final class TravelsStore: @unchecked Sendable {
             INSERT INTO events (
                 latitude, longitude, horizontalAccuracy, verticalAccuracy, altitude, course, speed,
                 timestamp, localizedDate, source, geolocationID, note, tags, externalReference, photoFilename, isDemo,
-                tripEndpointOverride, solar_period, solar_period_percent, solar_period_calculated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tripEndpointOverride, movementStateOverride, solar_period, solar_period_percent, solar_period_calculated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             parameters: [
                 .real(event.latitude),
@@ -304,6 +344,7 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.photoFilename),
                 .integer(demoFlag ? 1 : 0),
                 optionalInt(event.tripEndpointOverride?.rawValue),
+                optionalInt(event.movementStateOverride?.rawValue),
                 .text(solar.period.rawValue),
                 optionalDouble(solar.percent),
                 optionalDate(solar.calculatedAt)
@@ -320,7 +361,7 @@ public final class TravelsStore: @unchecked Sendable {
                 latitude = ?, longitude = ?, horizontalAccuracy = ?, verticalAccuracy = ?,
                 altitude = ?, course = ?, speed = ?, timestamp = ?, localizedDate = ?,
                 source = ?, geolocationID = ?, note = ?, tags = ?, externalReference = ?,
-                photoFilename = ?, tripEndpointOverride = ?, isDemo = ?, solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
+                photoFilename = ?, tripEndpointOverride = ?, movementStateOverride = ?, isDemo = ?, solar_period = ?, solar_period_percent = ?, solar_period_calculated_at = ?
             WHERE id = ?
             """,
             parameters: [
@@ -340,6 +381,7 @@ public final class TravelsStore: @unchecked Sendable {
                 .text(event.externalReference),
                 .text(event.photoFilename),
                 optionalInt(event.tripEndpointOverride?.rawValue),
+                optionalInt(event.movementStateOverride?.rawValue),
                 .integer(event.isDemo ? 1 : 0),
                 .text(solar.period.rawValue),
                 optionalDouble(solar.percent),
@@ -353,10 +395,11 @@ public final class TravelsStore: @unchecked Sendable {
         let day = TravelsDateTools.localizedDayString(for: date, timeZoneIdentifier: nil)
         var parameters: [SQLiteValue] = [.text(day)]
         var predicate = "e.localizedDate = ?"
-        if includePreviousDayContext, try dayHasVisibleNonDemoEvents(day: day, includeDemo: includeDemo) {
+        if includePreviousDayContext {
             let previous = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
-            predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? ORDER BY timestamp DESC LIMIT 1))"
+            predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? AND (? = 1 OR isDemo = 0) ORDER BY timestamp DESC LIMIT 1))"
             parameters.append(.text(TravelsDateTools.localizedDayString(for: previous, timeZoneIdentifier: nil)))
+            parameters.append(.integer(includeDemo ? 1 : 0))
         }
         if !includeDemo {
             predicate += " AND e.isDemo = 0"
@@ -373,6 +416,36 @@ public final class TravelsStore: @unchecked Sendable {
         return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
     }
 
+    public func locationStatistics(includeDemo: Bool = true) throws -> LocationStatistics {
+        let demoPredicate = includeDemo ? "" : "WHERE e.isDemo = 0"
+        // REGRESSION GUARD: About statistics must stay an aggregate query. Loading every event here blocks the main actor on large histories and can trigger unrelated solar self-healing writes.
+        let row = try database.query(
+            """
+            SELECT
+                COUNT(*) AS totalLocations,
+                COUNT(DISTINCT e.geolocationID) AS uniqueLocations,
+                COALESCE(SUM(
+                    CASE
+                        WHEN e.geolocationID IS NULL OR length(trim(
+                            COALESCE(g.name, ''),
+                            ' ' || char(9) || char(10) || char(11) || char(12) || char(13)
+                        )) = 0 THEN 1
+                        ELSE 0
+                    END
+                ), 0) AS unaddressedLocations
+            FROM events e
+            LEFT JOIN geolocations g ON g.id = e.geolocationID
+            \(demoPredicate)
+            """
+        ).first
+
+        return LocationStatistics(
+            totalLocations: Int(row?["totalLocations"]?.int64 ?? 0),
+            uniqueLocations: Int(row?["uniqueLocations"]?.int64 ?? 0),
+            unaddressedLocations: Int(row?["unaddressedLocations"]?.int64 ?? 0)
+        )
+    }
+
     public func checkpoint() throws {
         _ = try database.query("PRAGMA wal_checkpoint(FULL)")
     }
@@ -386,64 +459,39 @@ public final class TravelsStore: @unchecked Sendable {
     }
 
     public func search(_ criteria: SearchCriteria, includeDemo: Bool = true) throws -> [EventDetail] {
-        var predicates: [String] = []
-        var parameters: [SQLiteValue] = []
+        let query = searchPredicate(for: criteria, includeDemo: includeDemo, includePlaceFilters: true)
+        return try fetchEventDetails(where: query.predicate, parameters: query.parameters, order: "e.timestamp ASC")
+    }
 
-        if let start = criteria.startDate {
-            predicates.append("e.timestamp >= ?")
-            parameters.append(.real(start.timeIntervalSinceReferenceDate))
-        }
-        if let end = criteria.endDate {
-            predicates.append("e.timestamp < ?")
-            parameters.append(.real(end.timeIntervalSinceReferenceDate))
-        }
-        if criteria.hasNote {
-            predicates.append("length(trim(e.note)) > 0")
-        }
-        if let value = nonAny(criteria.country) {
-            predicates.append("g.country = ?")
-            parameters.append(.text(value))
-        }
-        if let value = nonAny(criteria.administrativeArea) {
-            predicates.append("g.administrativeArea = ?")
-            parameters.append(.text(value))
-        }
-        if let value = nonAny(criteria.subAdministrativeArea) {
-            predicates.append("g.subAdministrativeArea = ?")
-            parameters.append(.text(value))
-        }
-        if let value = nonAny(criteria.locality) {
-            predicates.append("g.locality = ?")
-            parameters.append(.text(value))
-        }
-        if let value = nonAny(criteria.bodyOfWater) {
-            predicates.append("(g.inlandWater = ? OR g.ocean = ?)")
-            parameters.append(.text(value))
-            parameters.append(.text(value))
-        }
-        if let source = criteria.source {
-            predicates.append("e.source = ?")
-            parameters.append(.integer(Int64(source.rawValue)))
-        }
-        let term = criteria.term.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !term.isEmpty {
-            predicates.append("""
-            (
-                e.note LIKE ? OR e.tags LIKE ? OR g.name LIKE ? OR g.thoroughfare LIKE ? OR
-                g.locality LIKE ? OR g.administrativeArea LIKE ? OR g.country LIKE ? OR
-                g.areasOfInterest LIKE ? OR g.inlandWater LIKE ? OR g.ocean LIKE ?
+    public func searchPlaceMetadata(matching criteria: SearchCriteria, includeDemo: Bool = true) throws -> [SearchPlaceMetadata] {
+        let query = searchPredicate(for: criteria, includeDemo: includeDemo, includePlaceFilters: false)
+        // REGRESSION GUARD: place-filter population must not materialize every matching event. Large histories made five full event loads run for each filter change.
+        let rows = try database.query(
+            """
+            SELECT DISTINCT
+                g.country,
+                g.administrativeArea,
+                g.subAdministrativeArea,
+                g.locality,
+                g.inlandWater,
+                g.ocean
+            FROM events e
+            INNER JOIN geolocations g ON g.id = e.geolocationID
+            WHERE \(query.predicate)
+            """,
+            parameters: query.parameters
+        )
+
+        return rows.map { row in
+            SearchPlaceMetadata(
+                country: row["country"]?.string ?? "",
+                administrativeArea: row["administrativeArea"]?.string ?? "",
+                subAdministrativeArea: row["subAdministrativeArea"]?.string ?? "",
+                locality: row["locality"]?.string ?? "",
+                inlandWater: row["inlandWater"]?.string ?? "",
+                ocean: row["ocean"]?.string ?? ""
             )
-            """)
-            for _ in 0..<10 {
-                parameters.append(.text("%\(term)%"))
-            }
         }
-        if !includeDemo {
-            predicates.append("e.isDemo = 0")
-        }
-
-        let predicate = predicates.isEmpty ? "1 = 1" : predicates.joined(separator: " AND ")
-        return try fetchEventDetails(where: predicate, parameters: parameters, order: "e.timestamp ASC")
     }
 
     public func updateNote(eventID: Int64, note: String) throws {
@@ -455,6 +503,16 @@ public final class TravelsStore: @unchecked Sendable {
             "UPDATE events SET tripEndpointOverride = ? WHERE id = ?",
             parameters: [
                 optionalInt(tripEndpointOverride?.rawValue),
+                .integer(eventID)
+            ]
+        )
+    }
+
+    public func updateMovementStateOverride(eventID: Int64, movementStateOverride: MovementStateOverride?) throws {
+        try database.execute(
+            "UPDATE events SET movementStateOverride = ? WHERE id = ?",
+            parameters: [
+                optionalInt(movementStateOverride?.rawValue),
                 .integer(eventID)
             ]
         )
@@ -612,6 +670,60 @@ public final class TravelsStore: @unchecked Sendable {
         return rows.first.map(geolocation(from:))
     }
 
+    public func suitableGeolocation(latitude: Double, longitude: Double) throws -> Geolocation? {
+        guard latitude.isFinite, longitude.isFinite,
+              (-90.0...90.0).contains(latitude),
+              (-180.0...180.0).contains(longitude) else {
+            return nil
+        }
+
+        let latitudeSearchDelta = 0.005
+        let longitudeSearchDelta = latitudeSearchDelta / max(abs(cos(latitude * .pi / 180)), 0.1)
+        let rows = try database.query(
+            """
+            SELECT * FROM geolocations
+            WHERE trim(name) <> ''
+            AND latitude BETWEEN ? AND ?
+            AND longitude BETWEEN ? AND ?
+            """,
+            parameters: [
+                .real(latitude - latitudeSearchDelta),
+                .real(latitude + latitudeSearchDelta),
+                .real(longitude - longitudeSearchDelta),
+                .real(longitude + longitudeSearchDelta)
+            ]
+        )
+
+        let candidates = rows.compactMap { row -> (geolocation: Geolocation, coverage: Double, distance: Double)? in
+            let candidate = geolocation(from: row)
+            let distance = Self.haversineMeters(
+                fromLatitude: candidate.latitude,
+                longitude: candidate.longitude,
+                toLatitude: latitude,
+                longitude: longitude
+            )
+            guard let coverage = Self.suitableCoverageMeters(
+                for: candidate,
+                latitude: latitude,
+                longitude: longitude,
+                distance: distance
+            ) else {
+                return nil
+            }
+            return (candidate, coverage, distance)
+        }
+
+        return candidates.min { lhs, rhs in
+            if abs(lhs.coverage - rhs.coverage) > 0.001 {
+                return lhs.coverage < rhs.coverage
+            }
+            if abs(lhs.distance - rhs.distance) > 0.001 {
+                return lhs.distance < rhs.distance
+            }
+            return (lhs.geolocation.timestamp ?? .distantPast) > (rhs.geolocation.timestamp ?? .distantPast)
+        }?.geolocation
+    }
+
     public func findDuplicate(_ event: LocationEvent) throws -> LocationEvent? {
         let rows = try database.query(
             """
@@ -652,7 +764,8 @@ public final class TravelsStore: @unchecked Sendable {
                 e.timestamp AS event_timestamp, e.localizedDate AS event_localizedDate,
                 e.source AS event_source, e.geolocationID AS event_geolocationID, e.note AS event_note,
                 e.tags AS event_tags, e.externalReference AS event_externalReference, e.photoFilename AS event_photoFilename,
-                e.tripEndpointOverride AS event_tripEndpointOverride, e.isDemo AS event_isDemo, e.solar_period AS event_solar_period,
+                e.tripEndpointOverride AS event_tripEndpointOverride, e.movementStateOverride AS event_movementStateOverride,
+                e.isDemo AS event_isDemo, e.solar_period AS event_solar_period,
                 e.solar_period_percent AS event_solar_period_percent, e.solar_period_calculated_at AS event_solar_period_calculated_at,
                 g.*
             FROM events e
@@ -712,6 +825,63 @@ public final class TravelsStore: @unchecked Sendable {
         ]
     }
 
+    private static func suitableCoverageMeters(
+        for geolocation: Geolocation,
+        latitude: Double,
+        longitude: Double,
+        distance: Double
+    ) -> Double? {
+        let maximumCoverageRadius = 250.0
+        let proximityFallback = 15.0
+
+        if let minLatitude = geolocation.minLatitude,
+           let maxLatitude = geolocation.maxLatitude,
+           let minLongitude = geolocation.minLongitude,
+           let maxLongitude = geolocation.maxLongitude,
+           minLatitude <= maxLatitude,
+           minLongitude <= maxLongitude,
+           latitude >= minLatitude,
+           latitude <= maxLatitude,
+           longitude >= minLongitude,
+           longitude <= maxLongitude {
+            let diagonal = haversineMeters(
+                fromLatitude: minLatitude,
+                longitude: minLongitude,
+                toLatitude: maxLatitude,
+                longitude: maxLongitude
+            )
+            let coverageRadius = diagonal / 2
+            if coverageRadius.isFinite, coverageRadius <= maximumCoverageRadius {
+                return max(coverageRadius, distance)
+            }
+        }
+
+        if geolocation.radius.isFinite,
+           geolocation.radius > 0,
+           geolocation.radius <= maximumCoverageRadius,
+           distance <= geolocation.radius {
+            return geolocation.radius
+        }
+
+        return distance <= proximityFallback ? proximityFallback : nil
+    }
+
+    private static func haversineMeters(
+        fromLatitude latitude1: Double,
+        longitude longitude1: Double,
+        toLatitude latitude2: Double,
+        longitude longitude2: Double
+    ) -> Double {
+        let earthRadius = 6_371_000.0
+        let phi1 = latitude1 * .pi / 180
+        let phi2 = latitude2 * .pi / 180
+        let deltaPhi = (latitude2 - latitude1) * .pi / 180
+        let deltaLambda = (longitude2 - longitude1) * .pi / 180
+        let a = sin(deltaPhi / 2) * sin(deltaPhi / 2)
+            + cos(phi1) * cos(phi2) * sin(deltaLambda / 2) * sin(deltaLambda / 2)
+        return earthRadius * 2 * atan2(sqrt(a), sqrt(1 - a))
+    }
+
     private func event(from row: [String: SQLiteValue]) -> LocationEvent {
         let id = row["id"]?.int64
         let latitude = row["latitude"]?.double ?? 0
@@ -730,6 +900,7 @@ public final class TravelsStore: @unchecked Sendable {
         let externalReference = row["externalReference"]?.string ?? ""
         let photoFilename = row["photoFilename"]?.string ?? ""
         let tripEndpointOverride = row["tripEndpointOverride"]?.int64.flatMap { TripEndpointOverride(rawValue: Int($0)) }
+        let movementStateOverride = row["movementStateOverride"]?.int64.flatMap { MovementStateOverride(rawValue: Int($0)) }
         let isDemo = (row["isDemo"]?.int64 ?? 0) != 0
         let solarPeriod = SolarPeriod(rawValue: row["solar_period"]?.string ?? "") ?? .unknown
         let solarPeriodPercent = row["solar_period_percent"]?.double
@@ -756,7 +927,8 @@ public final class TravelsStore: @unchecked Sendable {
             solarPeriod: solarPeriod,
             solarPeriodPercent: solarPeriodPercent,
             solarPeriodCalculatedAt: solarPeriodCalculatedAt,
-            tripEndpointOverride: tripEndpointOverride
+            tripEndpointOverride: tripEndpointOverride,
+            movementStateOverride: movementStateOverride
         )
     }
 
@@ -778,6 +950,7 @@ public final class TravelsStore: @unchecked Sendable {
         let externalReference = row["event_externalReference"]?.string ?? ""
         let photoFilename = row["event_photoFilename"]?.string ?? ""
         let tripEndpointOverride = row["event_tripEndpointOverride"]?.int64.flatMap { TripEndpointOverride(rawValue: Int($0)) }
+        let movementStateOverride = row["event_movementStateOverride"]?.int64.flatMap { MovementStateOverride(rawValue: Int($0)) }
         let isDemo = (row["event_isDemo"]?.int64 ?? 0) != 0
         let solarPeriod = SolarPeriod(rawValue: row["event_solar_period"]?.string ?? "") ?? .unknown
         let solarPeriodPercent = row["event_solar_period_percent"]?.double
@@ -804,7 +977,8 @@ public final class TravelsStore: @unchecked Sendable {
             solarPeriod: solarPeriod,
             solarPeriodPercent: solarPeriodPercent,
             solarPeriodCalculatedAt: solarPeriodCalculatedAt,
-            tripEndpointOverride: tripEndpointOverride
+            tripEndpointOverride: tripEndpointOverride,
+            movementStateOverride: movementStateOverride
         )
     }
 
@@ -941,20 +1115,73 @@ public final class TravelsStore: @unchecked Sendable {
         return try refreshSolarPeriodIfNeeded(for: event)
     }
 
-    private func dayHasVisibleNonDemoEvents(day: String, includeDemo: Bool) throws -> Bool {
-        let rows = try database.query(
-            """
-            SELECT 1
-            FROM events
-            WHERE localizedDate = ? AND (? = 1 OR isDemo = 0) AND isDemo = 0
-            LIMIT 1
-            """,
-            parameters: [
-                .text(day),
-                .integer(includeDemo ? 1 : 0)
-            ]
+    private func searchPredicate(
+        for criteria: SearchCriteria,
+        includeDemo: Bool,
+        includePlaceFilters: Bool
+    ) -> (predicate: String, parameters: [SQLiteValue]) {
+        var predicates: [String] = []
+        var parameters: [SQLiteValue] = []
+
+        if let start = criteria.startDate {
+            predicates.append("e.timestamp >= ?")
+            parameters.append(.real(start.timeIntervalSinceReferenceDate))
+        }
+        if let end = criteria.endDate {
+            predicates.append("e.timestamp < ?")
+            parameters.append(.real(end.timeIntervalSinceReferenceDate))
+        }
+        if criteria.hasNote {
+            predicates.append("length(trim(e.note)) > 0")
+        }
+        if includePlaceFilters {
+            if let value = nonAny(criteria.country) {
+                predicates.append("g.country = ?")
+                parameters.append(.text(value))
+            }
+            if let value = nonAny(criteria.administrativeArea) {
+                predicates.append("g.administrativeArea = ?")
+                parameters.append(.text(value))
+            }
+            if let value = nonAny(criteria.subAdministrativeArea) {
+                predicates.append("g.subAdministrativeArea = ?")
+                parameters.append(.text(value))
+            }
+            if let value = nonAny(criteria.locality) {
+                predicates.append("g.locality = ?")
+                parameters.append(.text(value))
+            }
+            if let value = nonAny(criteria.bodyOfWater) {
+                predicates.append("(g.inlandWater = ? OR g.ocean = ?)")
+                parameters.append(.text(value))
+                parameters.append(.text(value))
+            }
+        }
+        if let source = criteria.source {
+            predicates.append("e.source = ?")
+            parameters.append(.integer(Int64(source.rawValue)))
+        }
+        let term = criteria.term.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !term.isEmpty {
+            predicates.append("""
+            (
+                e.note LIKE ? OR e.tags LIKE ? OR g.name LIKE ? OR g.thoroughfare LIKE ? OR
+                g.locality LIKE ? OR g.administrativeArea LIKE ? OR g.country LIKE ? OR
+                g.areasOfInterest LIKE ? OR g.inlandWater LIKE ? OR g.ocean LIKE ?
+            )
+            """)
+            for _ in 0..<10 {
+                parameters.append(.text("%\(term)%"))
+            }
+        }
+        if !includeDemo {
+            predicates.append("e.isDemo = 0")
+        }
+
+        return (
+            predicates.isEmpty ? "1 = 1" : predicates.joined(separator: " AND "),
+            parameters
         )
-        return !rows.isEmpty
     }
 
     private func nonAny(_ value: String?) -> String? {

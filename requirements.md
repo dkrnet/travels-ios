@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Travels iOS is a local-first iOS life-tracking application. It records, imports, displays, searches, annotates, backs up, restores, and exports location events. It is a modern Swift rebuild of the legacy Travels app and must preserve the legacy product model where applicable.
+Travels iOS is a local-first, privacy-first iOS location-history application. It records, imports, displays, searches, annotates, backs up, restores, and exports location events. It is a modern Swift rebuild of the legacy Travels app and must preserve the legacy product model where applicable.
 
 A future developer should be able to regenerate the application from scratch with the same look, feel, functionality, data model, privacy posture, and development safeguards by following this document together with `README.md` and `AGENTS.md`.
 
@@ -50,6 +50,9 @@ A future developer should be able to regenerate the application from scratch wit
 - Third-party or legacy assets shall retain their original attribution and license notices when they are retained.
 - The repository shall contain the MPL 2.0 license text in `LICENSE`.
 - The About screen shall identify Travels as licensed under the Mozilla Public License 2.0 and shall link to Mozilla's official MPL 2.0 license text at `https://www.mozilla.org/MPL/2.0/`.
+- The About screen shall describe Travels as a privacy-first location-history app, emphasize that location history is stored locally on the device, and accurately disclose the circumstances in which data may leave Travels.
+- The About screen shall explain that Travels is free because it was created for the developer's own privacy-first location-history needs and serves a niche audience, and shall state that users and their location data are not the product or the basis of the app's business model.
+- The About screen shall remain responsive with large location histories while displaying accurate total-location, unique-location, and unaddressed-location counts that respect the Include Demo Data setting.
 
 ## Application identity requirements
 
@@ -116,6 +119,7 @@ Events shall support storage of:
 - Optional external reference.
 - Optional copied photo filename.
 - Optional trip-endpoint override used by trip detection.
+- Optional movement-state override that changes whether the event is treated as stopped without changing recorded speed.
 - Demo-data flag.
 - Solar/time-of-day period.
 - Solar/time-of-day period percent.
@@ -152,6 +156,7 @@ The database shall maintain indexes needed for fast date filtering, timestamp or
 - Location history, notes, photo metadata, geocoded place names, GPX exports, and database backups shall be treated as sensitive personal data.
 - The app shall be local-first and shall not transmit data except for explicit user exports/shares or platform services required for user-enabled features.
 - Reverse geocoding may use Apple platform services and shall be disclosed as a platform service dependency.
+- User-facing address-lookup copy shall state: "Address lookup is optional and sends coordinates to Apple only when enabled."
 - Photo import may read photo metadata only with user permission and only for selected assets.
 - LocalAuthentication privacy lock shall be treated as a convenience privacy layer, not a replacement for device security or file protection.
 - When privacy lock is enabled, the app shall obscure sensitive content while locked or transitioning to/from the background.
@@ -231,6 +236,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - App settings decoded from the legacy Always-On High Precision Location boolean shall migrate false or missing values to Automatic and true values to Always On.
 - In Automatic Precise Location Mode, the app shall support hybrid automatic location tracking that normally uses significant-location-change monitoring and temporarily switches to active high-fidelity tracking when travel appears to begin.
 - In Automatic Precise Location Mode, the app shall stop active high-fidelity tracking and return to significant-location-change monitoring only after movement appears stationary for a sustained interval.
+- When Background Location is enabled, active high-precision tracking shall retain a Core Location background activity session so a significant-change background wake can continue receiving route updates. The session shall exist only during active high-precision tracking and shall be invalidated immediately when tracking returns to idle/significant-change monitoring, stops, is disabled, or loses authorization.
+- Idle significant-location-change monitoring, manual one-shot capture, and Shortcuts one-shot capture shall not retain a background activity session solely for those operations.
 - In Always On Precise Location Mode, when Automatic Location Tracking is enabled and location authorization allows tracking, the app shall keep active high-fidelity tracking enabled continuously and shall not automatically downgrade back to significant-location-change monitoring.
 - In Always Off Precise Location Mode, when Automatic Location Tracking is enabled, the app shall use idle/significant-change monitoring only and shall not automatically enter continuous precise/high-accuracy tracking because of movement detection or automatic location samples.
 - Always Off Precise Location Mode shall not disable Automatic Location Tracking entirely; it disables automatic precise/high-accuracy escalation. Manual Add Current Location and other manual user-triggered current-location captures shall remain available when otherwise permitted.
@@ -239,8 +246,12 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The Precise Location Mode setting shall be separate from any future manual start/stop tracking feature.
 - While Automatic Precise Location Mode hybrid tracking is active, the app shall periodically request a one-shot Core Location recheck so the app can recover when the location stream goes quiet after movement stops.
 - When Automatic Precise Location Mode hybrid tracking enters active high-precision mode, the app shall immediately request one automatic location sample so the first precise position is available without waiting for the next scheduled recheck.
+- When a background significant-location-change callback causes Automatic Precise Location Mode to enter active high-precision tracking, the app shall retain significant-change monitoring and a bounded background execution assertion during the handoff. The handoff shall end after a subsequent non-entry automatic Core Location callback confirms active delivery; if confirmation does not arrive within the bounded interval, the assertion shall end while significant-change monitoring remains enabled as a fallback. Manual and Shortcuts captures shall not independently start this handoff.
 - When Automatic Precise Location Mode hybrid tracking enters active high-precision mode, the app shall keep active tracking alive until the first hybrid watchdog recheck completes or a short minimum active interval elapses. A single immediate, stale, rejected, nearby, or ambiguous automatic sample shall not immediately downgrade the app back to idle detection or cancel the initial watchdog. Explicit stop, disabled Automatic Location Tracking, insufficient authorization, and Precise Location Mode changes may still stop or downgrade tracking immediately.
 - When active high-precision tracking receives no fresh Core Location deliveries for a sustained period and repeated watchdog rechecks can only see stale cached data, the app shall first make a bounded attempt to restart the active Core Location stream and request a fresh sample. If the stream remains silent, the app shall start the bounded final precise-exit flow without treating the stale cached location as stop confirmation or movement-resumed evidence.
+- The one-time active-stream restart latch shall remain set until its recovery sample is classified or precise mode exits. A fresh recovery callback shall not reset the silence episode merely because Core Location delivered it, and the app shall not repeatedly restart Core Location during the same stationary episode.
+- A fresh, accurate, nearby, nonmoving recovery sample delivered after a sustained active-stream silence interval shall confirm the existing stationary episode and begin bounded final precise exit rather than resetting the stationary window. A recovery sample that clearly indicates movement shall cancel the stationary episode and keep precise tracking active.
+- Stationary detection may accept one bounded sparse confirmation interval of up to the configured stationary duration plus the normal maximum stationary sample gap. Longer gaps shall reset the stationary window so arbitrarily stale samples cannot end precise tracking.
 - When Automatic Precise Location Mode hybrid tracking is about to return from active high-precision mode to idle detection because the stationary window has been satisfied, the app shall make one bounded best-effort automatic sample before leaving precise mode.
 - The immediate entry sample and bounded final-exit sample shall be automatic tracking samples rather than manual user captures, and the bounded final-exit sample shall not keep precise mode active indefinitely.
 - A bounded final-exit sample shall be treated as a confirmation or cleanup sample, not as ordinary movement evidence. It shall cancel final exit and keep high-precision tracking active only when the sample is fresh, accurate enough, newer than the stationary reference when distance is used, and clearly indicates movement by meaningful speed or material distance from the stationary reference.
@@ -253,6 +264,17 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The hybrid watchdog, immediate precise-entry sample, and bounded final precise-exit sample shall apply only to Automatic Precise Location Mode and shall not run in Always On or Always Off Precise Location Mode.
 - The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or Precise Location Mode switches away from Automatic.
 - Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always On Precise Location Mode, switch Always Off Precise Location Mode into active high-fidelity tracking, or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
+- Travels shall provide a background-capable `Capture Current Location` Shortcuts action that requests one automatic location sample and processes it through the existing filtering and persistence path without treating it as a manual Add capture or starting a continuous background session solely for the shortcut.
+- The `Capture Current Location` Shortcuts action shall complete silently without presenting a result dialog or requiring user interaction, including when the location is filtered, unavailable, or times out.
+- Travels shall provide a silent, background-capable `Capture Stopped Location` Shortcuts action that uses the same normal filtering as `Capture Current Location`; when its sample is accepted, the saved event shall receive the stopped movement override without changing the measured speed, and a rejected sample shall not create or modify an event.
+- Travels shall provide `Capture Non-Duplicate Location` and `Capture Stopped Non-Duplicate Location` Shortcuts actions that force-add a sample only when the previous accepted event is more than 20 meters away; an event at or within 20 meters shall be rejected, and the stopped variant shall set the movement override without changing measured speed.
+- Travels shall provide a silent `Force Add Current Location` Shortcuts action that requests one location and saves it through the manual Add path, bypassing normal location filtering without forcing the event to be classified as stopped.
+- Travels shall provide a silent `Force Add Stopped Location` Shortcuts action that bypasses normal filtering and sets the accepted event's movement override to stopped without changing measured speed.
+- Travels shall provide silent Shortcuts actions that persistently turn `Automatic Location Tracking` on or off through the same settings and tracking reconfiguration path used by the Settings screen.
+- The forced Shortcuts action shall use the same bounded completion, persistence, permission, and failure-safety behavior as the filtered Shortcuts action.
+- Users may connect the Travels Shortcuts action to personal Wi-Fi, Bluetooth, or charger automations. Those trigger automations are created, enabled, disabled, and executed by the Shortcuts app; Travels shall not claim that it can independently register for or guarantee background delivery of those system events.
+- Settings shall explain how to create the personal automations, select Run Immediately where available, add the Travels action, and manage each trigger in Shortcuts.
+- A shortcut-triggered location request shall finish or time out within a bounded interval and shall fail safely when location authorization or the database is unavailable.
 - Automatic foreground location capture shall respect the automatic location setting.
 - Background location capture shall respect the background location setting and required iOS permissions.
 - Automatic and manual location captures shall not be reported as saved, update the latest accepted event, or trigger saved-event side effects until the database write returns a valid durable event identifier.
@@ -274,6 +296,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The first valid location in a capture session may be accepted to establish context.
 - A forced manual add shall be able to bypass normal distance filtering when appropriate.
 - A newer and more accurate reading may replace or suppress a weaker recent reading according to documented filtering behavior.
+- A known stopped or nearly stopped reading within a recent moving event's accuracy radius shall replace that moving event within the improvement window when the stopped reading has usable horizontal accuracy, even when it is less accurate than the moving event; unavailable speed alone shall not qualify a reading for this stopped-event priority.
 - Location filtering rules shall be deterministic and testable without requiring live Core Location.
 
 ## Date browsing requirements
@@ -285,7 +308,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The user shall be able to choose a date from a date picker.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
 - Changing the selected date shall reload events and reset stale focused-selection state.
-- The app shall support including previous-day context in map/list displays when the setting is enabled.
+- When previous-day context is enabled, the most recent visible event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
 
 ## Map and list requirements
 
@@ -301,6 +324,9 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
 - The map shall provide sensible full-day and recent-event zoom behavior.
+- After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
+- Passive map redraws caused by automatic location additions, address-resolution updates, or other event reloads shall preserve the user's current camera position and zoom level.
+- Photo-source events shall use the photo marker glyph even when their recorded speed would otherwise classify them as moving.
 
 ## Event detail requirements
 
@@ -308,6 +334,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The event detail view shall hide optional rows whose values are unavailable, empty, whitespace-only, or otherwise not meaningful for the selected event while continuing to show core event information such as timestamp, coordinates, and source.
 - The event detail view shall continue to show the speed row when a speed value is stored, and shall display unavailable speed as "Not provided" rather than hiding the row.
 - The event detail view shall allow the user to mark an event as an automatic trip candidate, a trip endpoint, or explicitly not a trip endpoint without changing the underlying event data model.
+- The event detail view shall allow the user to treat an event's movement state as automatic, stopped, or not stopped without altering its recorded speed.
 - The user shall be able to edit an event note.
 - The user shall be able to request reverse address resolution for an event when supported.
 - The user shall be able to delete an event.
@@ -322,11 +349,14 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Search shall support filtering by place hierarchy where geolocation metadata exists, including country, administrative area, sub-administrative area, locality, and water features.
 - Search terms shall match relevant note, tag, geolocation, place, water, and area-of-interest fields.
 - Place filter options shall narrow appropriately as higher-level place choices are selected.
+- The Search screen shall remain responsive with large location histories while loading filters, narrowing hierarchical place choices, and executing searches.
 
 ## Reverse-geocoding requirements
 
 - Reverse geocoding shall be optional and controlled by settings.
 - Reverse geocoding shall store resolved geolocation/place metadata for events.
+- Before an accepted location or unresolved historical event is queued for reverse geocoding, the app shall reuse a meaningful stored geolocation whose validated bounds, reasonable radius, or close coordinate proximity covers the event.
+- Stored geolocation reuse shall reject empty place names and overly broad coverage, and shall prefer the narrowest suitable match when multiple records cover an event.
 - Reverse geocoding shall support resolving missing addresses when enabled.
 - Reverse geocoding shall expose enough status or diagnostics for troubleshooting pending, successful, failed, or skipped work.
 - Reverse geocoding failures shall not corrupt event data or block normal app use.
@@ -337,7 +367,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall import a user-selected `.gpx` file.
 - Import shall use security-scoped file access where iOS requires it.
 - Import shall parse GPX trackpoints with latitude, longitude, and timestamp.
-- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time zone, place metadata, area-of-interest metadata, notes, tags, trip-endpoint overrides, demo flags, and cached solar values.
+- Import shall preserve supported legacy child elements and namespaced Travels extensions for heading/course, speed, horizontal accuracy, time zone, place metadata, area-of-interest metadata, notes, tags, trip-endpoint overrides, movement-state overrides, demo flags, and cached solar values.
 - Import shall accept the Travels `speedMetersPerSecond` extension field as the canonical speed value and legacy `speed` aliases when present.
 - Import shall skip malformed or incomplete trackpoints and report skipped counts when meaningful.
 - Imported events shall use the imported source.
@@ -361,8 +391,9 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Export shall produce GPX 1.1-compatible XML.
 - Export shall include metadata name, export time, and bounds when available.
 - Export shall use GPX 1.1 standard elements where their semantics match.
-- Export shall include GPX 1.1 standard trackpoint fields for latitude, longitude, timestamp, name, comments, and source where available, plus namespaced Travels extensions for course/heading, speed, horizontal accuracy, time zone, place metadata, areas of interest, notes, tags, demo flags, and cached solar values.
+- Export shall include GPX 1.1 standard trackpoint fields for latitude, longitude, timestamp, name, comments, and source where available, plus namespaced Travels extensions for course/heading, speed, horizontal accuracy, time zone, place metadata, areas of interest, notes, tags, movement-state overrides, demo flags, and cached solar values.
 - Export shall include the optional trip-endpoint override when present so trip detection hints round-trip through GPX interchange.
+- Export shall include the optional movement-state override when present so stopped-location treatment round-trips without changing the exported speed.
 - Travels-specific metadata shall be exported under the versioned namespace documented in `docs/gpx-extension-v1.md`.
 - Internal database IDs shall not be exported.
 - Areas of interest shall export as repeated Travels extension elements and legacy joined areas-of-interest values shall remain import-compatible.
@@ -440,6 +471,8 @@ The active export scope is the complete set of exportable events selected by the
 - Trip detection shall tolerate noisy GPS data.
 - Trip detection shall distinguish stationary clusters from movement where practical.
 - Trip detection shall honor an explicit per-event trip-endpoint override when present.
+- Stopped-location presentation and trip detection shall honor an explicit per-event movement-state override while preserving the event's recorded speed.
+- Movement-state and trip-endpoint overrides shall remain independent so an event's stopped treatment does not implicitly force or suppress its endpoint treatment.
 - Trip detection shall treat sufficiently separated moving samples as trip boundaries and preserve those boundary samples as endpoint markers for neighboring trips.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 

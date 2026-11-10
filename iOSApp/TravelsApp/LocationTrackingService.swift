@@ -11,6 +11,14 @@ import UIKit
 import TravelsCore
 #endif
 
+enum ShortcutLocationCaptureResult: Equatable {
+    case saved(eventID: Int64)
+    case filtered
+    case unavailable
+    case timedOut
+    case failed
+}
+
 @MainActor
 final class LocationTrackingService: NSObject, @preconcurrency CLLocationManagerDelegate {
     private enum ManagerMode {
@@ -84,12 +92,22 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let source: String
         let isCachedLocation: Bool
         let isImmediatePreciseEntrySample: Bool
+        let isShortcutAutomationSample: Bool
+        let isForcedShortcutCapture: Bool
+        let shortcutMovementStateOverride: MovementStateOverride?
+        let shortcutNonDuplicateRadiusMeters: Double?
+        let isActiveSilenceRecoverySample: Bool
 
         static let coreLocationUpdate = PendingLocationContext(
             reason: "Core Location update",
             source: "coreLocation",
             isCachedLocation: false,
-            isImmediatePreciseEntrySample: false
+            isImmediatePreciseEntrySample: false,
+            isShortcutAutomationSample: false,
+            isForcedShortcutCapture: false,
+            shortcutMovementStateOverride: nil,
+            shortcutNonDuplicateRadiusMeters: nil,
+            isActiveSilenceRecoverySample: false
         )
     }
 
@@ -122,13 +140,23 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var isPausing = false
     private var pendingManualCapture = false
     private var pendingForcedStoppedCapture = false
+    private var pendingShortcutAutomationCapture = false
+    private var pendingShortcutForcesCapture = false
+    private var pendingShortcutMovementStateOverride: MovementStateOverride?
+    private var pendingShortcutNonDuplicateRadiusMeters: Double?
+    private var shortcutAutomationContinuation: CheckedContinuation<ShortcutLocationCaptureResult, Never>?
+    private nonisolated(unsafe) var shortcutAutomationTimeoutTask: Task<Void, Never>?
     private var pendingLocation: CLLocation?
     private var pendingLocationContext: PendingLocationContext?
     private nonisolated(unsafe) var locationProcessingTask: Task<Void, Never>?
     private nonisolated(unsafe) var hybridTrackingWatchdogTask: Task<Void, Never>?
     private nonisolated(unsafe) var finalPreciseExitTask: Task<Void, Never>?
     private nonisolated(unsafe) var powerStateReevaluationTask: Task<Void, Never>?
+    private nonisolated(unsafe) var activeTrackingHandoffTimeoutTask: Task<Void, Never>?
     private nonisolated(unsafe) var activeHybridWatchdogID: Int?
+    // Access remains main-actor confined except for terminal invalidation in deinit.
+    private nonisolated(unsafe) var backgroundActivitySession: CLBackgroundActivitySession?
+    private nonisolated(unsafe) var activeTrackingHandoffBackgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private var hybridTrackingWatchdog = HybridTrackingWatchdog()
     private var nextHybridWatchdogID = 1
     private var powerState = LocationTrackingPowerState()
@@ -146,6 +174,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var activePreciseModeEntryAppState: UIApplication.State?
     private var consecutiveStaleWatchdogFreshLocationRequests = 0
     private var didRestartLocationManagerForActiveSilence = false
+    private var activeSilenceRecoveryStartedAt: Date?
+    private var isAwaitingActiveTrackingHandoffConfirmation = false
+    private var activeTransitionIsAutomaticCoreLocationSample = false
 
     private let postExitPreciseGuardCooldown: TimeInterval = 180
     private let minimumInitialActiveTrackingInterval: TimeInterval = 90
@@ -154,6 +185,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private let backgroundActiveTrackingSilenceThreshold: TimeInterval = 120
     private let minimumActiveTrackingSilenceBeforeStopFallback: TimeInterval = 5 * 60
     private let minimumStaleWatchdogRequestsBeforeSilenceFallback = 3
+    private let activeTrackingHandoffTimeout: TimeInterval = 25
 
     var onStatusMessage: ((String) -> Void)?
     var onTraceMessage: ((String) -> Void)?
@@ -204,6 +236,15 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         activeHybridWatchdogID = nil
         finalPreciseExitTask?.cancel()
         powerStateReevaluationTask?.cancel()
+        activeTrackingHandoffTimeoutTask?.cancel()
+        shortcutAutomationTimeoutTask?.cancel()
+        backgroundActivitySession?.invalidate()
+        let handoffBackgroundTaskID = activeTrackingHandoffBackgroundTaskID
+        if handoffBackgroundTaskID != .invalid {
+            Task { @MainActor in
+                UIApplication.shared.endBackgroundTask(handoffBackgroundTaskID)
+            }
+        }
     }
 
     func configure(store: TravelsStore, settings: AppSettings, latestEvent: LocationEvent?) {
@@ -259,18 +300,27 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     func update(settings: AppSettings) {
         let previousLocationDetailMode = self.settings.locationDetailMode
         let previousPreciseLocationMode = self.settings.preciseLocationMode
+        let previousBackgroundLocationEnabled = self.settings.backgroundLocationEnabled
         self.settings = settings
         let policy = settings.preciseLocationMode.locationTrackingPolicy
         _ = trackingStateMachine.update(policy: policy)
         hybridTrackingWatchdog.update(policy: policy)
         if previousPreciseLocationMode != settings.preciseLocationMode {
+            cancelActiveTrackingHandoff(reason: "Precise Location Mode changed", stopSignificantChangeMonitoring: managerMode == .activeTracking)
             clearActiveTrackingEntryGuard(reason: "Precise Location Mode changed")
             clearPostExitPreciseGuard(reason: "Precise Location Mode changed")
             cancelHybridTrackingWatchdog(reason: .preciseLocationModeChanged)
         } else if policy != .hybridAutomatic {
+            cancelActiveTrackingHandoff(reason: "tracking policy is not hybrid automatic", stopSignificantChangeMonitoring: managerMode == .activeTracking)
             clearActiveTrackingEntryGuard(reason: "tracking policy is not hybrid automatic")
             clearPostExitPreciseGuard(reason: "tracking policy is not hybrid automatic")
             cancelHybridTrackingWatchdog(reason: .trackingPolicyNotHybridAutomatic)
+        }
+        if previousBackgroundLocationEnabled && !settings.backgroundLocationEnabled {
+            cancelActiveTrackingHandoff(
+                reason: "Background Location disabled",
+                stopSignificantChangeMonitoring: managerMode == .activeTracking
+            )
         }
         if previousLocationDetailMode != settings.locationDetailMode {
             adaptiveDistanceCalculator.update(mode: settings.locationDetailMode)
@@ -312,12 +362,73 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                     reason: forceStopped ? "Manual stopped capture using cached location" : "Manual capture using cached location",
                     source: "manualCapture",
                     isCachedLocation: true,
-                    isImmediatePreciseEntrySample: false
+                    isImmediatePreciseEntrySample: false,
+                    isShortcutAutomationSample: false,
+                    isForcedShortcutCapture: false,
+                    shortcutMovementStateOverride: nil,
+                    shortcutNonDuplicateRadiusMeters: nil,
+                    isActiveSilenceRecoverySample: false
                 )
             )
             return
         }
         locationManager.requestLocation()
+    }
+
+    func requestShortcutAutomationLocation(
+        force: Bool = false,
+        movementStateOverride: MovementStateOverride? = nil,
+        nonDuplicateRadiusMeters: Double? = nil
+    ) async -> ShortcutLocationCaptureResult {
+        guard hasConfiguredStore, hasCurrentLocationPermission else {
+            traceLocationEvent("Shortcuts automatic location capture is unavailable because the database or location permission is unavailable.")
+            return .unavailable
+        }
+        guard shortcutAutomationContinuation == nil else {
+            traceLocationEvent("Shortcuts automatic location capture joined an existing in-progress request.")
+            return .unavailable
+        }
+
+        return await withCheckedContinuation { continuation in
+            shortcutAutomationContinuation = continuation
+            pendingShortcutAutomationCapture = true
+            pendingShortcutForcesCapture = force
+            pendingShortcutMovementStateOverride = movementStateOverride
+            pendingShortcutNonDuplicateRadiusMeters = nonDuplicateRadiusMeters
+
+            // REGRESSION GUARD: The normal shortcut remains an automatic filtered sample,
+            // the stopped shortcut only marks an accepted event, and the explicit forced
+            // shortcut bypasses filtering like manual Add.
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.distanceFilter = kCLDistanceFilterNone
+            traceLocationEvent("Shortcuts requested one current-location sample; forcedManual=\(force) movementOverride=\(movementStateOverride.map { String($0.rawValue) } ?? "automatic") nonDuplicateRadius=\(nonDuplicateRadiusMeters.map(formatDistance) ?? "none").")
+            locationManager.requestLocation()
+
+            shortcutAutomationTimeoutTask?.cancel()
+            shortcutAutomationTimeoutTask = Task { [weak self] in
+                do {
+                    try await Task.sleep(for: .seconds(15))
+                } catch {
+                    return
+                }
+                guard let self else { return }
+                self.traceLocationEvent("Shortcuts automatic location capture timed out after 15 seconds.")
+                self.completeShortcutAutomationCapture(with: .timedOut)
+            }
+        }
+    }
+
+    private func completeShortcutAutomationCapture(with result: ShortcutLocationCaptureResult) {
+        pendingShortcutAutomationCapture = false
+        pendingShortcutForcesCapture = false
+        pendingShortcutMovementStateOverride = nil
+        pendingShortcutNonDuplicateRadiusMeters = nil
+        shortcutAutomationTimeoutTask?.cancel()
+        shortcutAutomationTimeoutTask = nil
+        let continuation = shortcutAutomationContinuation
+        shortcutAutomationContinuation = nil
+        updateLocationManagerConfiguration(for: managerMode)
+        continuation?.resume(returning: result)
     }
 
     private func refreshAuthorization() {
@@ -436,6 +547,108 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         }
     }
 
+    private func updateBackgroundActivitySession(for mode: ManagerMode, reason: String) {
+        let shouldRetainSession = HybridPreciseLocationSamplingRules.shouldRetainBackgroundActivitySession(
+            managerIsActive: mode == .activeTracking,
+            automaticLocationTrackingEnabled: settings.autoAddLocations,
+            backgroundLocationEnabled: settings.backgroundLocationEnabled,
+            hasLocationAuthorization: hasCurrentLocationPermission
+        )
+        guard shouldRetainSession else {
+            endBackgroundActivitySession(reason: reason)
+            return
+        }
+        guard backgroundActivitySession == nil else { return }
+
+        // BUGFIX: a significant-change wake can start precise tracking while Travels is in the
+        // background, then iOS may suspend the process before route callbacks continue. Retain
+        // background activity only for the active precise interval, never for low-power idle mode.
+        backgroundActivitySession = CLBackgroundActivitySession()
+        traceLocationEvent("Background activity session retained for active precise tracking; reason=\(reason); \(hybridWatchdogContext()).")
+    }
+
+    private func endBackgroundActivitySession(reason: String) {
+        guard let backgroundActivitySession else { return }
+        backgroundActivitySession.invalidate()
+        self.backgroundActivitySession = nil
+        traceLocationEvent("Background activity session ended; reason=\(reason); \(hybridWatchdogContext()).")
+    }
+
+    private func beginActiveTrackingHandoff() {
+        guard !isAwaitingActiveTrackingHandoffConfirmation else {
+            traceLocationEvent("Background active-tracking handoff already pending; duplicate start ignored; \(hybridWatchdogContext()).")
+            return
+        }
+
+        // BUGFIX: a significant-change callback can wake Travels after a long idle period, but
+        // stopping that service before standard updates are established lets iOS suspend the app
+        // after the first point. Keep the wake source and a bounded UIKit assertion until a later
+        // non-entry callback proves that the high-accuracy stream is delivering.
+        isAwaitingActiveTrackingHandoffConfirmation = true
+        locationManager.startMonitoringSignificantLocationChanges()
+        activeTrackingHandoffBackgroundTaskID = UIApplication.shared.beginBackgroundTask(
+            withName: "Travels precise tracking handoff"
+        ) { [weak self] in
+            Task { @MainActor in
+                self?.expireActiveTrackingHandoff(reason: "UIKit background task expired")
+            }
+        }
+        traceLocationEvent("Background active-tracking handoff started; retaining significant-change monitoring until precise delivery is confirmed; timeout=\(formatDuration(activeTrackingHandoffTimeout)); \(hybridWatchdogContext()).")
+
+        activeTrackingHandoffTimeoutTask?.cancel()
+        activeTrackingHandoffTimeoutTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await Task.sleep(for: .seconds(self.activeTrackingHandoffTimeout))
+            } catch {
+                return
+            }
+            self.expireActiveTrackingHandoff(reason: "bounded handoff timeout elapsed")
+        }
+    }
+
+    private func confirmActiveTrackingHandoff() {
+        guard isAwaitingActiveTrackingHandoffConfirmation else { return }
+        isAwaitingActiveTrackingHandoffConfirmation = false
+        activeTrackingHandoffTimeoutTask?.cancel()
+        activeTrackingHandoffTimeoutTask = nil
+        endActiveTrackingHandoffBackgroundTask(reason: "subsequent precise callback confirmed delivery")
+        if managerMode == .activeTracking {
+            locationManager.stopMonitoringSignificantLocationChanges()
+        }
+        traceLocationEvent("Background active-tracking handoff confirmed; precise stream delivered a subsequent automatic callback and significant-change fallback ended; \(hybridWatchdogContext()).")
+    }
+
+    private func expireActiveTrackingHandoff(reason: String) {
+        guard isAwaitingActiveTrackingHandoffConfirmation else { return }
+        activeTrackingHandoffTimeoutTask?.cancel()
+        activeTrackingHandoffTimeoutTask = nil
+        endActiveTrackingHandoffBackgroundTask(reason: reason)
+        traceLocationEvent("Background active-tracking handoff assertion ended without confirmation; significant-change monitoring remains enabled as a fallback; reason=\(reason); \(hybridWatchdogContext()).")
+    }
+
+    private func cancelActiveTrackingHandoff(reason: String, stopSignificantChangeMonitoring: Bool) {
+        let wasPending = isAwaitingActiveTrackingHandoffConfirmation
+        isAwaitingActiveTrackingHandoffConfirmation = false
+        activeTrackingHandoffTimeoutTask?.cancel()
+        activeTrackingHandoffTimeoutTask = nil
+        endActiveTrackingHandoffBackgroundTask(reason: reason)
+        if stopSignificantChangeMonitoring {
+            locationManager.stopMonitoringSignificantLocationChanges()
+        }
+        if wasPending {
+            traceLocationEvent("Background active-tracking handoff cancelled; reason=\(reason); \(hybridWatchdogContext()).")
+        }
+    }
+
+    private func endActiveTrackingHandoffBackgroundTask(reason: String) {
+        guard activeTrackingHandoffBackgroundTaskID != .invalid else { return }
+        let backgroundTaskID = activeTrackingHandoffBackgroundTaskID
+        activeTrackingHandoffBackgroundTaskID = .invalid
+        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+        traceLocationEvent("Background active-tracking handoff UIKit assertion ended; reason=\(reason); \(hybridWatchdogContext()).")
+    }
+
     private func syncTrackingMode() {
         guard settings.autoAddLocations else {
             clearActiveTrackingEntryGuard(reason: "automatic tracking disabled")
@@ -500,6 +713,16 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         applyTrackingMode(desiredMode)
     }
 
+    private func syncTrackingMode(for context: PendingLocationContext, wasManualCapture: Bool) {
+        activeTransitionIsAutomaticCoreLocationSample = !wasManualCapture
+            && !context.isShortcutAutomationSample
+            && context.source == "coreLocation"
+        defer {
+            activeTransitionIsAutomaticCoreLocationSample = false
+        }
+        syncTrackingMode()
+    }
+
     private func applyTrackingMode(_ mode: ManagerMode) {
         if managerMode == mode {
             updateLocationManagerConfiguration(for: mode)
@@ -522,7 +745,20 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 reason: "applyTrackingMode idle detection"
             )
         case .activeTracking:
-            locationManager.stopMonitoringSignificantLocationChanges()
+            let shouldBeginBackgroundHandoff = HybridPreciseLocationSamplingRules.shouldBeginBackgroundActiveTrackingHandoff(
+                isEnteringActiveTracking: true,
+                isHybridPolicy: trackingStateMachine.policy == .hybridAutomatic,
+                automaticLocationTrackingEnabled: settings.autoAddLocations,
+                backgroundLocationEnabled: settings.backgroundLocationEnabled,
+                hasLocationAuthorization: authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse,
+                applicationIsBackgrounded: UIApplication.shared.applicationState == .background,
+                isAutomaticCoreLocationSample: activeTransitionIsAutomaticCoreLocationSample
+            )
+            if shouldBeginBackgroundHandoff {
+                beginActiveTrackingHandoff()
+            } else {
+                cancelActiveTrackingHandoff(reason: "active entry does not require a background handoff", stopSignificantChangeMonitoring: true)
+            }
             managerMode = .activeTracking
             updateLocationManagerConfiguration(for: mode)
             // REGRESSION GUARD: Apply the active Core Location configuration before
@@ -565,8 +801,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         clearPostExitPreciseGuard(reason: "tracking manager stopped")
         cancelFinalPreciseExit()
         cancelHybridTrackingWatchdog(reason: .trackingStopped)
+        cancelActiveTrackingHandoff(reason: "tracking manager stopped", stopSignificantChangeMonitoring: true)
         locationManager.stopMonitoringSignificantLocationChanges()
         locationManager.stopUpdatingLocation()
+        endBackgroundActivitySession(reason: "tracking manager stopped")
         managerMode = .stopped
         preciseModeEnteredAt = nil
         activeTrackingEntryGuard = nil
@@ -581,6 +819,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     private func updateLocationManagerConfiguration(for mode: ManagerMode) {
         applyBackgroundLocationConfiguration(for: mode, reason: "manager configuration update for \(managerModeLabel(mode))")
+        updateBackgroundActivitySession(for: mode, reason: "manager configuration update for \(managerModeLabel(mode))")
         locationManager.activityType = .automotiveNavigation
         switch mode {
         case .stopped:
@@ -636,10 +875,16 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         if let clError = error as? CLError, clError.code == .denied {
             // Regression guard: denied authorization should surface the friendly access message
             // instead of leaking the raw kCLErrorDomain error back to the user.
+            if shortcutAutomationContinuation != nil {
+                completeShortcutAutomationCapture(with: .unavailable)
+            }
             onAuthorizationStateChanged?("Location access is needed for Travels.")
             return
         }
         traceLocationEvent("Core Location failed with error: \(error.localizedDescription); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        if shortcutAutomationContinuation != nil {
+            completeShortcutAutomationCapture(with: .failed)
+        }
         onStatusMessage?(error.localizedDescription)
     }
 
@@ -647,22 +892,49 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         guard let location = locations.last else {
             return
         }
+        let isActiveSilenceRecoverySample = didRestartLocationManagerForActiveSilence
+            && managerMode == .activeTracking
+            && trackingStateMachine.policy == .hybridAutomatic
+            && !isCompletingHybridPreciseExit
         lastCoreLocationDeliveryAt = Date()
-        resetActiveTrackingSilenceFallback(reason: "Core Location delivered a fresh update")
-        let isImmediatePreciseEntrySample = pendingImmediatePreciseEntrySample && !pendingManualCapture
+        if isActiveSilenceRecoverySample {
+            // REGRESSION GUARD: the one-time stream restart callback must be classified before
+            // clearing its latch. Clearing here caused each stationary callback to begin a new
+            // five-minute window and allowed precise mode to remain active indefinitely.
+            traceLocationEvent("Core Location delivered an active-silence recovery sample; deferring fallback reset until movement classification.")
+        } else {
+            resetActiveTrackingSilenceFallback(reason: "Core Location delivered a fresh update")
+        }
+        let isShortcutAutomationSample = pendingShortcutAutomationCapture
+        let isForcedShortcutCapture = isShortcutAutomationSample && pendingShortcutForcesCapture
+        let shortcutMovementStateOverride = isShortcutAutomationSample ? pendingShortcutMovementStateOverride : nil
+        let shortcutNonDuplicateRadiusMeters = isShortcutAutomationSample ? pendingShortcutNonDuplicateRadiusMeters : nil
+        if isShortcutAutomationSample {
+            pendingShortcutAutomationCapture = false
+            pendingShortcutForcesCapture = false
+            pendingShortcutMovementStateOverride = nil
+            pendingShortcutNonDuplicateRadiusMeters = nil
+        }
+        let isImmediatePreciseEntrySample = pendingImmediatePreciseEntrySample && !pendingManualCapture && !isShortcutAutomationSample
         if isImmediatePreciseEntrySample {
             pendingImmediatePreciseEntrySample = false
         }
-        traceLocationEvent("Core Location delivered \(locations.count) update(s); using the newest sample; manual=\(pendingManualCapture) immediatePreciseEntrySample=\(isImmediatePreciseEntrySample) elapsedSincePreciseEntry=\(preciseModeElapsedDescription()).")
+        if isAwaitingActiveTrackingHandoffConfirmation,
+           !isImmediatePreciseEntrySample,
+           !pendingManualCapture,
+           !isShortcutAutomationSample {
+            confirmActiveTrackingHandoff()
+        }
+        traceLocationEvent("Core Location delivered \(locations.count) update(s); using the newest sample; manual=\(pendingManualCapture || isForcedShortcutCapture) immediatePreciseEntrySample=\(isImmediatePreciseEntrySample) elapsedSincePreciseEntry=\(preciseModeElapsedDescription()).")
         evaluateOverdueHybridWatchdogIfNeeded(reason: "Core Location delivery")
-        if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, !pendingManualCapture {
+        if let ignoreUntil = ignoreAutomaticLocationUpdatesUntil, !pendingManualCapture, !isShortcutAutomationSample {
             if Date() <= ignoreUntil {
                 traceLocationEvent("Ignoring automatic location sample during post-precise-exit cooldown.")
                 return
             }
             ignoreAutomaticLocationUpdatesUntil = nil
         }
-        guard settings.autoAddLocations || pendingManualCapture else {
+        guard settings.autoAddLocations || pendingManualCapture || isShortcutAutomationSample else {
             return
         }
         enqueue(
@@ -671,7 +943,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 reason: isImmediatePreciseEntrySample ? "Immediate automatic sample after entering precise mode" : "Core Location update",
                 source: "coreLocation",
                 isCachedLocation: false,
-                isImmediatePreciseEntrySample: isImmediatePreciseEntrySample
+                isImmediatePreciseEntrySample: isImmediatePreciseEntrySample,
+                isShortcutAutomationSample: isShortcutAutomationSample,
+                isForcedShortcutCapture: isForcedShortcutCapture,
+                shortcutMovementStateOverride: shortcutMovementStateOverride,
+                shortcutNonDuplicateRadiusMeters: shortcutNonDuplicateRadiusMeters,
+                isActiveSilenceRecoverySample: isActiveSilenceRecoverySample
             )
         )
     }
@@ -691,6 +968,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     @objc private func applicationDidBecomeActive(_ notification: Notification) {
         traceLocationEvent("Application became active; \(activeBackgroundSilenceDescription(now: Date())); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext()).")
+        if isAwaitingActiveTrackingHandoffConfirmation {
+            expireActiveTrackingHandoff(reason: "application became active; background assertion no longer needed")
+        }
         evaluateOverdueHybridWatchdogIfNeeded(reason: "application became active")
     }
 
@@ -983,7 +1263,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                         reason: "Hybrid watchdog #\(watchdogID) fired and used fresh-enough cached location",
                         source: "hybridWatchdog",
                         isCachedLocation: true,
-                        isImmediatePreciseEntrySample: false
+                        isImmediatePreciseEntrySample: false,
+                        isShortcutAutomationSample: false,
+                        isForcedShortcutCapture: false,
+                        shortcutMovementStateOverride: nil,
+                        shortcutNonDuplicateRadiusMeters: nil,
+                        isActiveSilenceRecoverySample: false
                     )
                 )
                 return true
@@ -1024,7 +1309,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                         reason: "\(reason) Used fresh-enough cached location first.",
                         source: "automaticRequest",
                         isCachedLocation: true,
-                        isImmediatePreciseEntrySample: false
+                        isImmediatePreciseEntrySample: false,
+                        isShortcutAutomationSample: false,
+                        isForcedShortcutCapture: false,
+                        shortcutMovementStateOverride: nil,
+                        shortcutNonDuplicateRadiusMeters: nil,
+                        isActiveSilenceRecoverySample: false
                     )
                 )
                 return
@@ -1045,6 +1335,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         )
         consecutiveStaleWatchdogFreshLocationRequests = 0
         didRestartLocationManagerForActiveSilence = false
+        activeSilenceRecoveryStartedAt = nil
     }
 
     private func handleActiveTrackingSilenceFallbackIfNeeded(watchdogID: Int, firedAt: Date) -> Bool {
@@ -1063,7 +1354,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return false
         }
 
-        let latestDeliveryAt = lastCoreLocationDeliveryAt ?? preciseModeEnteredAt
+        let latestDeliveryAt = activeSilenceRecoveryStartedAt ?? lastCoreLocationDeliveryAt ?? preciseModeEnteredAt
         guard let latestDeliveryAt else {
             traceLocationEvent(
                 "Active tracking silence fallback skipped; no Core Location delivery or precise-entry timestamp is available; watchdog #\(watchdogID); \(hybridWatchdogContext())."
@@ -1081,6 +1372,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
         if !didRestartLocationManagerForActiveSilence {
             didRestartLocationManagerForActiveSilence = true
+            activeSilenceRecoveryStartedAt = latestDeliveryAt
             traceLocationEvent(
                 "Active tracking silence fallback restarting Core Location once before stop exit; watchdog #\(watchdogID) silence=\(formatDuration(silence)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests); \(locationManagerConfigurationDescription()); \(hybridWatchdogContext())."
             )
@@ -1136,7 +1428,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                     reason: "Final precise exit evaluating cached location",
                     source: "finalPreciseExit",
                     isCachedLocation: true,
-                    isImmediatePreciseEntrySample: false
+                    isImmediatePreciseEntrySample: false,
+                    isShortcutAutomationSample: false,
+                    isForcedShortcutCapture: false,
+                    shortcutMovementStateOverride: nil,
+                    shortcutNonDuplicateRadiusMeters: nil,
+                    isActiveSilenceRecoverySample: false
                 )
             )
         } else {
@@ -1190,14 +1487,20 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         finalPreciseExitTask?.cancel()
         finalPreciseExitTask = nil
         ignoreAutomaticLocationUpdatesUntil = Date().addingTimeInterval(10)
+        let finalExitReference = pendingFinalPreciseExitSample ?? latestAcceptedEvent.map(locationSample)
         armPostExitPreciseGuard(
-            finalExitSample: pendingFinalPreciseExitSample ?? latestAcceptedEvent.map(locationSample),
+            finalExitSample: finalExitReference,
             reason: afterTimeout ? "final precise exit timed out" : "final precise exit completed"
         )
         pendingFinalPreciseExitSample = nil
         traceLocationEvent(afterTimeout
                            ? "Hybrid final precise exit timed out; returning to idle detection mode."
                            : "Hybrid final precise exit completed; returning to idle detection mode.")
+        // REGRESSION GUARD: timeout-based final exit must update the logical state as well as the
+        // CLLocationManager mode, or a later synchronization can incorrectly restore precise mode.
+        _ = trackingStateMachine.confirmSustainedStationaryPeriod(
+            referenceSample: finalExitReference
+        )
         applyIdleDetectionModeBypassingGuard(
             callSite: "completeFinalPreciseExit",
             reason: exitReason
@@ -1301,7 +1604,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent("Direct idle apply bypassing guard; callSite=\(callSite); reason=central idle downgrade helper allowed: \(reason); \(hybridWatchdogContext()).")
         tracePreciseModeExitIfNeeded(callSite: callSite, reason: reason)
         cancelHybridTrackingWatchdog(reason: .managerModeChangedOutOfActiveTracking)
+        cancelActiveTrackingHandoff(reason: "precise mode exited to idle detection", stopSignificantChangeMonitoring: false)
         locationManager.stopUpdatingLocation()
+        endBackgroundActivitySession(reason: "precise mode exited to idle detection")
         locationManager.startMonitoringSignificantLocationChanges()
         managerMode = .idleDetection
         preciseModeEnteredAt = nil
@@ -1478,9 +1783,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func handle(location: CLLocation, context: PendingLocationContext) async {
-        let wasManualCapture = pendingManualCapture
+        let wasManualCapture = pendingManualCapture || context.isForcedShortcutCapture
+        let wasShortcutAutomationCapture = context.isShortcutAutomationSample
         let forceStoppedCapture = pendingForcedStoppedCapture
-        let forceCapture = pendingManualCapture
         let wasCompletingFinalPreciseExit = isCompletingHybridPreciseExit
         pendingManualCapture = false
         pendingForcedStoppedCapture = false
@@ -1533,7 +1838,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent("Received location sample speed=\(formatSpeed(sample.speed)) accuracy=\(formatDistance(sample.horizontalAccuracy)) manual=\(wasManualCapture) forcedStopped=\(forceStoppedCapture) trackedMode=\(trackingModeLabel()) sampleContext=\(locationContextDescription(context))")
 
         let previousTrackingState = trackingStateMachine.state
-        var shouldRecordAutomaticTrackingSample = !wasManualCapture && (!wasCompletingFinalPreciseExit || finalPreciseExitResumedMovement)
+        var shouldRecordAutomaticTrackingSample = settings.autoAddLocations && !wasManualCapture && (!wasCompletingFinalPreciseExit || finalPreciseExitResumedMovement)
         if shouldRecordAutomaticTrackingSample {
             expirePostExitPreciseGuardIfNeeded()
         }
@@ -1554,6 +1859,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 }
             }
         }
+
         traceLocationEvent("Location sample usage decision; usedForTrackingState=\(shouldRecordAutomaticTrackingSample) usedForSavingDecision=true sampleContext=\(locationContextDescription(context)) previousTrackingState=\(trackingStateLabel(previousTrackingState)).")
         if shouldRecordAutomaticTrackingSample {
             let idleFallbackReference: LocationSample?
@@ -1571,18 +1877,58 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             }
         }
 
-        let decision = LocationFiltering.decision(
-            candidate: sample,
-            previous: latestAcceptedEvent,
-            force: forceCapture,
-            isPausing: isPausing,
-            minimumDistanceMeters: currentAdaptiveDistanceMeters,
-            pausedMinimumDistanceMeters: 50
-        )
+        if context.isActiveSilenceRecoverySample, !wasManualCapture {
+            let assessment = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+                sample: sample,
+                latestAcceptedEvent: latestAcceptedEvent,
+                stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
+                stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
+                minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
+            )
+            switch assessment {
+            case .movementResumed(let reason):
+                traceLocationEvent("Active-silence recovery sample proves movement resumed (\(reason)); retaining precise mode and resetting the stationary episode.")
+                resetActiveTrackingSilenceFallback(reason: "active-silence recovery sample proved movement resumed")
+            case .confirmsStop(let reason):
+                traceLocationEvent("Active-silence recovery sample confirms the sustained stop (\(reason)); starting bounded final precise exit.")
+                _ = trackingStateMachine.confirmSustainedStationaryPeriod(referenceSample: sample)
+            case .rejects(let reason):
+                traceLocationEvent("Active-silence recovery sample was inconclusive (\(reason)); preserving the one-time restart latch for bounded final exit.")
+            }
+        }
+
+        let shouldForceNonDuplicateCapture = context.shortcutNonDuplicateRadiusMeters.map { radius in
+            LocationFiltering.shouldForceNonDuplicateCapture(
+                candidate: sample,
+                previous: latestAcceptedEvent,
+                duplicateRadiusMeters: radius
+            )
+        }
+        let forceCapture = wasManualCapture || shouldForceNonDuplicateCapture == true
+        let decision: LocationFilterDecision
+        if context.shortcutNonDuplicateRadiusMeters != nil, shouldForceNonDuplicateCapture == false {
+            // REGRESSION GUARD: non-duplicate shortcuts must not fall through to normal
+            // accuracy-improvement replacement while the prior event is within 20 meters.
+            decision = .reject
+            traceLocationEvent("Non-duplicate shortcut rejected the sample because the previous event is within \(formatDistance(context.shortcutNonDuplicateRadiusMeters ?? 0)).")
+        } else {
+            decision = LocationFiltering.decision(
+                candidate: sample,
+                previous: latestAcceptedEvent,
+                force: forceCapture,
+                isPausing: isPausing,
+                minimumDistanceMeters: currentAdaptiveDistanceMeters,
+                pausedMinimumDistanceMeters: 50,
+                stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold
+            )
+        }
 
         traceLocationEvent(locationDecisionMessage(for: decision, sample: sample, previous: latestAcceptedEvent, force: forceCapture, isPausing: isPausing))
 
         guard decision != .reject else {
+            if wasShortcutAutomationCapture {
+                completeShortcutAutomationCapture(with: .filtered)
+            }
             if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
                 completeFinalPreciseExit()
                 if isPausing {
@@ -1593,7 +1939,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             if !wasManualCapture {
                 let modeBeforeSync = managerMode
                 traceLocationEvent("Rejected automatic location sample will call syncTrackingMode; sampleContext=\(locationContextDescription(context)) modeBeforeSync=\(managerModeLabel(modeBeforeSync)); \(hybridWatchdogContext()).")
-                syncTrackingMode()
+                syncTrackingMode(for: context, wasManualCapture: wasManualCapture)
                 tracePreciseModeExitAfterSyncIfNeeded(
                     reason: "rejected automatic sample",
                     previousMode: modeBeforeSync,
@@ -1604,6 +1950,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         }
 
         var event = LocationFiltering.event(from: sample, source: .locationServices)
+        // REGRESSION GUARD: the stopped shortcut must use normal filtering and preserve
+        // measured speed; only an accepted event receives the movement override.
+        event.movementStateOverride = context.shortcutMovementStateOverride
         if decision == .acceptAndReplacePrevious {
             event.geolocationID = latestAcceptedEvent?.geolocationID
         }
@@ -1615,6 +1964,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             )
             traceLocationEvent(savedLocationRecoveryDetails(eventID: eventID, event: event, savedKind: savedKind, context: context, manual: wasManualCapture, replacingEventID: decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil))
             traceLocationEvent("Saved location event #\(eventID) as \(savedKind) record.")
+            if wasShortcutAutomationCapture {
+                completeShortcutAutomationCapture(with: .saved(eventID: eventID))
+            }
             if wasManualCapture, eventID > 0 {
                 onManualTrackedEvent?(eventID, event.timestamp)
             }
@@ -1634,6 +1986,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             if wasCompletingFinalPreciseExit && !finalPreciseExitResumedMovement {
                 completeFinalPreciseExit()
             }
+            if wasShortcutAutomationCapture {
+                completeShortcutAutomationCapture(with: .failed)
+            }
             if isPausing {
                 isPausing = false
             }
@@ -1648,7 +2003,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return
         }
 
-        if !wasManualCapture {
+        if !wasManualCapture && settings.autoAddLocations {
             if managerMode == .activeTracking {
                 restartHybridTrackingWatchdog(reason: "automatic sample processed; \(context.reason)")
             } else {
@@ -1656,7 +2011,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             }
             let modeBeforeSync = managerMode
             traceLocationEvent("Accepted automatic location sample will call syncTrackingMode; sampleContext=\(locationContextDescription(context)) modeBeforeSync=\(managerModeLabel(modeBeforeSync)); \(hybridWatchdogContext()).")
-            syncTrackingMode()
+            syncTrackingMode(for: context, wasManualCapture: wasManualCapture)
             tracePreciseModeExitAfterSyncIfNeeded(
                 reason: "accepted automatic sample",
                 previousMode: modeBeforeSync,
@@ -1716,11 +2071,23 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                         || (candidateSpeedUnavailable && previous.speed <= 0)
                         || (previousSpeedUnavailable && candidate.speed <= 0)
                     )
+                let stationarySpeedThreshold = trackingStateMachine.thresholds.stationarySpeedThreshold
+                let stoppedCandidateReplacesMovingEvent = candidate.speed.isFinite
+                    && candidate.speed >= 0
+                    && candidate.speed <= stationarySpeedThreshold
+                    && previous.speed.isFinite
+                    && previous.speed > stationarySpeedThreshold
+                    && candidate.horizontalAccuracy.isFinite
+                    && candidate.horizontalAccuracy >= 0
+                    && candidate.horizontalAccuracy <= trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
                 if moreAccurate {
                     return "inside the previous event radius, more accurate, and within the improvement window"
                 }
                 if atLeastAsAccurateAndSlower {
                     return "inside the previous event radius, at least as accurate, slower or unavailable speed, and within the improvement window"
+                }
+                if stoppedCandidateReplacesMovingEvent {
+                    return "inside the previous event radius, stopped or nearly stopped after a moving event, accurate enough to use, and within the improvement window"
                 }
             }
             return "inside the previous event radius without a qualifying improvement window"
@@ -1760,7 +2127,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func locationContextDescription(_ context: PendingLocationContext) -> String {
-        "source=\(context.source) cached=\(context.isCachedLocation) immediatePreciseEntry=\(context.isImmediatePreciseEntrySample) reason=\"\(context.reason)\" elapsedSincePreciseEntry=\(preciseModeElapsedDescription()) watchdogTaskExists=\(hybridTrackingWatchdogTask != nil) activeWatchdogID=\(activeHybridWatchdogID.map(String.init) ?? "none")"
+        "source=\(context.source) cached=\(context.isCachedLocation) immediatePreciseEntry=\(context.isImmediatePreciseEntrySample) activeSilenceRecovery=\(context.isActiveSilenceRecoverySample) shortcutAutomation=\(context.isShortcutAutomationSample) forcedShortcut=\(context.isForcedShortcutCapture) movementOverride=\(context.shortcutMovementStateOverride.map { String($0.rawValue) } ?? "automatic") nonDuplicateRadius=\(context.shortcutNonDuplicateRadiusMeters.map(formatDistance) ?? "none") reason=\"\(context.reason)\" elapsedSincePreciseEntry=\(preciseModeElapsedDescription()) watchdogTaskExists=\(hybridTrackingWatchdogTask != nil) activeWatchdogID=\(activeHybridWatchdogID.map(String.init) ?? "none")"
     }
 
     private func preciseModeElapsedDescription() -> String {
@@ -1801,6 +2168,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         var parts = [
             "activeWatchdogID=\(activeHybridWatchdogID.map(String.init) ?? "none")",
             "watchdogTaskExists=\(hybridTrackingWatchdogTask != nil)",
+            "backgroundActivitySession=\(backgroundActivitySession == nil ? "inactive" : "retained")",
+            "activeTrackingHandoff=\(isAwaitingActiveTrackingHandoffConfirmation ? "awaitingConfirmation" : "inactive")",
+            "handoffBackgroundTask=\(activeTrackingHandoffBackgroundTaskID == .invalid ? "inactive" : "retained")",
             "managerMode=\(managerModeLabel())",
             "trackingState=\(trackingStateLabel())",
             "trackingPolicy=\(trackingStateMachine.policy.rawValue)",
@@ -2102,20 +2472,40 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             traceLocationEvent("Location event save failed before database write; reason=location store unavailable timestamp=\(Self.traceDateFormatter.string(from: event.timestamp)) latitude=\(String(format: "%.6f", event.latitude)) longitude=\(String(format: "%.6f", event.longitude)).")
             throw PersistenceFailure.storeUnavailable
         }
-        let eventID = try await Task.detached(priority: .utility) { [store, event] in
-            if let replacingEventID {
-                try store.replaceEvent(eventID: replacingEventID, with: event)
-                return replacingEventID
+        let saveResult = try await Task.detached(priority: .utility) { [store, event] in
+            var storedEvent = event
+            var reusedGeolocationID: Int64?
+
+            // REGRESSION GUARD: Attach trustworthy cached place data before reload so
+            // accepted events never enter the network lookup queue unnecessarily.
+            if storedEvent.geolocationID == nil,
+               let cached = try? store.suitableGeolocation(
+                   latitude: storedEvent.latitude,
+                   longitude: storedEvent.longitude
+               ),
+               let cachedID = cached.id {
+                storedEvent.geolocationID = cachedID
+                reusedGeolocationID = cachedID
             }
-            return try store.saveEvent(event)
+
+            if let replacingEventID {
+                try store.replaceEvent(eventID: replacingEventID, with: storedEvent)
+                return (eventID: replacingEventID, event: storedEvent, reusedGeolocationID: reusedGeolocationID)
+            }
+            let eventID = try store.saveEvent(storedEvent)
+            return (eventID: eventID, event: storedEvent, reusedGeolocationID: reusedGeolocationID)
         }.value
+        let eventID = saveResult.eventID
         guard eventID > 0 else {
             traceLocationEvent("Location event save failed after database write; reason=invalid event ID eventID=\(eventID) timestamp=\(Self.traceDateFormatter.string(from: event.timestamp)) latitude=\(String(format: "%.6f", event.latitude)) longitude=\(String(format: "%.6f", event.longitude)).")
             throw PersistenceFailure.invalidEventID(eventID)
         }
-        var storedEvent = event
+        var storedEvent = saveResult.event
         storedEvent.id = eventID
         latestAcceptedEvent = storedEvent
+        if let reusedGeolocationID = saveResult.reusedGeolocationID {
+            traceLocationEvent("Attached saved geolocation #\(reusedGeolocationID) to accepted event #\(eventID) before address queueing.")
+        }
         onTrackedEvent?()
         return eventID
     }

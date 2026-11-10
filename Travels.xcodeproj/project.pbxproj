@@ -44,6 +44,7 @@
 		1D2A3B4C5D6E7F8100010063 /* Sources/TravelsCore/PhotoImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010064 /* Sources/TravelsCore/PhotoImport.swift */; };
 		1D2A3B4C5D6E7F8100010065 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */; };
 		1D2A3B4C5D6E7F8100010067 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */; };
+		1D2A3B4C5D6E7F8100010069 /* iOSApp/TravelsApp/LocationCaptureIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001006A /* iOSApp/TravelsApp/LocationCaptureIntent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +89,7 @@
 		1D2A3B4C5D6E7F8100010064 /* Sources/TravelsCore/PhotoImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/PhotoImport.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001006A /* iOSApp/TravelsApp/LocationCaptureIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp/TravelsApp/LocationCaptureIntent.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +134,7 @@
 				1D2A3B4C5D6E7F8100010016 /* iOSApp/TravelsApp/TravelsModel.swift */,
 				1D2A3B4C5D6E7F8100010029 /* iOSApp/TravelsApp/ShareSheet.swift */,
 				1D2A3B4C5D6E7F8100010035 /* iOSApp/TravelsApp/LocationTrackingService.swift */,
+				1D2A3B4C5D6E7F810001006A /* iOSApp/TravelsApp/LocationCaptureIntent.swift */,
 				1D2A3B4C5D6E7F810001005C /* iOSApp/TravelsApp/LocationPrecisionStatusBadge.swift */,
 				1D2A3B4C5D6E7F8100010036 /* iOSApp/TravelsApp/PhotoImportView.swift */,
 				1D2A3B4C5D6E7F8100010038 /* iOSApp/TravelsApp/ReverseGeocodingService.swift */,
@@ -339,6 +342,7 @@
 				1D2A3B4C5D6E7F8100010006 /* iOSApp/TravelsApp/TravelsModel.swift in Sources */,
 				1D2A3B4C5D6E7F8100010018 /* iOSApp/TravelsApp/ShareSheet.swift in Sources */,
 				1D2A3B4C5D6E7F8100010019 /* iOSApp/TravelsApp/LocationTrackingService.swift in Sources */,
+				1D2A3B4C5D6E7F8100010069 /* iOSApp/TravelsApp/LocationCaptureIntent.swift in Sources */,
 				1D2A3B4C5D6E7F810001005B /* iOSApp/TravelsApp/LocationPrecisionStatusBadge.swift in Sources */,
 				1D2A3B4C5D6E7F810001002A /* iOSApp/TravelsApp/PhotoImportView.swift in Sources */,
 				1D2A3B4C5D6E7F810001002C /* iOSApp/TravelsApp/ReverseGeocodingService.swift in Sources */,

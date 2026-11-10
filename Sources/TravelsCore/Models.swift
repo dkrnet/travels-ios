@@ -48,6 +48,29 @@ public enum TripEndpointOverride: Int, Codable, CaseIterable, Sendable {
     }
 }
 
+public enum MovementStateOverride: Int, Codable, CaseIterable, Sendable {
+    case notStopped = 0
+    case stopped = 1
+
+    public var displayName: String {
+        switch self {
+        case .notStopped:
+            return "Not stopped"
+        case .stopped:
+            return "Stopped"
+        }
+    }
+
+    public var gpxValue: String {
+        switch self {
+        case .notStopped:
+            return "not_stopped"
+        case .stopped:
+            return "stopped"
+        }
+    }
+}
+
 public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var id: Int64?
     public var latitude: Double
@@ -70,6 +93,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
     public var solarPeriodPercent: Double?
     public var solarPeriodCalculatedAt: Date?
     public var tripEndpointOverride: TripEndpointOverride?
+    public var movementStateOverride: MovementStateOverride?
 
     @available(*, deprecated, message: "Use solarPeriod instead.")
     public var twilightPhase: TwilightPhase {
@@ -110,7 +134,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         solarPeriod: SolarPeriod = .unknown,
         solarPeriodPercent: Double? = nil,
         solarPeriodCalculatedAt: Date? = nil,
-        tripEndpointOverride: TripEndpointOverride? = nil
+        tripEndpointOverride: TripEndpointOverride? = nil,
+        movementStateOverride: MovementStateOverride? = nil
     ) {
         self.id = id
         self.latitude = latitude
@@ -133,6 +158,7 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         self.solarPeriodPercent = solarPeriodPercent
         self.solarPeriodCalculatedAt = solarPeriodCalculatedAt
         self.tripEndpointOverride = tripEndpointOverride
+        self.movementStateOverride = movementStateOverride
     }
 
     @available(*, deprecated, message: "Use solarPeriod instead.")
@@ -157,7 +183,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
         twilightPhase: TwilightPhase,
         twilightPercent: Double? = nil,
         twilightCalculatedAt: Date? = nil,
-        tripEndpointOverride: TripEndpointOverride? = nil
+        tripEndpointOverride: TripEndpointOverride? = nil,
+        movementStateOverride: MovementStateOverride? = nil
     ) {
         self.init(
             id: id,
@@ -180,7 +207,8 @@ public struct LocationEvent: Identifiable, Codable, Equatable, Sendable {
             solarPeriod: SolarPeriod(twilightPhase: twilightPhase),
             solarPeriodPercent: twilightPercent,
             solarPeriodCalculatedAt: twilightCalculatedAt,
-            tripEndpointOverride: tripEndpointOverride
+            tripEndpointOverride: tripEndpointOverride,
+            movementStateOverride: movementStateOverride
         )
     }
 }

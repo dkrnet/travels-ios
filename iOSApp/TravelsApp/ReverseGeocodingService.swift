@@ -33,7 +33,10 @@ actor ReverseGeocodingService {
             )
         }
 
-        if let store, let saved = try? store.geolocation(near: location.coordinate.latitude, longitude: location.coordinate.longitude) {
+        if let store, let saved = try? store.suitableGeolocation(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        ) {
             cache[cacheKey] = saved
             return ReverseGeocodingLookupResult(
                 geolocation: saved,

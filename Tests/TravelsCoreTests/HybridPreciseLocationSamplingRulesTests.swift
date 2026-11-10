@@ -3,6 +3,43 @@ import XCTest
 @testable import TravelsCore
 
 final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
+    func testBackgroundActiveTrackingHandoffOnlyStartsForAutomaticHybridBackgroundEntry() {
+        XCTAssertTrue(
+            HybridPreciseLocationSamplingRules.shouldBeginBackgroundActiveTrackingHandoff(
+                isEnteringActiveTracking: true,
+                isHybridPolicy: true,
+                automaticLocationTrackingEnabled: true,
+                backgroundLocationEnabled: true,
+                hasLocationAuthorization: true,
+                applicationIsBackgrounded: true,
+                isAutomaticCoreLocationSample: true
+            )
+        )
+
+        let disabledConditions: [(Bool, Bool, Bool, Bool, Bool, Bool, Bool)] = [
+            (false, true, true, true, true, true, true),
+            (true, false, true, true, true, true, true),
+            (true, true, false, true, true, true, true),
+            (true, true, true, false, true, true, true),
+            (true, true, true, true, false, true, true),
+            (true, true, true, true, true, false, true),
+            (true, true, true, true, true, true, false)
+        ]
+        for condition in disabledConditions {
+            XCTAssertFalse(
+                HybridPreciseLocationSamplingRules.shouldBeginBackgroundActiveTrackingHandoff(
+                    isEnteringActiveTracking: condition.0,
+                    isHybridPolicy: condition.1,
+                    automaticLocationTrackingEnabled: condition.2,
+                    backgroundLocationEnabled: condition.3,
+                    hasLocationAuthorization: condition.4,
+                    applicationIsBackgrounded: condition.5,
+                    isAutomaticCoreLocationSample: condition.6
+                )
+            )
+        }
+    }
+
     func testInitialActiveTrackingGuardStaysActiveUntilFirstRecheckOrMinimumInterval() {
         let enteredAt = Date(timeIntervalSinceReferenceDate: 100)
 
@@ -82,6 +119,28 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 isCompletingFinalPreciseExit: true
             )
         )
+    }
+
+    func testBackgroundActivitySessionIsRetainedOnlyForAuthorizedActiveBackgroundTracking() {
+        XCTAssertTrue(
+            HybridPreciseLocationSamplingRules.shouldRetainBackgroundActivitySession(
+                managerIsActive: true,
+                automaticLocationTrackingEnabled: true,
+                backgroundLocationEnabled: true,
+                hasLocationAuthorization: true
+            )
+        )
+
+        for disabledCondition in 0..<4 {
+            XCTAssertFalse(
+                HybridPreciseLocationSamplingRules.shouldRetainBackgroundActivitySession(
+                    managerIsActive: disabledCondition != 0,
+                    automaticLocationTrackingEnabled: disabledCondition != 1,
+                    backgroundLocationEnabled: disabledCondition != 2,
+                    hasLocationAuthorization: disabledCondition != 3
+                )
+            )
+        }
     }
 
     func testFinalExitOnlyStartsForHybridActiveToIdleTransitions() {

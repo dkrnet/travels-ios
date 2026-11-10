@@ -136,10 +136,10 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             }
 
             if let previousSample = samples.last,
-               sample.timestamp.timeIntervalSince(previousSample.timestamp) > thresholds.maximumStationarySampleGap {
-                // REGRESSION GUARD: a large timestamp jump can happen when simulator playback is
-                // replaced with a custom location or another source change. Do not let stale samples
-                // from before the gap immediately satisfy the stationary window.
+               sample.timestamp.timeIntervalSince(previousSample.timestamp) > maximumStationaryConfirmationGap {
+                // REGRESSION GUARD: arbitrarily stale samples must not satisfy the stationary window,
+                // but the watchdog can legitimately deliver one nearby stationary confirmation only
+                // after the full stationary interval. Preserve that bounded sparse confirmation.
                 state = .maybeStopped(anchor: sample, samples: [sample])
                 return .none
             }
@@ -159,6 +159,23 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
             state = .maybeStopped(anchor: anchor, samples: trimmed(samples))
             return .none
         }
+    }
+
+    /// Completes a hybrid stop episode that the coordinator independently verified across a
+    /// sustained Core Location silence interval. The coordinator must validate the sample first.
+    @discardableResult
+    public mutating func confirmSustainedStationaryPeriod(
+        referenceSample: LocationSample?
+    ) -> LocationTrackingTransition {
+        guard policy == .hybridAutomatic else {
+            return .none
+        }
+        state = .idleDetection
+        if let referenceSample {
+            idleReferenceSample = referenceSample
+            lastSampleTimestamp = max(lastSampleTimestamp ?? referenceSample.timestamp, referenceSample.timestamp)
+        }
+        return .enterIdleDetection
     }
 
     private func shouldStop(anchor: LocationSample, samples: [LocationSample]) -> Bool {
@@ -184,11 +201,15 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         for index in 1..<samples.count {
             let previous = samples[index - 1]
             let current = samples[index]
-            if current.timestamp.timeIntervalSince(previous.timestamp) > thresholds.maximumStationarySampleGap {
+            if current.timestamp.timeIntervalSince(previous.timestamp) > maximumStationaryConfirmationGap {
                 return false
             }
         }
         return true
+    }
+
+    private var maximumStationaryConfirmationGap: TimeInterval {
+        thresholds.stationaryDuration + thresholds.maximumStationarySampleGap
     }
 
     private func isUsableStationarySample(_ sample: LocationSample) -> Bool {

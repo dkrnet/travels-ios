@@ -83,6 +83,35 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(EventDetailDisplayRules.speedDisplayText(.nan), "Not provided")
     }
 
+    func testLocationStatisticsAggregateCountsAndRespectsDemoSetting() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let namedGeolocationID = try store.saveGeolocation(Geolocation(latitude: 1, longitude: 1, name: "Named Place"))
+        let blankGeolocationID = try store.saveGeolocation(Geolocation(latitude: 3, longitude: 3, name: "   \n"))
+        let timestamp = Date(timeIntervalSinceReferenceDate: 1_000)
+
+        for event in [
+            LocationEvent(latitude: 1, longitude: 1, timestamp: timestamp, source: .locationServices, geolocationID: namedGeolocationID),
+            LocationEvent(latitude: 2, longitude: 2, timestamp: timestamp.addingTimeInterval(1), source: .locationServices, geolocationID: namedGeolocationID),
+            LocationEvent(latitude: 3, longitude: 3, timestamp: timestamp.addingTimeInterval(2), source: .locationServices, geolocationID: blankGeolocationID),
+            LocationEvent(latitude: 4, longitude: 4, timestamp: timestamp.addingTimeInterval(3), source: .locationServices),
+            LocationEvent(latitude: 5, longitude: 5, timestamp: timestamp.addingTimeInterval(4), source: .simulated, geolocationID: namedGeolocationID, isDemo: true)
+        ] {
+            _ = try store.saveEvent(event)
+        }
+
+        XCTAssertEqual(
+            try store.locationStatistics(includeDemo: true),
+            TravelsStore.LocationStatistics(totalLocations: 5, uniqueLocations: 2, unaddressedLocations: 2)
+        )
+        XCTAssertEqual(
+            try store.locationStatistics(includeDemo: false),
+            TravelsStore.LocationStatistics(totalLocations: 4, uniqueLocations: 2, unaddressedLocations: 2)
+        )
+    }
+
     private func createLegacyEventsDatabase(at url: URL) throws {
         let database = try SQLiteDatabase(path: url.path)
         try database.execute("""
@@ -148,6 +177,49 @@ final class TravelsCoreTests: XCTestCase {
     func testLocationFilteringAcceptsFirstSample() {
         let candidate = LocationSample(latitude: 2, longitude: 2, horizontalAccuracy: 10, timestamp: Date())
         XCTAssertEqual(LocationFiltering.decision(candidate: candidate, previous: nil), .accept)
+    }
+
+    func testNonDuplicateCaptureRequiresMoreThanTwentyMetersFromPreviousEvent() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let withinTwentyMeters = LocationSample(
+            latitude: 0.0001,
+            longitude: 0,
+            horizontalAccuracy: 5,
+            timestamp: Date(timeIntervalSinceReferenceDate: 200)
+        )
+        let beyondTwentyMeters = LocationSample(
+            latitude: 0.0002,
+            longitude: 0,
+            horizontalAccuracy: 5,
+            timestamp: Date(timeIntervalSinceReferenceDate: 200)
+        )
+
+        XCTAssertFalse(
+            LocationFiltering.shouldForceNonDuplicateCapture(
+                candidate: withinTwentyMeters,
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+        XCTAssertTrue(
+            LocationFiltering.shouldForceNonDuplicateCapture(
+                candidate: beyondTwentyMeters,
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+        XCTAssertTrue(
+            LocationFiltering.shouldForceNonDuplicateCapture(
+                candidate: withinTwentyMeters,
+                previous: nil,
+                duplicateRadiusMeters: 20
+            )
+        )
     }
 
     func testLocationFilteringUsesThePausedDistanceThresholdWhilePausing() {
@@ -244,6 +316,89 @@ final class TravelsCoreTests: XCTestCase {
             ),
             .acceptAndReplacePrevious
         )
+    }
+
+    func testLocationFilteringPrioritizesStoppedDestinationOverMoreAccurateMovingEvent() {
+        let previous = LocationEvent(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 8,
+            speed: 12,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 20,
+            speed: 0.7,
+            timestamp: Date(timeIntervalSinceReferenceDate: 120)
+        )
+
+        XCTAssertEqual(
+            LocationFiltering.decision(candidate: candidate, previous: previous),
+            .acceptAndReplacePrevious
+        )
+    }
+
+    func testLocationFilteringDoesNotPrioritizeUnknownSpeedAsStopped() {
+        let previous = LocationEvent(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 8,
+            speed: 12,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 20,
+            speed: -1,
+            timestamp: Date(timeIntervalSinceReferenceDate: 120)
+        )
+
+        XCTAssertEqual(LocationFiltering.decision(candidate: candidate, previous: previous), .reject)
+    }
+
+    func testLocationFilteringDoesNotPrioritizeStoppedSampleWithUnusableAccuracy() {
+        let previous = LocationEvent(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 8,
+            speed: 12,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 101,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 120)
+        )
+
+        XCTAssertEqual(LocationFiltering.decision(candidate: candidate, previous: previous), .reject)
+    }
+
+    func testLocationFilteringDoesNotPrioritizeStoppedSampleOutsideImprovementWindow() {
+        let previous = LocationEvent(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 8,
+            speed: 12,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 37.0,
+            longitude: -122.0,
+            horizontalAccuracy: 20,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 400)
+        )
+
+        XCTAssertEqual(LocationFiltering.decision(candidate: candidate, previous: previous), .reject)
     }
 
     func testTwilightResultIsNoneDuringFullDaylight() throws {
@@ -771,7 +926,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertNil(saved?.event.twilightPercent)
     }
 
-    func testDemoDayDoesNotPullInPreviousDayContext() throws {
+    func testPreviousDayContextIsIncludedBeforeDemoDay() throws {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
         defer { try? FileManager.default.removeItem(at: url) }
 
@@ -809,7 +964,42 @@ final class TravelsCoreTests: XCTestCase {
             includeDemo: true
         )
 
-        XCTAssertEqual(dayEvents.map(\.event.note), ["Demo day start"])
+        XCTAssertEqual(dayEvents.map(\.event.note), ["Previous day tail", "Demo day start"])
+    }
+
+    func testPreviousDayContextIsReturnedWhenSelectedDayIsEmpty() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let previousDayTail = makeDate(year: 2026, month: 6, day: 7, hour: 23, minute: 50, timeZone: timeZone)
+        let emptySelectedDay = makeDate(year: 2026, month: 6, day: 8, hour: 12, timeZone: timeZone)
+
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 33.8403,
+                longitude: -118.0037,
+                timestamp: previousDayTail,
+                localizedDate: TravelsDateTools.localizedDayString(for: previousDayTail, timeZoneIdentifier: timeZone.identifier),
+                source: .locationServices,
+                note: "Previous day tail"
+            )
+        )
+
+        let eventsWithContext = try store.events(
+            on: emptySelectedDay,
+            includePreviousDayContext: true,
+            includeDemo: false
+        )
+        let eventsWithoutContext = try store.events(
+            on: emptySelectedDay,
+            includePreviousDayContext: false,
+            includeDemo: false
+        )
+
+        XCTAssertEqual(eventsWithContext.map(\.event.note), ["Previous day tail"])
+        XCTAssertTrue(eventsWithoutContext.isEmpty)
     }
 
     func testMigrationAddsTwilightCalculatedAtWithoutDestroyingExistingEvents() throws {
@@ -824,6 +1014,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertTrue(columns.contains { $0["name"]?.string == "solar_period_percent" })
         XCTAssertTrue(columns.contains { $0["name"]?.string == "solar_period_calculated_at" })
         XCTAssertTrue(columns.contains { $0["name"]?.string == "twilight_calculated_at" })
+        XCTAssertTrue(columns.contains { $0["name"]?.string == "movementStateOverride" })
 
         let saved = try store.allEvents().first
         XCTAssertEqual(saved?.event.note, "legacy note")
@@ -831,6 +1022,7 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertNil(saved?.event.solarPeriodPercent)
         XCTAssertNil(saved?.event.solarPeriodCalculatedAt)
         XCTAssertNil(saved?.event.twilightCalculatedAt)
+        XCTAssertNil(saved?.event.movementStateOverride)
         XCTAssertEqual(try store.eventCount(), 1)
     }
 
@@ -1563,6 +1755,7 @@ final class TravelsCoreTests: XCTestCase {
         _ = try store.saveEvent(event)
 
         let xml = try GPXExporter.export(events: try store.allEvents(), title: "Sample & Track")
+        XCTAssertTrue(xml.contains("creator=\"Travels - privacy-first location tracking\""))
         XCTAssertTrue(xml.contains("xmlns:travels=\"https://github.com/dkrnet/travels-ios/gpx/extensions/1\""))
         XCTAssertTrue(xml.contains("<name>Sample &amp; Track</name>"))
         XCTAssertTrue(xml.contains("<ele>42.0</ele>"))
@@ -1744,6 +1937,41 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(try store.eventCount(), 1)
     }
 
+    func testSearchPlaceMetadataIsDistinctAndUsesOnlyNonPlaceCriteria() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let californiaID = try store.saveGeolocation(
+            Geolocation(latitude: 1, longitude: 1, locality: "Cupertino", administrativeArea: "California", country: "United States")
+        )
+        let newYorkID = try store.saveGeolocation(
+            Geolocation(latitude: 2, longitude: 2, locality: "New York", administrativeArea: "New York", country: "United States")
+        )
+        let canadaID = try store.saveGeolocation(
+            Geolocation(latitude: 3, longitude: 3, locality: "Vancouver", administrativeArea: "British Columbia", country: "Canada")
+        )
+        let timestamp = Date(timeIntervalSinceReferenceDate: 2_000)
+
+        for event in [
+            LocationEvent(latitude: 1, longitude: 1, timestamp: timestamp, source: .manual, geolocationID: californiaID, note: "needle"),
+            LocationEvent(latitude: 1, longitude: 1, timestamp: timestamp.addingTimeInterval(1), source: .manual, geolocationID: californiaID, note: "needle"),
+            LocationEvent(latitude: 2, longitude: 2, timestamp: timestamp.addingTimeInterval(2), source: .manual, geolocationID: newYorkID, note: "needle"),
+            LocationEvent(latitude: 3, longitude: 3, timestamp: timestamp.addingTimeInterval(3), source: .manual, geolocationID: canadaID, note: "needle", isDemo: true)
+        ] {
+            _ = try store.saveEvent(event)
+        }
+
+        let metadata = try store.searchPlaceMetadata(
+            matching: SearchCriteria(term: "needle", country: "Canada", source: .manual),
+            includeDemo: false
+        )
+
+        XCTAssertEqual(metadata.count, 2)
+        XCTAssertEqual(Set(metadata.map(\.administrativeArea)), ["California", "New York"])
+        XCTAssertEqual(Set(metadata.map(\.country)), ["United States"])
+    }
+
     func testSQLiteStoreCanReplaceAnExistingEventInPlace() throws {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
         defer { try? FileManager.default.removeItem(at: url) }
@@ -1808,6 +2036,39 @@ final class TravelsCoreTests: XCTestCase {
 
         try store.updateTripEndpointOverride(eventID: eventID, tripEndpointOverride: .notTripEndpoint)
         XCTAssertEqual(try store.allEvents().first?.event.tripEndpointOverride, .notTripEndpoint)
+    }
+
+    func testSQLiteStorePersistsMovementStateOverrideWithoutChangingSpeed() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let eventID = try store.saveEvent(
+            LocationEvent(
+                latitude: 37.0,
+                longitude: -122.0,
+                horizontalAccuracy: 20,
+                speed: 12.5,
+                timestamp: Date(timeIntervalSinceReferenceDate: 1_000),
+                localizedDate: "2001-01-01",
+                source: .locationServices,
+                movementStateOverride: .stopped
+            )
+        )
+
+        var saved = try XCTUnwrap(store.allEvents().first?.event)
+        XCTAssertEqual(saved.movementStateOverride, .stopped)
+        XCTAssertEqual(saved.speed, 12.5)
+
+        try store.updateMovementStateOverride(eventID: eventID, movementStateOverride: .notStopped)
+        saved = try XCTUnwrap(store.allEvents().first?.event)
+        XCTAssertEqual(saved.movementStateOverride, .notStopped)
+        XCTAssertEqual(saved.speed, 12.5)
+
+        try store.updateMovementStateOverride(eventID: eventID, movementStateOverride: nil)
+        saved = try XCTUnwrap(store.allEvents().first?.event)
+        XCTAssertNil(saved.movementStateOverride)
+        XCTAssertEqual(saved.speed, 12.5)
     }
 
     func testSQLiteStoreCanDeleteAnEvent() throws {
@@ -2065,6 +2326,53 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertEqual(cached?.name, "Apple Park")
     }
 
+    func testSuitableGeolocationPrefersNarrowCoverageAndRejectsOutsideOrUnnamedRecords() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        _ = try store.saveGeolocation(
+            Geolocation(latitude: 33.8000, longitude: -118.0000, radius: 200, name: "Broad Place")
+        )
+        let narrowID = try store.saveGeolocation(
+            Geolocation(latitude: 33.8000, longitude: -118.0000, radius: 50, name: "Narrow Place")
+        )
+        _ = try store.saveGeolocation(
+            Geolocation(latitude: 34.0000, longitude: -118.0000, radius: 100, name: "   ")
+        )
+
+        XCTAssertEqual(
+            try store.suitableGeolocation(latitude: 33.8001, longitude: -118.0000)?.id,
+            narrowID
+        )
+        XCTAssertNil(try store.suitableGeolocation(latitude: 33.8100, longitude: -118.0000))
+        XCTAssertNil(try store.suitableGeolocation(latitude: 34.0000, longitude: -118.0000))
+    }
+
+    func testSuitableGeolocationUsesReasonablySizedBounds() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let boundedID = try store.saveGeolocation(
+            Geolocation(
+                latitude: 33.8000,
+                longitude: -118.0000,
+                minLatitude: 33.7997,
+                maxLatitude: 33.8003,
+                minLongitude: -118.0003,
+                maxLongitude: -117.9997,
+                name: "Bounded Place"
+            )
+        )
+
+        XCTAssertEqual(
+            try store.suitableGeolocation(latitude: 33.8002, longitude: -117.9998)?.id,
+            boundedID
+        )
+        XCTAssertNil(try store.suitableGeolocation(latitude: 33.8005, longitude: -117.9995))
+    }
+
     func testGPXExportRejectsEmptySets() {
         XCTAssertThrowsError(try GPXExporter.export(events: [])) { error in
             XCTAssertEqual(error as? TravelsError, .emptyExport)
@@ -2112,6 +2420,8 @@ final class TravelsCoreTests: XCTestCase {
 
         let details = try store.allEvents()
         let xml = try GPXExporter.export(events: details, title: "Sample & Track")
+        let defaultTitleXML = try GPXExporter.export(events: details)
+        XCTAssertTrue(defaultTitleXML.contains("<name>Travels privacy-first location history</name>"))
         XCTAssertTrue(xml.contains("xmlns:travels=\"https://github.com/dkrnet/travels-ios/gpx/extensions/1\""))
         XCTAssertTrue(xml.contains("<name>Sample &amp; Track</name>"))
         XCTAssertTrue(xml.contains("<ele>42.0</ele>"))
@@ -2161,6 +2471,29 @@ final class TravelsCoreTests: XCTestCase {
 
         let imported = try GPXImporter.parse(data: Data(exported.utf8))
         XCTAssertEqual(imported.events.first?.tripEndpointOverride, .tripEndpoint)
+    }
+
+    func testGPXExportAndImportRoundTripMovementStateOverrideWithoutChangingSpeed() throws {
+        let event = LocationEvent(
+            latitude: 37.3317,
+            longitude: -122.0301,
+            speed: 8.75,
+            timestamp: Date(timeIntervalSinceReferenceDate: 2_000),
+            localizedDate: "2001-01-01",
+            source: .imported,
+            movementStateOverride: .stopped
+        )
+        let exported = try GPXExporter.export(
+            events: [EventDetail(event: event, geolocation: nil)],
+            title: "Movement Override"
+        )
+
+        XCTAssertTrue(exported.contains("<travels:movementStateOverride>stopped</travels:movementStateOverride>"))
+        XCTAssertTrue(exported.contains("<travels:speedMetersPerSecond>8.75</travels:speedMetersPerSecond>"))
+
+        let imported = try GPXImporter.parse(data: Data(exported.utf8))
+        XCTAssertEqual(imported.events.first?.movementStateOverride, .stopped)
+        XCTAssertEqual(imported.events.first?.speed, 8.75)
     }
 
     func testPhotoFilenameRoundTripsThroughStore() throws {

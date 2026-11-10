@@ -6,7 +6,14 @@
 import Foundation
 
 public func isMovingLocationEvent(_ event: LocationEvent) -> Bool {
-    event.speed > 0
+    switch event.movementStateOverride {
+    case .stopped:
+        return false
+    case .notStopped:
+        return true
+    case nil:
+        return event.speed > 0
+    }
 }
 
 public func isStoppedLocationEvent(_ event: LocationEvent) -> Bool {
@@ -243,9 +250,16 @@ public struct TripDetectionService: Sendable {
         case .notTripEndpoint:
             return .moving
         case nil:
-            return isAutomaticStationaryCandidate(event, thresholds: thresholds)
-                ? .stationaryCandidate(forcedEndpoint: false)
-                : .moving
+            switch event.movementStateOverride {
+            case .stopped:
+                return .stationaryCandidate(forcedEndpoint: false)
+            case .notStopped:
+                return .moving
+            case nil:
+                return isAutomaticStationaryCandidate(event, thresholds: thresholds)
+                    ? .stationaryCandidate(forcedEndpoint: false)
+                    : .moving
+            }
         }
     }
 
@@ -279,10 +293,24 @@ public struct TripDetectionService: Sendable {
         guard consecutiveSampleGapsAreWithinLimit(events, thresholds: thresholds) else {
             return false
         }
-        guard events.allSatisfy({ isAutomaticStationaryCandidate($0, thresholds: thresholds) }) else {
+        guard events.allSatisfy({ isStationaryCandidateConsideringMovementOverride($0, thresholds: thresholds) }) else {
             return false
         }
         return events.allSatisfy { distanceMeters(from: first, to: $0) <= thresholds.stationaryRadiusMeters }
+    }
+
+    private static func isStationaryCandidateConsideringMovementOverride(
+        _ event: LocationEvent,
+        thresholds: LocationTrackingThresholds
+    ) -> Bool {
+        switch event.movementStateOverride {
+        case .stopped:
+            return true
+        case .notStopped:
+            return false
+        case nil:
+            return isAutomaticStationaryCandidate(event, thresholds: thresholds)
+        }
     }
 
     private static func consecutiveSampleGapsAreWithinLimit(_ events: [LocationEvent], thresholds: LocationTrackingThresholds) -> Bool {

@@ -1,12 +1,12 @@
 # Travels iOS
 
-Travels iOS is a modern rebuild of the legacy Travels iOS app. It preserves the original product model: local-first life tracking, map/list browsing, GPX import/export, legacy SQLite migration, search, notes, demo history, reverse geocoding, photo attachments, and privacy-aware settings.
+Travels iOS is a modern rebuild of the legacy Travels iOS app. It preserves the original product model while emphasizing privacy-first location tracking: local storage, map/list browsing, GPX import/export, legacy SQLite migration, search, notes, demo history, optional reverse geocoding, photo attachments, and privacy-aware settings.
 
 The application is designed around a reusable Swift package core and a SwiftUI iOS app shell. The core package owns model, SQLite, GPX, search, migration, filtering, trip-detection, solar-period, and color logic so those behaviors can be tested independently from iOS UI, Core Location, Photos, LocalAuthentication, and MapKit.
 
 ## Intended use
 
-Travels is intended for personal location journaling and lightweight life tracking on iOS. It records locations locally, displays them by day, allows browsing as a map or list, supports manual location capture, imports GPX tracks and geotagged photos, and exports GPX logs.
+Travels is intended for personal, privacy-first location history on iOS. It records locations locally, displays them by day, allows browsing as a map or list, supports manual location capture, imports GPX tracks and geotagged photos, and exports GPX logs.
 
 Travels exports GPX 1.1 with a documented Travels extension namespace for app-specific metadata. The schema is documented in `docs/gpx-extension-v1.md`.
 
@@ -17,20 +17,21 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
 - Always-visible lower-right map scale marker
-- Date navigation with previous-day context for continuity
+- Date navigation with previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
+- Silent, background-capable Shortcuts actions for filtered, stopped, 20-meter non-duplicate, and forced location capture, plus actions that persistently turn Automatic Location Tracking on or off. Stopped actions preserve measured speed, and trigger availability and background execution remain subject to iOS
 - A full-width date/count banner on the map and list screens with a trailing `Precise Location` indicator while high-precision tracking is running
 - Background-location option with adaptive Location Detail presets for High Detail, Balanced, Battery Saver, and Road Trip point density
-- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, recovers from prolonged active-stream silence with a one-time stream restart followed by bounded final precise exit if no fresh sample arrives, and uses a short post-exit guard so queued or ambiguous samples do not bounce the app straight back into precise mode unless movement is clearly resumed; Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
+- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, uses a bounded background handoff that retains significant-change monitoring until a later callback confirms active delivery, retains background activity only for the active precise interval when Background Location is enabled, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, and recovers from prolonged active-stream silence with one stream restart whose stationary recovery sample confirms the existing stop episode before bounded final precise exit; the background activity session ends immediately on return to low-power idle monitoring, and a short post-exit guard prevents queued or ambiguous samples from bouncing the app straight back into precise mode unless movement is clearly resumed. Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
 - Adaptive automatic tracking distance grows conservatively during sustained highway speed, shrinks faster after sustained town-speed slowdowns, requests a bounded automatic transition sample near highway exits or town entries, keeps stop detection independent of highway-sized event-save filtering, and keeps active Core Location delivery more frequent than event persistence when preserving route continuity
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
 - Developer diagnostics mirrored to a local maintenance log file in app-controlled storage
-- Per-event trip endpoint overrides for refining automatic trip detection
+- Per-event movement and trip-endpoint overrides for refining stopped-location treatment and automatic trip detection without changing recorded speed
 - GPX import and export with GPX 1.1 standard fields, a documented Travels extension namespace, and legacy import compatibility
 - Legacy `travels.sqlite` migration with backup and duplicate skipping
 - Photo import from geotagged photo metadata with local attachment storage
-- Search by text, dates, notes, source, and place hierarchy
+- Responsive search by text, dates, notes, source, and hierarchical place filters
 - Demo data that can be shown or hidden
 - Time-of-day coloring based on solar periods, civil twilight, day, and night
 - Trip/stopped-location map filtering
@@ -134,9 +135,15 @@ On first launch, the app checks for a legacy `Documents/travels.sqlite` database
 
 ## Privacy model
 
-Travels is local-first. The database, notes, imported photo references, and photo attachments stay in app-controlled local storage unless the user explicitly exports or shares them.
+Your location history. On your device.
 
-Reverse geocoding can send coordinates to Apple services when address resolution is enabled. Address resolution is off by default and must be enabled by the user. Photo import can create an event from a photo's date and location metadata either with or without copying the photo into Travels storage. GPX exports and database backups can contain precise location history and should be handled as sensitive files.
+Travels is a privacy-first location history app. It is local-first and does not require an account or include advertising, analytics, cloud tracking, or tracking SDKs. The database, notes, imported photo references, and photo attachments stay in app-controlled local storage unless the user explicitly exports or shares them.
+
+Address lookup is optional and sends coordinates to Apple only when enabled. Before queueing an Apple lookup, Travels conservatively reuses meaningful local place data that already covers the event coordinate. Address resolution is off by default and must be enabled by the user. Photo import can create an event from a photo's date and location metadata either with or without copying the photo into Travels storage. GPX exports and database backups can contain precise location history and should be handled as sensitive files.
+
+### Why Travels is free
+
+Travels was created because its developer wanted a privacy-first way to keep a personal location history. It is free because it serves a niche audience, and charging for it would add more complexity than value. Users are not the product: Travels has no advertising, analytics, accounts, subscriptions, or business model based on selling location data.
 
 The optional authentication lock uses device-owner authentication to hide map/list content while locked. It is a convenience privacy layer on top of normal iOS device security.
 

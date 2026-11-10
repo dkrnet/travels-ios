@@ -43,6 +43,24 @@ public struct InitialActiveTrackingGuardStatus: Equatable, Sendable {
 public enum HybridPreciseLocationSamplingRules {
     private static let finalExitMaximumSampleAge: TimeInterval = 30
 
+    public static func shouldBeginBackgroundActiveTrackingHandoff(
+        isEnteringActiveTracking: Bool,
+        isHybridPolicy: Bool,
+        automaticLocationTrackingEnabled: Bool,
+        backgroundLocationEnabled: Bool,
+        hasLocationAuthorization: Bool,
+        applicationIsBackgrounded: Bool,
+        isAutomaticCoreLocationSample: Bool
+    ) -> Bool {
+        isEnteringActiveTracking
+            && isHybridPolicy
+            && automaticLocationTrackingEnabled
+            && backgroundLocationEnabled
+            && hasLocationAuthorization
+            && applicationIsBackgrounded
+            && isAutomaticCoreLocationSample
+    }
+
     public static func initialActiveTrackingGuardStatus(
         enteredAt: Date?,
         firstWatchdogRecheckCompleted: Bool,
@@ -75,6 +93,18 @@ public enum HybridPreciseLocationSamplingRules {
             && automaticLocationTrackingEnabled
             && hasLocationAuthorization
             && !isCompletingFinalPreciseExit
+    }
+
+    public static func shouldRetainBackgroundActivitySession(
+        managerIsActive: Bool,
+        automaticLocationTrackingEnabled: Bool,
+        backgroundLocationEnabled: Bool,
+        hasLocationAuthorization: Bool
+    ) -> Bool {
+        managerIsActive
+            && automaticLocationTrackingEnabled
+            && backgroundLocationEnabled
+            && hasLocationAuthorization
     }
 
     public static func shouldStartBoundedFinalPreciseExit(

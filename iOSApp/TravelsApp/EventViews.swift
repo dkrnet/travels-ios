@@ -23,9 +23,11 @@ struct EventMapView: View {
     @EnvironmentObject private var model: TravelsModel
     let day: Date
     let events: [EventDetail]
+    let onManualZoom: () -> Void
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
+    @State private var suppressManualZoomDetectionUntil = Date.distantPast
     private let minimumMarkerSpacing: CGFloat = 35
 
     var body: some View {
@@ -60,10 +62,14 @@ struct EventMapView: View {
             .onChange(of: model.mapCameraCommandID) { _, _ in
                 updateCameraPosition()
             }
-            .onChange(of: events.count) { _, newValue in
-                updateCameraPosition()
-            }
             .onMapCameraChange(frequency: .onEnd) { context in
+                let previousRegion = scaleRegion ?? model.mapCameraRegion
+                if Date() > suppressManualZoomDetectionUntil,
+                   let previousRegion,
+                   spansDiffer(previousRegion.span, context.region.span) {
+                    // REGRESSION GUARD: after any user-driven map zoom, the toolbar action must offer full-day zoom next.
+                    onManualZoom()
+                }
                 scaleRegion = context.region
                 model.updateMapCameraRegion(context.region)
                 updateVisibleEventIDs(in: context.region)
@@ -162,6 +168,7 @@ struct EventMapView: View {
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
+            suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
             withAnimation(.easeInOut(duration: 0.25)) {
                 cameraPosition = .region(region)
             }
@@ -181,6 +188,7 @@ struct EventMapView: View {
             center: center,
             span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
         )
+        suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
         withAnimation(.easeInOut(duration: 0.25)) {
             cameraPosition = .region(region)
         }
@@ -190,10 +198,15 @@ struct EventMapView: View {
     }
 
     private func fullDayEvents() -> [EventDetail] {
-        let dayString = TravelsDateTools.localizedDayString(for: day, timeZoneIdentifier: nil)
-        // BUGFIX: the zoom/reset controls must use the currently displayed subset, not the entire day's data.
-        let dayEvents = events.filter { $0.event.localizedDate == dayString }
-        return dayEvents.isEmpty ? events : dayEvents
+        // REGRESSION GUARD: full-day framing includes the displayed previous-day context marker for route continuity.
+        events
+    }
+
+    private func spansDiffer(_ lhs: MKCoordinateSpan, _ rhs: MKCoordinateSpan) -> Bool {
+        let latitudeTolerance = max(max(abs(lhs.latitudeDelta), abs(rhs.latitudeDelta)), 0.000_001) * 0.001
+        let longitudeTolerance = max(max(abs(lhs.longitudeDelta), abs(rhs.longitudeDelta)), 0.000_001) * 0.001
+        return abs(lhs.latitudeDelta - rhs.latitudeDelta) > latitudeTolerance
+            || abs(lhs.longitudeDelta - rhs.longitudeDelta) > longitudeTolerance
     }
 
     private func focusedEvents() -> [EventDetail] {
@@ -917,12 +930,14 @@ struct EventDetailView: View {
     @EnvironmentObject private var model: TravelsModel
     let detail: EventDetail
     @State private var note: String
+    @State private var movementStateOverrideSelectionValue: MovementStateOverrideSelection
     @State private var tripEndpointOverrideSelectionValue: TripEndpointOverrideSelection
     @State private var confirmDelete = false
 
     init(detail: EventDetail) {
         self.detail = detail
         _note = State(initialValue: detail.event.note)
+        _movementStateOverrideSelectionValue = State(initialValue: MovementStateOverrideSelection(movementStateOverride: detail.event.movementStateOverride) ?? .automatic)
         _tripEndpointOverrideSelectionValue = State(initialValue: TripEndpointOverrideSelection(tripEndpointOverride: detail.event.tripEndpointOverride) ?? .automatic)
     }
 
@@ -974,6 +989,15 @@ struct EventDetailView: View {
                         labeled("Time of Day", timeOfDayText)
                     }
                     labeled("Source", detail.event.source.displayName)
+                    Picker("Movement", selection: $movementStateOverrideSelectionValue) {
+                        ForEach(MovementStateOverrideSelection.allCases) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: movementStateOverrideSelectionValue) { _, newValue in
+                        model.updateMovementStateOverride(for: detail, movementStateOverride: newValue.movementStateOverride)
+                    }
                     Picker("Trip Endpoint", selection: $tripEndpointOverrideSelectionValue) {
                         ForEach(TripEndpointOverrideSelection.allCases) { option in
                             Text(option.displayName).tag(option)
@@ -1207,6 +1231,47 @@ struct EventDetailView: View {
     }
 }
 
+private enum MovementStateOverrideSelection: String, CaseIterable, Identifiable {
+    case automatic
+    case stopped
+    case notStopped
+
+    var id: Self { self }
+
+    var displayName: String {
+        switch self {
+        case .automatic:
+            return "Automatic"
+        case .stopped:
+            return "Stopped"
+        case .notStopped:
+            return "Not stopped"
+        }
+    }
+
+    var movementStateOverride: MovementStateOverride? {
+        switch self {
+        case .automatic:
+            return nil
+        case .stopped:
+            return .stopped
+        case .notStopped:
+            return .notStopped
+        }
+    }
+
+    init?(movementStateOverride: MovementStateOverride?) {
+        switch movementStateOverride {
+        case nil:
+            self = .automatic
+        case .stopped:
+            self = .stopped
+        case .notStopped:
+            self = .notStopped
+        }
+    }
+}
+
 private enum TripEndpointOverrideSelection: String, CaseIterable, Identifiable {
     case automatic
     case tripEndpoint
@@ -1267,7 +1332,10 @@ private struct EventMapBadge: View {
         let color = color(for: detail)
         let rotation = badgeRotation(for: detail)
 
-        if isMovingLocationEvent(detail.event) {
+        if detail.event.source == .photo {
+            // REGRESSION GUARD: photo provenance takes precedence over movement styling so imported photos remain recognizable.
+            sourceBadge(color: color)
+        } else if isMovingLocationEvent(detail.event) {
             // BUGFIX: moving imported events can lack a usable course value, but they still need the moving-style badge instead of falling back to a source icon.
             if let rotation {
                 DirectionPointer(color: color)
@@ -1278,18 +1346,22 @@ private struct EventMapBadge: View {
                     .scaleEffect(x: 0.92, y: 1.14)
             }
         } else {
-            Image(systemName: symbol(for: detail.event.source))
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 24, height: 24)
-                .background(color)
-                .overlay {
-                    Circle()
-                        .strokeBorder(.white.opacity(0.9), lineWidth: 2)
-                }
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.18), radius: 1.5, x: 0, y: 1)
+            sourceBadge(color: color)
         }
+    }
+
+    private func sourceBadge(color: Color) -> some View {
+        Image(systemName: symbol(for: detail.event.source))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 24, height: 24)
+            .background(color)
+            .overlay {
+                Circle()
+                    .strokeBorder(.white.opacity(0.9), lineWidth: 2)
+            }
+            .clipShape(Circle())
+            .shadow(color: .black.opacity(0.18), radius: 1.5, x: 0, y: 1)
     }
 }
 
