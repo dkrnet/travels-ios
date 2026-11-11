@@ -5,6 +5,43 @@
 
 import Foundation
 
+public enum LocationRefreshAction: Equatable, Sendable {
+    case requestOneShot
+    case beginUnfilteredContinuousRefresh
+    case coalesceWithPendingContinuousRefresh
+}
+
+public struct LocationRefreshCoordinator: Equatable, Sendable {
+    public private(set) var isAwaitingContinuousCallback = false
+
+    public init() {}
+
+    public mutating func request(managerIsActivelyUpdating: Bool) -> LocationRefreshAction {
+        guard managerIsActivelyUpdating else {
+            return .requestOneShot
+        }
+        guard !isAwaitingContinuousCallback else {
+            return .coalesceWithPendingContinuousRefresh
+        }
+        isAwaitingContinuousCallback = true
+        return .beginUnfilteredContinuousRefresh
+    }
+
+    @discardableResult
+    public mutating func consumeContinuousCallback() -> Bool {
+        guard isAwaitingContinuousCallback else {
+            return false
+        }
+        isAwaitingContinuousCallback = false
+        return true
+    }
+
+    @discardableResult
+    public mutating func cancel() -> Bool {
+        consumeContinuousCallback()
+    }
+}
+
 public enum FinalPreciseExitSampleAssessment: Equatable, Sendable {
     case confirmsStop(reason: String)
     case rejects(reason: String)

@@ -19,10 +19,10 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Always-visible lower-right map scale marker
 - Date navigation with previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
-- Silent, background-capable Shortcuts actions for filtered, stopped, 20-meter non-duplicate, and forced location capture, plus actions that persistently turn Automatic Location Tracking on or off. Stopped actions preserve measured speed, and trigger availability and background execution remain subject to iOS
+- Silent, background-capable Shortcuts actions for filtered, stopped, 20-meter non-duplicate, and forced location capture, plus actions that persistently turn Automatic Location Tracking on or off. A stopped non-duplicate capture can mark the nearby previous event stopped when it is less than five minutes old instead of inserting a duplicate; stopped actions preserve measured speed, and trigger availability and background execution remain subject to iOS
 - A full-width date/count banner on the map and list screens with a trailing `Precise Location` indicator while high-precision tracking is running
 - Background-location option with adaptive Location Detail presets for High Detail, Balanced, Battery Saver, and Road Trip point density
-- Automatic Precise Location Mode immediately requests a precise sample when it enters active mode, uses a bounded background handoff that retains significant-change monitoring until a later callback confirms active delivery, retains background activity only for the active precise interval when Background Location is enabled, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location when movement quiets down, and recovers from prolonged active-stream silence with one stream restart whose stationary recovery sample confirms the existing stop episode before bounded final precise exit; the background activity session ends immediately on return to low-power idle monitoring, and a short post-exit guard prevents queued or ambiguous samples from bouncing the app straight back into precise mode unless movement is clearly resumed. Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
+- Automatic Precise Location Mode makes its first active callback immediately available with temporarily unfiltered continuous delivery, uses a bounded background handoff that retains significant-change monitoring until a later callback confirms active delivery, retains background activity only for the active precise interval when Background Location is enabled, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location with a bounded unfiltered continuous callback when movement quiets down, and recovers from prolonged active-stream silence with one stream restart whose stationary recovery sample confirms the existing stop episode before bounded final precise exit; normal active delivery filtering resumes after each requested callback or timeout, the background activity session ends immediately on return to low-power idle monitoring, and a short post-exit guard prevents queued or ambiguous samples from bouncing the app straight back into precise mode unless movement is clearly resumed. Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
 - Adaptive automatic tracking distance grows conservatively during sustained highway speed, shrinks faster after sustained town-speed slowdowns, requests a bounded automatic transition sample near highway exits or town entries, keeps stop detection independent of highway-sized event-save filtering, and keeps active Core Location delivery more frequent than event persistence when preserving route continuity
 - LocalAuthentication privacy lock option
 - Reverse-geocoded place metadata with queueing and diagnostics
@@ -101,6 +101,28 @@ If more than one paired phone is available, pass the device identifier from `xcr
 ```bash
 scripts/install_device.sh --build --device DEVICE_ID
 ```
+
+Back up the complete Travels application-support directory from the only
+available paired phone, including the database, SQLite sidecar files, photo
+attachments, and maintenance log:
+
+```bash
+scripts/backup_device_data.sh
+```
+
+The helper validates the copied database, records table counts and a SHA-256
+checksum in `backup-manifest.txt`, and stores the timestamped backup under
+`../device-backups` by default. Pass `--device DEVICE_ID` when more than one
+phone is available. To clear the phone's maintenance log only after a valid
+backup has been created, explicitly opt in:
+
+```bash
+scripts/backup_device_data.sh --truncate-log
+```
+
+The script never truncates the maintenance log if the app-support copy,
+database integrity check, or regular-file preflight for the exact on-device
+`Maintenance.log` path fails.
 
 Real-device validation is required before release for background location, Always Location permission flow, photo metadata import, LocalAuthentication, and adaptive Location Detail behavior.
 

@@ -30,6 +30,8 @@ public enum LocationFilterDecision: Equatable, Sendable {
 }
 
 public enum LocationFiltering {
+    public static let recentStoppedDuplicateWindowSeconds: TimeInterval = 5 * 60
+
     public static func shouldForceNonDuplicateCapture(
         candidate: LocationSample,
         previous: LocationEvent?,
@@ -45,6 +47,29 @@ public enum LocationFiltering {
             toLatitude: candidate.latitude,
             longitude: candidate.longitude
         ) > radius
+    }
+
+    public static func shouldMarkPreviousEventStoppedForRecentDuplicate(
+        candidate: LocationSample,
+        previous: LocationEvent?,
+        duplicateRadiusMeters: Double,
+        recencyWindowSeconds: TimeInterval = recentStoppedDuplicateWindowSeconds
+    ) -> Bool {
+        guard let previous else { return false }
+        let elapsed = candidate.timestamp.timeIntervalSince(previous.timestamp)
+        guard elapsed >= 0, elapsed < max(0, recencyWindowSeconds) else { return false }
+        return !shouldForceNonDuplicateCapture(
+            candidate: candidate,
+            previous: previous,
+            duplicateRadiusMeters: duplicateRadiusMeters
+        )
+    }
+
+    public static func replacementMovementStateOverride(
+        requested: MovementStateOverride?,
+        previous: LocationEvent?
+    ) -> MovementStateOverride? {
+        requested ?? previous?.movementStateOverride
     }
 
     public static func decision(

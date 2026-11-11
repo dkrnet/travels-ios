@@ -222,6 +222,94 @@ final class TravelsCoreTests: XCTestCase {
         )
     }
 
+    func testStoppedNonDuplicateCanMarkRecentNearbyEventStopped() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let candidate = LocationSample(
+            latitude: 0.0001,
+            longitude: 0,
+            horizontalAccuracy: 5,
+            timestamp: Date(timeIntervalSinceReferenceDate: 399)
+        )
+
+        XCTAssertTrue(
+            LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                candidate: candidate,
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+    }
+
+    func testStoppedNonDuplicateDoesNotModifyStaleDistantOrFutureEvent() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+
+        XCTAssertFalse(
+            LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                candidate: LocationSample(
+                    latitude: 0.0001,
+                    longitude: 0,
+                    horizontalAccuracy: 5,
+                    timestamp: Date(timeIntervalSinceReferenceDate: 400)
+                ),
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+        XCTAssertFalse(
+            LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                candidate: LocationSample(
+                    latitude: 0.0002,
+                    longitude: 0,
+                    horizontalAccuracy: 5,
+                    timestamp: Date(timeIntervalSinceReferenceDate: 200)
+                ),
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+        XCTAssertFalse(
+            LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                candidate: LocationSample(
+                    latitude: 0.0001,
+                    longitude: 0,
+                    horizontalAccuracy: 5,
+                    timestamp: Date(timeIntervalSinceReferenceDate: 99)
+                ),
+                previous: previous,
+                duplicateRadiusMeters: 20
+            )
+        )
+    }
+
+    func testReplacementPreservesExistingMovementOverrideUnlessNewOverrideIsRequested() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices,
+            movementStateOverride: .stopped
+        )
+
+        XCTAssertEqual(
+            LocationFiltering.replacementMovementStateOverride(requested: nil, previous: previous),
+            .stopped
+        )
+        XCTAssertEqual(
+            LocationFiltering.replacementMovementStateOverride(requested: .notStopped, previous: previous),
+            .notStopped
+        )
+    }
+
     func testLocationFilteringUsesThePausedDistanceThresholdWhilePausing() {
         let previous = LocationEvent(latitude: 0, longitude: 0, horizontalAccuracy: 5, timestamp: Date(timeIntervalSinceReferenceDate: 100), source: .locationServices)
         let candidate = LocationSample(latitude: 0.0005, longitude: 0, horizontalAccuracy: 5, timestamp: Date(timeIntervalSinceReferenceDate: 200))
