@@ -533,6 +533,17 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(filtered.compactMap(\.id), [1, 3])
     }
 
+    func testMapMarkerPriorityPlacesStoppedEventsBeforeMovingEvents() {
+        let events = [
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 5),
+            makeDetail(id: 2, hour: 8, minute: 1, speed: 5, movementStateOverride: .stopped),
+            makeDetail(id: 3, hour: 8, minute: 2, speed: 0, movementStateOverride: .notStopped),
+            makeDetail(id: 4, hour: 8, minute: 3, speed: -1)
+        ]
+
+        XCTAssertEqual(mapMarkerPriorityOrder(events).compactMap(\.id), [2, 4, 1, 3])
+    }
+
     func testMapDisplaySelectionTripReturnsTripEvents() {
         let events = [
             makeDetail(id: 1, hour: 8, minute: 0, speed: 4),

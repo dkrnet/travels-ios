@@ -35,6 +35,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Demo data that can be shown or hidden
 - Time-of-day coloring based on solar periods, civil twilight, day, and night
 - Trip/stopped-location map filtering
+- Stopped map markers remain visible when dense nearby moving samples are thinned
 - GPX export for the full selected day or the active export scope, such as a selected trip, filtered result set, or search result
 - Database backup, restore, health check, and repair behavior
 - Unit-testable `TravelsCore` package

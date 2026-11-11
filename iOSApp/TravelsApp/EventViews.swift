@@ -43,6 +43,9 @@ struct EventMapView: View {
                             model.selectedEvent = detail
                         } label: {
                             EventMapBadge(detail: detail)
+                                // REGRESSION GUARD: selected moving events may intentionally
+                                // overlap, but they must never visually cover a stopped marker.
+                                .zIndex(isStoppedLocationEvent(detail.event) ? 1 : 0)
                         }
                         .buttonStyle(.plain)
                     }
@@ -325,14 +328,17 @@ struct EventMapView: View {
             }
         }
 
-        if let first = ordered.first {
-            _ = append(first, requireSpacing: false)
+        for stopped in mapMarkerPriorityOrder(ordered) where isStoppedLocationEvent(stopped.event) {
+            _ = append(stopped, requireSpacing: false)
         }
         if let selectedEventID, let selected = ordered.first(where: { $0.id == selectedEventID }) {
             _ = append(selected, requireSpacing: false)
         }
+        if let first = ordered.first {
+            _ = append(first, requireSpacing: !isStoppedLocationEvent(first.event))
+        }
         if let last = ordered.last {
-            _ = append(last, requireSpacing: false)
+            _ = append(last, requireSpacing: !isStoppedLocationEvent(last.event))
         }
 
         let selectionRadius = minimumSpacing * 1.75
@@ -414,14 +420,17 @@ struct EventMapView: View {
             result.append(detail)
         }
 
-        if let first = ordered.first {
-            append(first, requireSpacing: false)
+        for stopped in mapMarkerPriorityOrder(ordered) where isStoppedLocationEvent(stopped.event) {
+            append(stopped, requireSpacing: false)
         }
         if let selectedEventID, let selected = ordered.first(where: { $0.id == selectedEventID }) {
             append(selected, requireSpacing: false)
         }
+        if let first = ordered.first {
+            append(first, requireSpacing: !isStoppedLocationEvent(first.event))
+        }
         if let last = ordered.last {
-            append(last, requireSpacing: false)
+            append(last, requireSpacing: !isStoppedLocationEvent(last.event))
         }
 
         func isPreferred(_ detail: EventDetail) -> Bool {
@@ -486,6 +495,7 @@ struct EventMapView: View {
             }
         }
 
+        append(mapMarkerPriorityOrder(ordered).filter { isStoppedLocationEvent($0.event) })
         append(turnCandidates(in: ordered))
         append(ordered.filter(isPreferred))
         append(ordered)

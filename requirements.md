@@ -328,6 +328,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
 - Passive map redraws caused by automatic location additions, address-resolution updates, or other event reloads shall preserve the user's current camera position and zoom level.
 - Photo-source events shall use the photo marker glyph even when their recorded speed would otherwise classify them as moving.
+- Map marker thinning shall prioritize every stopped event over nearby moving events, and a moving marker shall not hide or displace a stopped marker.
 
 ## Event detail requirements
 

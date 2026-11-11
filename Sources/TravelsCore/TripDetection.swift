@@ -20,6 +20,20 @@ public func isStoppedLocationEvent(_ event: LocationEvent) -> Bool {
     !isMovingLocationEvent(event)
 }
 
+public func mapMarkerPriorityOrder(_ events: [EventDetail]) -> [EventDetail] {
+    // REGRESSION GUARD: map thinning must consider stopped events before moving
+    // route samples so a nearby moving marker cannot consume the stopped marker's slot.
+    let indexed = events.enumerated()
+    return indexed.sorted { lhs, rhs in
+        let lhsStopped = isStoppedLocationEvent(lhs.element.event)
+        let rhsStopped = isStoppedLocationEvent(rhs.element.event)
+        if lhsStopped != rhsStopped {
+            return lhsStopped
+        }
+        return lhs.offset < rhs.offset
+    }.map(\.element)
+}
+
 public func tripDetectionEvents(
     from events: [EventDetail],
     displayedDate: Date
