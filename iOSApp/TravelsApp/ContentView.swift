@@ -558,8 +558,9 @@ struct AboutView: View {
 
     private var versionText: String {
         let info = Bundle.main.infoDictionary
-        let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "Version \(build)"
+        let displayVersion = info?["TravelsDisplayVersion"] as? String
+        let fallbackVersion = info?["CFBundleVersion"] as? String ?? "?"
+        return "Version \(displayVersion ?? fallbackVersion)"
     }
 
     private func statRow(_ title: String, value: String) -> some View {

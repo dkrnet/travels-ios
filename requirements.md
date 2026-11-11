@@ -57,19 +57,18 @@ A future developer should be able to regenerate the application from scratch wit
 ## Application identity requirements
 
 - The app shall preserve the legacy Travels product identity unless intentionally changed.
-- The intended bundle identifier is `com.adigitalanalog.Travels` until verified against the original shipping app identity.
-- Before release, verify that the bundle identifier, signing identity, app group assumptions if any, and migration path match the legacy app identity.
+- The shipping bundle identifier shall be `com.adigitalanalog.travels`, matching the original App Store archive and existing App Store Connect record exactly.
+- The signing team shall be supplied by the gitignored local signing configuration rather than committed to the repository.
+- Before the first device installation that changes an existing development build to the restored shipping identity, the current application-support directory shall be backed up and validated. Installation shall not assume that iOS will preserve or transfer data between differently signed or identified app containers.
 
 ## Versioning requirements
 
 - Travels shall use semantic marketing versions for the App Store-facing version number.
-- Travels shall use automatic development build metadata for the bundle version.
+- Travels shall use a positive numeric, monotonically increasing App Store bundle build number in `CFBundleVersion` so archives are valid for App Store Connect and TestFlight.
 - The initial marketing version shall be `2.0.0` unless intentionally changed.
-- Untagged development build versions shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`.
-- Tagged commit build versions shall use the form `2.0.0.<build-count>+<git-short-sha>`, where `build-count` resets to `0`.
-- The build count shall increment for each app build and may be stored locally in a gitignored state file so the version updates automatically at build time.
-- The About screen shall display the build version directly, for example `Version 2.0.0-dev.0+8508546`.
-- Future development builds shall keep the same pattern so the visible version matches the build metadata scheme unless this requirement is intentionally changed.
+- The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
+- Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.0.0+<git-short-sha>` and reset the development counter to `0`.
+- The About screen shall display the human-readable development version, for example `Version 2.0.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
 
 ## Data storage requirements
 
@@ -570,7 +569,6 @@ Before release, manually validate:
 
 ## Known verification items
 
-- Confirm the final shipping bundle identifier before App Store release.
 - Confirm Xcode scheme names and simulator destinations before documenting a release checklist.
 - Confirm whether a UI test target should be added.
 - Confirm all legacy artwork, icons, or copied resources have appropriate license and attribution.

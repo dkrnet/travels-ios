@@ -23,7 +23,7 @@ Options:
 Environment overrides:
   TRAVELS_DEVICE_ID     Default device identifier or name.
   TRAVELS_BUNDLE_ID     App bundle identifier. Defaults to
-                        com.adigitalanalog.Travels.
+                        com.adigitalanalog.travels.
   TRAVELS_BACKUP_ROOT   Default backup parent directory.
 
 Examples:
@@ -35,7 +35,7 @@ USAGE
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 device_id="${TRAVELS_DEVICE_ID:-}"
-bundle_id="${TRAVELS_BUNDLE_ID:-com.adigitalanalog.Travels}"
+bundle_id="${TRAVELS_BUNDLE_ID:-com.adigitalanalog.travels}"
 output_root="${TRAVELS_BACKUP_ROOT:-${repo_dir}/../device-backups}"
 truncate_log=false
 remote_support_path="Library/Application Support/Travels"

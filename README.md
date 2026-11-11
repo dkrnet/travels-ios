@@ -65,6 +65,17 @@ Travels.xcodeproj/      Xcode iOS app project
 
 ## Build and test
 
+The restored shipping identity is `com.adigitalanalog.travels`, matching the
+original App Store app. The development team is read from the gitignored
+`Config/Signing.local.xcconfig`; copy or create that file locally with a
+`DEVELOPMENT_TEAM = ...` assignment before signed device or archive builds.
+
+Builds use a numeric `CFBundleVersion` suitable for App Store Connect and a
+separate human-readable version containing development count and Git SHA for
+the About screen. The numeric sequence starts above the legacy build `310`.
+Set `TRAVELS_BUNDLE_BUILD_NUMBER` to an unused positive integer when an archive
+must use a build number higher than the local automatic state.
+
 Run the core package tests:
 
 ```bash
