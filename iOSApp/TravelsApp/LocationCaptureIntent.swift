@@ -6,7 +6,7 @@
 import AppIntents
 
 struct CaptureCurrentLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Capture Current Location"
+    static let title: LocalizedStringResource = "Add"
     static let description = IntentDescription(
         "Requests one location and processes it through Travels' normal automatic filtering and storage rules."
     )
@@ -20,7 +20,7 @@ struct CaptureCurrentLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct ForceAddCurrentLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Force Add Current Location"
+    static let title: LocalizedStringResource = "Add Forced"
     static let description = IntentDescription(
         "Requests one location and saves it through Travels' manual Add path, bypassing normal location filtering."
     )
@@ -34,7 +34,7 @@ struct ForceAddCurrentLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct CaptureStoppedLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Capture Stopped Location"
+    static let title: LocalizedStringResource = "Stopped"
     static let description = IntentDescription(
         "Requests one normally filtered location and marks it as stopped if Travels accepts it."
     )
@@ -48,7 +48,7 @@ struct CaptureStoppedLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct CaptureNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Capture Non-Duplicate Location"
+    static let title: LocalizedStringResource = "Non-Duplicate"
     static let description = IntentDescription(
         "Force adds the current location only when it is more than 20 meters from the previous event."
     )
@@ -61,7 +61,7 @@ struct CaptureNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct CaptureStoppedNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Capture Stopped Non-Duplicate Location"
+    static let title: LocalizedStringResource = "Stopped Non-Duplicate"
     static let description = IntentDescription(
         "Force adds the current location when it is more than 20 meters from the previous event and marks an accepted event as stopped."
     )
@@ -74,7 +74,7 @@ struct CaptureStoppedNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct ForceAddStoppedLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Force Add Stopped Location"
+    static let title: LocalizedStringResource = "Stopped Forced"
     static let description = IntentDescription(
         "Force adds the current location and marks it as stopped without changing its measured speed."
     )
@@ -87,7 +87,7 @@ struct ForceAddStoppedLocationIntent: AppIntent, LongRunningIntent {
 }
 
 struct DisableAutomaticLocationTrackingIntent: AppIntent {
-    static let title: LocalizedStringResource = "Set Automatic Location Tracking Off"
+    static let title: LocalizedStringResource = "Tracking Off"
     static let description = IntentDescription("Turns off Travels automatic location tracking.")
     static let openAppWhenRun = false
 
@@ -98,7 +98,7 @@ struct DisableAutomaticLocationTrackingIntent: AppIntent {
 }
 
 struct EnableAutomaticLocationTrackingIntent: AppIntent {
-    static let title: LocalizedStringResource = "Set Automatic Location Tracking On"
+    static let title: LocalizedStringResource = "Tracking On"
     static let description = IntentDescription("Turns on Travels automatic location tracking.")
     static let openAppWhenRun = false
 
@@ -116,7 +116,7 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
                 "Capture my current location in \(.applicationName)",
                 "Save my current location in \(.applicationName)"
             ],
-            shortTitle: "Capture Location",
+            shortTitle: "Add",
             systemImageName: "location.fill"
         )
         AppShortcut(
@@ -125,7 +125,7 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
                 "Force add my current location in \(.applicationName)",
                 "Force save my current location in \(.applicationName)"
             ],
-            shortTitle: "Force Add Location",
+            shortTitle: "Add Forced",
             systemImageName: "location.fill.viewfinder"
         )
         AppShortcut(
@@ -134,8 +134,17 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
                 "Capture my stopped location in \(.applicationName)",
                 "Save my stopped location in \(.applicationName)"
             ],
-            shortTitle: "Capture Stopped Location",
+            shortTitle: "Stopped",
             systemImageName: "mappin.and.ellipse"
+        )
+        AppShortcut(
+            intent: ForceAddStoppedLocationIntent(),
+            phrases: [
+                "Force add a stopped location in \(.applicationName)",
+                "Force save a stopped location in \(.applicationName)"
+            ],
+            shortTitle: "Stopped Forced",
+            systemImageName: "mappin.and.ellipse.circle.fill"
         )
         AppShortcut(
             intent: CaptureNonDuplicateLocationIntent(),
@@ -143,7 +152,7 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
                 "Capture a non duplicate location in \(.applicationName)",
                 "Save a non duplicate location in \(.applicationName)"
             ],
-            shortTitle: "Capture Non-Duplicate",
+            shortTitle: "Non-Duplicate",
             systemImageName: "location.circle"
         )
         AppShortcut(
@@ -154,15 +163,6 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Stopped Non-Duplicate",
             systemImageName: "mappin.circle"
-        )
-        AppShortcut(
-            intent: ForceAddStoppedLocationIntent(),
-            phrases: [
-                "Force add a stopped location in \(.applicationName)",
-                "Force save a stopped location in \(.applicationName)"
-            ],
-            shortTitle: "Force Add Stopped",
-            systemImageName: "mappin.and.ellipse.circle.fill"
         )
         AppShortcut(
             intent: DisableAutomaticLocationTrackingIntent(),
