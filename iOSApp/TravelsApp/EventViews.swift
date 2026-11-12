@@ -23,8 +23,11 @@ struct EventMapView: View {
     @EnvironmentObject private var model: TravelsModel
     let day: Date
     let events: [EventDetail]
+    let onManualZoom: () -> Void
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
+    @State private var suppressManualZoomDetectionUntil = Date.distantPast
     private let minimumMarkerSpacing: CGFloat = 35
 
     var body: some View {
@@ -40,6 +43,9 @@ struct EventMapView: View {
                             model.selectedEvent = detail
                         } label: {
                             EventMapBadge(detail: detail)
+                                // REGRESSION GUARD: selected moving events may intentionally
+                                // overlap, but they must never visually cover a stopped marker.
+                                .zIndex(isStoppedLocationEvent(detail.event) ? 1 : 0)
                         }
                         .buttonStyle(.plain)
                     }
@@ -59,12 +65,26 @@ struct EventMapView: View {
             .onChange(of: model.mapCameraCommandID) { _, _ in
                 updateCameraPosition()
             }
-            .onChange(of: events.count) { _, newValue in
-                updateCameraPosition()
-            }
             .onMapCameraChange(frequency: .onEnd) { context in
+                let previousRegion = scaleRegion ?? model.mapCameraRegion
+                if Date() > suppressManualZoomDetectionUntil,
+                   let previousRegion,
+                   spansDiffer(previousRegion.span, context.region.span) {
+                    // REGRESSION GUARD: after any user-driven map zoom, the toolbar action must offer full-day zoom next.
+                    onManualZoom()
+                }
+                scaleRegion = context.region
                 model.updateMapCameraRegion(context.region)
                 updateVisibleEventIDs(in: context.region)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                MapScaleMarker(
+                    region: scaleRegion ?? model.mapCameraRegion,
+                    viewportWidth: effectiveViewportSize.width,
+                    measurementSystem: model.settings.preferredMeasurementSystem
+                )
+                .padding(.trailing, 16)
+                .padding(.bottom, 16)
             }
         }
     }
@@ -151,9 +171,11 @@ struct EventMapView: View {
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
+            suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
             withAnimation(.easeInOut(duration: 0.25)) {
                 cameraPosition = .region(region)
             }
+            scaleRegion = region
             model.updateMapVisibleEventIDs(visibleEvents.compactMap(\.id))
             model.mapFocusEventIDs = nil
             return
@@ -169,18 +191,25 @@ struct EventMapView: View {
             center: center,
             span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
         )
+        suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
         withAnimation(.easeInOut(duration: 0.25)) {
             cameraPosition = .region(region)
         }
+        scaleRegion = region
         model.updateMapVisibleEventIDs(visibleEvents.compactMap(\.id))
         model.mapFocusEventIDs = nil
     }
 
     private func fullDayEvents() -> [EventDetail] {
-        let dayString = TravelsDateTools.localizedDayString(for: day, timeZoneIdentifier: nil)
-        // BUGFIX: the zoom/reset controls must use the currently displayed subset, not the entire day's data.
-        let dayEvents = events.filter { $0.event.localizedDate == dayString }
-        return dayEvents.isEmpty ? events : dayEvents
+        // REGRESSION GUARD: full-day framing includes the displayed previous-day context marker for route continuity.
+        events
+    }
+
+    private func spansDiffer(_ lhs: MKCoordinateSpan, _ rhs: MKCoordinateSpan) -> Bool {
+        let latitudeTolerance = max(max(abs(lhs.latitudeDelta), abs(rhs.latitudeDelta)), 0.000_001) * 0.001
+        let longitudeTolerance = max(max(abs(lhs.longitudeDelta), abs(rhs.longitudeDelta)), 0.000_001) * 0.001
+        return abs(lhs.latitudeDelta - rhs.latitudeDelta) > latitudeTolerance
+            || abs(lhs.longitudeDelta - rhs.longitudeDelta) > longitudeTolerance
     }
 
     private func focusedEvents() -> [EventDetail] {
@@ -299,14 +328,17 @@ struct EventMapView: View {
             }
         }
 
-        if let first = ordered.first {
-            _ = append(first, requireSpacing: false)
+        for stopped in mapMarkerPriorityOrder(ordered) where isStoppedLocationEvent(stopped.event) {
+            _ = append(stopped, requireSpacing: false)
         }
         if let selectedEventID, let selected = ordered.first(where: { $0.id == selectedEventID }) {
             _ = append(selected, requireSpacing: false)
         }
+        if let first = ordered.first {
+            _ = append(first, requireSpacing: !isStoppedLocationEvent(first.event))
+        }
         if let last = ordered.last {
-            _ = append(last, requireSpacing: false)
+            _ = append(last, requireSpacing: !isStoppedLocationEvent(last.event))
         }
 
         let selectionRadius = minimumSpacing * 1.75
@@ -388,14 +420,17 @@ struct EventMapView: View {
             result.append(detail)
         }
 
-        if let first = ordered.first {
-            append(first, requireSpacing: false)
+        for stopped in mapMarkerPriorityOrder(ordered) where isStoppedLocationEvent(stopped.event) {
+            append(stopped, requireSpacing: false)
         }
         if let selectedEventID, let selected = ordered.first(where: { $0.id == selectedEventID }) {
             append(selected, requireSpacing: false)
         }
+        if let first = ordered.first {
+            append(first, requireSpacing: !isStoppedLocationEvent(first.event))
+        }
         if let last = ordered.last {
-            append(last, requireSpacing: false)
+            append(last, requireSpacing: !isStoppedLocationEvent(last.event))
         }
 
         func isPreferred(_ detail: EventDetail) -> Bool {
@@ -460,6 +495,7 @@ struct EventMapView: View {
             }
         }
 
+        append(mapMarkerPriorityOrder(ordered).filter { isStoppedLocationEvent($0.event) })
         append(turnCandidates(in: ordered))
         append(ordered.filter(isPreferred))
         append(ordered)
@@ -615,14 +651,127 @@ struct EventMapView: View {
     }
 }
 
+private struct MapScaleMarker: View {
+    let region: MKCoordinateRegion?
+    let viewportWidth: CGFloat
+    let measurementSystem: MeasurementSystemPreference
+
+    private let maximumBarWidth: CGFloat = 112
+
+    var body: some View {
+        if let scale = scaleValue {
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(scale.label)
+                    .font(.caption2.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+                ZStack(alignment: .bottomLeading) {
+                    Rectangle()
+                        .frame(width: scale.width, height: 2)
+                    HStack {
+                        Rectangle()
+                            .frame(width: 2, height: 8)
+                        Spacer(minLength: 0)
+                        Rectangle()
+                            .frame(width: 2, height: 8)
+                    }
+                    .frame(width: scale.width, height: 8)
+                }
+                .foregroundStyle(.primary)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Map scale \(scale.label)")
+        }
+    }
+
+    private var scaleValue: (label: String, width: CGFloat)? {
+        guard let region, viewportWidth > 0 else { return nil }
+        let centerLatitudeRadians = region.center.latitude * .pi / 180
+        let metersPerDegreeLongitude = 111_320.0 * max(cos(centerLatitudeRadians), 0.01)
+        let visibleWidthMeters = abs(region.span.longitudeDelta) * metersPerDegreeLongitude
+        guard visibleWidthMeters.isFinite, visibleWidthMeters > 0 else { return nil }
+        let metersPerPoint = visibleWidthMeters / Double(viewportWidth)
+        guard metersPerPoint.isFinite, metersPerPoint > 0 else { return nil }
+
+        let targetMeters = metersPerPoint * Double(maximumBarWidth)
+        let distanceMeters: Double
+        let label: String
+        switch measurementSystem {
+        case .metric:
+            distanceMeters = Self.niceValue(atMost: targetMeters)
+            label = Self.metricLabel(forMeters: distanceMeters)
+        case .imperial:
+            let feet = targetMeters * 3.280_839_895_013_123
+            if targetMeters >= 804.672 {
+                let miles = Self.niceValue(atMost: targetMeters / 1_609.344)
+                distanceMeters = miles * 1_609.344
+                label = Self.unitLabel(value: miles, unit: "mi")
+            } else {
+                let niceFeet = Self.niceValue(atMost: feet)
+                distanceMeters = niceFeet / 3.280_839_895_013_123
+                label = Self.unitLabel(value: niceFeet, unit: "ft")
+            }
+        }
+
+        let width = CGFloat(distanceMeters / metersPerPoint)
+        guard width.isFinite, width >= 24 else { return nil }
+        return (label, min(width, maximumBarWidth))
+    }
+
+    private static func niceValue(atMost value: Double) -> Double {
+        guard value.isFinite, value > 0 else { return 0 }
+        let exponent = floor(log10(value))
+        let magnitude = pow(10, exponent)
+        let normalized = value / magnitude
+        let multiplier: Double
+        if normalized >= 5 {
+            multiplier = 5
+        } else if normalized >= 2 {
+            multiplier = 2
+        } else {
+            multiplier = 1
+        }
+        return multiplier * magnitude
+    }
+
+    private static func metricLabel(forMeters meters: Double) -> String {
+        if meters >= 1_000 {
+            return unitLabel(value: meters / 1_000, unit: "km")
+        }
+        return unitLabel(value: meters, unit: "m")
+    }
+
+    private static func unitLabel(value: Double, unit: String) -> String {
+        let rounded = value.rounded()
+        if abs(value - rounded) < 0.0001 {
+            return "\(Int(rounded)) \(unit)"
+        }
+        return String(format: "%.1f %@", value, unit)
+    }
+}
+
 struct EventListView: View {
     @EnvironmentObject private var model: TravelsModel
     let events: [EventDetail]
+    let topContentInset: CGFloat
+    private let topAnchorID = "EventListTopAnchor"
+
+    init(events: [EventDetail], topContentInset: CGFloat = 0) {
+        self.events = events
+        self.topContentInset = topContentInset
+    }
 
     var body: some View {
         GeometryReader { geometry in
             ScrollViewReader { proxy in
                 List {
+                    Color.clear
+                        .frame(height: topContentInset)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .id(topAnchorID)
+
                     ForEach(events) { detail in
                         Button {
                             model.selectedEvent = detail
@@ -653,12 +802,21 @@ struct EventListView: View {
                 .onAppear {
                 }
                 .task(id: model.listScrollCommandID) {
-                    guard let target = model.listScrollTargetEventID else { return }
+                    let scrollsToContentTop = model.listScrollTargetsContentTop
+                    let target = model.listScrollTargetEventID
+                    let targetAnchor = model.listScrollTargetAnchor
+                    guard scrollsToContentTop || target != nil else { return }
                     await Task.yield()
                     await MainActor.run {
                         withAnimation(.easeInOut(duration: 0.25)) {
-                            proxy.scrollTo(target, anchor: .top)
+                            if scrollsToContentTop {
+                                proxy.scrollTo(topAnchorID, anchor: .top)
+                            } else if let target {
+                                proxy.scrollTo(target, anchor: targetAnchor)
+                            }
                         }
+                        model.listScrollTargetAnchor = .top
+                        model.listScrollTargetsContentTop = false
                         model.listScrollTargetEventID = nil
                     }
                 }
@@ -782,12 +940,14 @@ struct EventDetailView: View {
     @EnvironmentObject private var model: TravelsModel
     let detail: EventDetail
     @State private var note: String
+    @State private var movementStateOverrideSelectionValue: MovementStateOverrideSelection
     @State private var tripEndpointOverrideSelectionValue: TripEndpointOverrideSelection
     @State private var confirmDelete = false
 
     init(detail: EventDetail) {
         self.detail = detail
         _note = State(initialValue: detail.event.note)
+        _movementStateOverrideSelectionValue = State(initialValue: MovementStateOverrideSelection(movementStateOverride: detail.event.movementStateOverride) ?? .automatic)
         _tripEndpointOverrideSelectionValue = State(initialValue: TripEndpointOverrideSelection(tripEndpointOverride: detail.event.tripEndpointOverride) ?? .automatic)
     }
 
@@ -839,6 +999,15 @@ struct EventDetailView: View {
                         labeled("Time of Day", timeOfDayText)
                     }
                     labeled("Source", detail.event.source.displayName)
+                    Picker("Movement", selection: $movementStateOverrideSelectionValue) {
+                        ForEach(MovementStateOverrideSelection.allCases) { option in
+                            Text(option.displayName).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: movementStateOverrideSelectionValue) { _, newValue in
+                        model.updateMovementStateOverride(for: detail, movementStateOverride: newValue.movementStateOverride)
+                    }
                     Picker("Trip Endpoint", selection: $tripEndpointOverrideSelectionValue) {
                         ForEach(TripEndpointOverrideSelection.allCases) { option in
                             Text(option.displayName).tag(option)
@@ -1072,6 +1241,47 @@ struct EventDetailView: View {
     }
 }
 
+private enum MovementStateOverrideSelection: String, CaseIterable, Identifiable {
+    case automatic
+    case stopped
+    case notStopped
+
+    var id: Self { self }
+
+    var displayName: String {
+        switch self {
+        case .automatic:
+            return "Automatic"
+        case .stopped:
+            return "Stopped"
+        case .notStopped:
+            return "Not stopped"
+        }
+    }
+
+    var movementStateOverride: MovementStateOverride? {
+        switch self {
+        case .automatic:
+            return nil
+        case .stopped:
+            return .stopped
+        case .notStopped:
+            return .notStopped
+        }
+    }
+
+    init?(movementStateOverride: MovementStateOverride?) {
+        switch movementStateOverride {
+        case nil:
+            self = .automatic
+        case .stopped:
+            self = .stopped
+        case .notStopped:
+            self = .notStopped
+        }
+    }
+}
+
 private enum TripEndpointOverrideSelection: String, CaseIterable, Identifiable {
     case automatic
     case tripEndpoint
@@ -1132,7 +1342,10 @@ private struct EventMapBadge: View {
         let color = color(for: detail)
         let rotation = badgeRotation(for: detail)
 
-        if isMovingLocationEvent(detail.event) {
+        if detail.event.source == .photo {
+            // REGRESSION GUARD: photo provenance takes precedence over movement styling so imported photos remain recognizable.
+            sourceBadge(color: color)
+        } else if isMovingLocationEvent(detail.event) {
             // BUGFIX: moving imported events can lack a usable course value, but they still need the moving-style badge instead of falling back to a source icon.
             if let rotation {
                 DirectionPointer(color: color)
@@ -1143,18 +1356,22 @@ private struct EventMapBadge: View {
                     .scaleEffect(x: 0.92, y: 1.14)
             }
         } else {
-            Image(systemName: symbol(for: detail.event.source))
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 24, height: 24)
-                .background(color)
-                .overlay {
-                    Circle()
-                        .strokeBorder(.white.opacity(0.9), lineWidth: 2)
-                }
-                .clipShape(Circle())
-                .shadow(color: .black.opacity(0.18), radius: 1.5, x: 0, y: 1)
+            sourceBadge(color: color)
         }
+    }
+
+    private func sourceBadge(color: Color) -> some View {
+        Image(systemName: symbol(for: detail.event.source))
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 24, height: 24)
+            .background(color)
+            .overlay {
+                Circle()
+                    .strokeBorder(.white.opacity(0.9), lineWidth: 2)
+            }
+            .clipShape(Circle())
+            .shadow(color: .black.opacity(0.18), radius: 1.5, x: 0, y: 1)
     }
 }
 

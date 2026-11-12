@@ -37,7 +37,8 @@ final class TripDetectionTests: XCTestCase {
         minute: Int = 0,
         speed: Double,
         second: Int = 0,
-        tripEndpointOverride: TripEndpointOverride? = nil
+        tripEndpointOverride: TripEndpointOverride? = nil,
+        movementStateOverride: MovementStateOverride? = nil
     ) -> LocationEvent {
         let timestamp = makeDate(day: day, hour: hour, minute: minute, second: second)
         return LocationEvent(
@@ -49,7 +50,8 @@ final class TripDetectionTests: XCTestCase {
             timestamp: timestamp,
             localizedDate: TravelsDateTools.localizedDayString(for: timestamp, timeZoneIdentifier: timeZone.identifier),
             source: .locationServices,
-            tripEndpointOverride: tripEndpointOverride
+            tripEndpointOverride: tripEndpointOverride,
+            movementStateOverride: movementStateOverride
         )
     }
 
@@ -60,9 +62,22 @@ final class TripDetectionTests: XCTestCase {
         minute: Int = 0,
         speed: Double,
         second: Int = 0,
-        tripEndpointOverride: TripEndpointOverride? = nil
+        tripEndpointOverride: TripEndpointOverride? = nil,
+        movementStateOverride: MovementStateOverride? = nil
     ) -> EventDetail {
-        EventDetail(event: makeEvent(id: id, day: day, hour: hour, minute: minute, speed: speed, second: second, tripEndpointOverride: tripEndpointOverride), geolocation: nil)
+        EventDetail(
+            event: makeEvent(
+                id: id,
+                day: day,
+                hour: hour,
+                minute: minute,
+                speed: speed,
+                second: second,
+                tripEndpointOverride: tripEndpointOverride,
+                movementStateOverride: movementStateOverride
+            ),
+            geolocation: nil
+        )
     }
 
     private func detect(_ events: [LocationEvent]) -> [DetectedTrip] {
@@ -113,15 +128,17 @@ final class TripDetectionTests: XCTestCase {
         let events = [
             makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 16, speed: 0),
-            makeEvent(id: 4, hour: 8, minute: 24, speed: 5)
+            makeEvent(id: 3, hour: 8, minute: 12, speed: 0),
+            makeEvent(id: 4, hour: 8, minute: 14, speed: 0),
+            makeEvent(id: 5, hour: 8, minute: 16, speed: 0),
+            makeEvent(id: 6, hour: 8, minute: 24, speed: 5)
         ]
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
         XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([2]))
         XCTAssertEqual(trips[0].displayEventIDs, Set<Int64>([1, 2]))
-        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([3, 4]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([5, 6]))
     }
 
     func testStoppedThenMovingThenStoppedUsesBothEndpoints() {
@@ -129,15 +146,17 @@ final class TripDetectionTests: XCTestCase {
             makeEvent(id: 1, hour: 7, minute: 50, speed: 0),
             makeEvent(id: 2, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 3, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 4, hour: 8, minute: 16, speed: 0),
-            makeEvent(id: 5, hour: 8, minute: 24, speed: 5)
+            makeEvent(id: 4, hour: 8, minute: 12, speed: 0),
+            makeEvent(id: 5, hour: 8, minute: 14, speed: 0),
+            makeEvent(id: 6, hour: 8, minute: 16, speed: 0),
+            makeEvent(id: 7, hour: 8, minute: 24, speed: 5)
         ]
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
         XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([1, 3]))
         XCTAssertEqual(trips[0].displayEventIDs, Set<Int64>([1, 2, 3]))
-        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([4, 5]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([6, 7]))
     }
 
     func testMovingStoppedMovingCreatesTwoTripsAndSharesTheStoppedEvent() {
@@ -164,6 +183,60 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(trips.count, 1)
         XCTAssertEqual(trips[0].movingEventIDs, Set<Int64>([1, 2, 3]))
         XCTAssertTrue(trips[0].endpointEventIDs.isEmpty)
+    }
+
+    func testStoppedMovementOverrideTreatsPositiveSpeedEventsAsStationaryCandidates() {
+        let events = [
+            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
+            makeEvent(id: 2, hour: 8, minute: 10, speed: 6, movementStateOverride: .stopped),
+            makeEvent(id: 3, hour: 8, minute: 11, speed: 7, movementStateOverride: .stopped),
+            makeEvent(id: 4, hour: 8, minute: 12, speed: 6, movementStateOverride: .stopped),
+            makeEvent(id: 5, hour: 8, minute: 13, speed: 7, movementStateOverride: .stopped),
+            makeEvent(id: 6, hour: 8, minute: 14, speed: 6, movementStateOverride: .stopped),
+            makeEvent(id: 7, hour: 8, minute: 15, speed: 7, movementStateOverride: .stopped),
+            makeEvent(id: 8, hour: 8, minute: 16, speed: 6, movementStateOverride: .stopped),
+            makeEvent(id: 9, hour: 8, minute: 20, speed: 5)
+        ]
+
+        let trips = detect(events)
+        XCTAssertEqual(trips.count, 2)
+        XCTAssertEqual(trips.map(\.endpointEventIDs), [Set<Int64>([2]), Set<Int64>([8])])
+        XCTAssertEqual(events[1].speed, 6)
+        XCTAssertEqual(events[7].speed, 6)
+    }
+
+    func testNotStoppedMovementOverrideKeepsZeroSpeedEventInMovingTrip() {
+        let events = [
+            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
+            makeEvent(id: 2, hour: 8, minute: 10, speed: 0, movementStateOverride: .notStopped),
+            makeEvent(id: 3, hour: 8, minute: 20, speed: 5)
+        ]
+
+        let trips = detect(events)
+        XCTAssertEqual(trips.count, 1)
+        XCTAssertEqual(trips[0].movingEventIDs, Set<Int64>([1, 2, 3]))
+        XCTAssertEqual(events[1].speed, 0)
+    }
+
+    func testTripEndpointOverrideRemainsIndependentFromMovementOverride() {
+        let event = makeEvent(
+            id: 2,
+            hour: 8,
+            minute: 10,
+            speed: 5,
+            tripEndpointOverride: .tripEndpoint,
+            movementStateOverride: .notStopped
+        )
+
+        XCTAssertTrue(isMovingLocationEvent(event))
+        let trips = detect([
+            makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
+            event,
+            makeEvent(id: 3, hour: 8, minute: 20, speed: 5)
+        ])
+        XCTAssertEqual(trips.count, 2)
+        XCTAssertTrue(trips[0].endpointEventIDs.contains(2))
+        XCTAssertTrue(trips[1].endpointEventIDs.contains(2))
     }
 
     func testConsecutiveEndpointEventsFormAnEndpointRun() {
@@ -203,17 +276,18 @@ final class TripDetectionTests: XCTestCase {
         let events = [
             makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 16, speed: 0),
-            makeEvent(id: 4, hour: 8, minute: 22, speed: 0),
-            makeEvent(id: 5, hour: 8, minute: 30, speed: 5)
+            makeEvent(id: 3, hour: 8, minute: 12, speed: 0),
+            makeEvent(id: 4, hour: 8, minute: 14, speed: 0),
+            makeEvent(id: 5, hour: 8, minute: 16, speed: 0),
+            makeEvent(id: 6, hour: 8, minute: 30, speed: 5)
         ]
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
         XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([2]))
-        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([4]))
+        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([5]))
         XCTAssertEqual(trips[0].displayEventIDs, Set<Int64>([1, 2]))
-        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([4, 5]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([5, 6]))
     }
 
     func testBriefStopsDoNotSplitTrips() {
@@ -233,16 +307,18 @@ final class TripDetectionTests: XCTestCase {
         let events = [
             makeEvent(id: 1, hour: 8, minute: 0, speed: 4),
             makeEvent(id: 2, hour: 8, minute: 10, speed: 0),
-            makeEvent(id: 3, hour: 8, minute: 16, speed: 0),
-            makeEvent(id: 4, hour: 8, minute: 20, speed: 5)
+            makeEvent(id: 3, hour: 8, minute: 12, speed: 0),
+            makeEvent(id: 4, hour: 8, minute: 14, speed: 0),
+            makeEvent(id: 5, hour: 8, minute: 16, speed: 0),
+            makeEvent(id: 6, hour: 8, minute: 20, speed: 5)
         ]
 
         let trips = detect(events)
         XCTAssertEqual(trips.count, 2)
         XCTAssertEqual(trips[0].endpointEventIDs, Set<Int64>([2]))
-        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([3]))
+        XCTAssertEqual(trips[1].endpointEventIDs, Set<Int64>([5]))
         XCTAssertEqual(trips[0].displayEventIDs, Set<Int64>([1, 2]))
-        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([3, 4]))
+        XCTAssertEqual(trips[1].displayEventIDs, Set<Int64>([5, 6]))
     }
 
     func testGapLessThanTripSeparationIntervalStaysOneTrip() {
@@ -345,7 +421,7 @@ final class TripDetectionTests: XCTestCase {
     }
 
     func testTripDisplayNameUsesMovingEventStartAndEndTimes() {
-        let events = (0...16).map { index -> LocationEvent in
+        let events = (0...17).map { index -> LocationEvent in
             let totalMinutes = 6 * 60 + 30 + (index * 20)
             let hour = totalMinutes / 60
             let minute = totalMinutes % 60
@@ -367,9 +443,11 @@ final class TripDetectionTests: XCTestCase {
             makeEvent(id: 1, hour: 15, minute: 10, speed: 4),
             makeEvent(id: 2, hour: 15, minute: 20, speed: 5),
             makeEvent(id: 3, hour: 15, minute: 30, speed: 0),
-            makeEvent(id: 4, hour: 15, minute: 36, speed: 0),
-            makeEvent(id: 5, hour: 15, minute: 40, speed: 4),
-            makeEvent(id: 6, hour: 15, minute: 50, speed: 5)
+            makeEvent(id: 4, hour: 15, minute: 32, speed: 0),
+            makeEvent(id: 5, hour: 15, minute: 34, speed: 0),
+            makeEvent(id: 6, hour: 15, minute: 36, speed: 0),
+            makeEvent(id: 7, hour: 15, minute: 40, speed: 4),
+            makeEvent(id: 8, hour: 15, minute: 50, speed: 5)
         ]
 
         let trips = detect(events)
@@ -446,19 +524,30 @@ final class TripDetectionTests: XCTestCase {
 
     func testMapDisplaySelectionStoppedOnlyReturnsOnlyStoppedEvents() {
         let events = [
-            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
-            makeDetail(id: 2, hour: 8, minute: 10, speed: 0),
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4, movementStateOverride: .stopped),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0, movementStateOverride: .notStopped),
             makeDetail(id: 3, hour: 8, minute: 20, speed: -1)
         ]
 
         let filtered = filteredEvents(from: events, selection: .stoppedOnly, detectedTrips: [])
-        XCTAssertEqual(filtered.compactMap(\.id), [2, 3])
+        XCTAssertEqual(filtered.compactMap(\.id), [1, 3])
+    }
+
+    func testMapMarkerPriorityPlacesStoppedEventsBeforeMovingEvents() {
+        let events = [
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 5),
+            makeDetail(id: 2, hour: 8, minute: 1, speed: 5, movementStateOverride: .stopped),
+            makeDetail(id: 3, hour: 8, minute: 2, speed: 0, movementStateOverride: .notStopped),
+            makeDetail(id: 4, hour: 8, minute: 3, speed: -1)
+        ]
+
+        XCTAssertEqual(mapMarkerPriorityOrder(events).compactMap(\.id), [2, 4, 1, 3])
     }
 
     func testMapDisplaySelectionTripReturnsTripEvents() {
         let events = [
             makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
-            makeDetail(id: 2, hour: 8, minute: 10, speed: 0),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 0, tripEndpointOverride: .tripEndpoint),
             makeDetail(id: 3, hour: 8, minute: 20, speed: 5)
         ]
         let trips = detect(events.map(\.event))

@@ -13,6 +13,7 @@ struct DeveloperDiagnosticsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingRestoreImporter = false
     @State private var backupShareItem: ShareItem?
+    @State private var maintenanceLogShareItem: ShareItem?
     @State private var solarPeriodRebuildTimeZoneIdentifier = TimeZone.current.identifier
 
     var body: some View {
@@ -42,7 +43,9 @@ struct DeveloperDiagnosticsView: View {
                     LabeledContent("Resolve Missing", value: model.settings.resolveMissingAddresses ? "On" : "Off")
                     LabeledContent("Demo Data", value: model.settings.includeDemoData ? "On" : "Off")
                     LabeledContent("Background", value: model.settings.backgroundLocationEnabled ? "On" : "Off")
-                    LabeledContent("Always-On High Precision", value: model.settings.alwaysOnHighPrecisionLocation ? "On" : "Off")
+                    LabeledContent("Precise Location Mode", value: model.settings.preciseLocationMode.displayName)
+                    LabeledContent("Location Detail", value: model.settings.locationDetailMode.displayName)
+                    LabeledContent("Adaptive Distance", value: formattedLengthText(model.adaptiveLocationDistanceMeters, measurementSystem: model.settings.preferredMeasurementSystem))
                 }
 
                 Section("Actions") {
@@ -58,6 +61,13 @@ struct DeveloperDiagnosticsView: View {
                     Button("Clear Log", role: .destructive) {
                         model.clearAddressResolutionLog()
                     }
+                    Button("Save Maintenance Log") {
+                        do {
+                            maintenanceLogShareItem = ShareItem(url: try model.createMaintenanceLogExport())
+                        } catch {
+                            model.statusMessage = error.localizedDescription
+                        }
+                    }
                 }
 
                 Section("Database") {
@@ -70,6 +80,19 @@ struct DeveloperDiagnosticsView: View {
                     }
                     Button("Restore Database") {
                         showingRestoreImporter = true
+                    }
+                }
+
+                Section("CarPlay Events") {
+                    if model.carPlayDiagnosticLog.isEmpty {
+                        Text("No CarPlay automation events recorded this session.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(Array(model.carPlayDiagnosticLog.reversed().enumerated()), id: \.offset) { _, entry in
+                            Text(entry)
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                        }
                     }
                 }
 
@@ -95,6 +118,9 @@ struct DeveloperDiagnosticsView: View {
                 }
             }
             .sheet(item: $backupShareItem) { item in
+                ShareSheet(items: [item.url])
+            }
+            .sheet(item: $maintenanceLogShareItem) { item in
                 ShareSheet(items: [item.url])
             }
             .fileImporter(

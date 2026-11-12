@@ -30,6 +30,48 @@ public enum LocationFilterDecision: Equatable, Sendable {
 }
 
 public enum LocationFiltering {
+    public static let recentStoppedDuplicateWindowSeconds: TimeInterval = 5 * 60
+
+    public static func shouldForceNonDuplicateCapture(
+        candidate: LocationSample,
+        previous: LocationEvent?,
+        duplicateRadiusMeters: Double
+    ) -> Bool {
+        guard let previous else {
+            return true
+        }
+        let radius = max(0, duplicateRadiusMeters)
+        return haversineMeters(
+            fromLatitude: previous.latitude,
+            longitude: previous.longitude,
+            toLatitude: candidate.latitude,
+            longitude: candidate.longitude
+        ) > radius
+    }
+
+    public static func shouldMarkPreviousEventStoppedForRecentDuplicate(
+        candidate: LocationSample,
+        previous: LocationEvent?,
+        duplicateRadiusMeters: Double,
+        recencyWindowSeconds: TimeInterval = recentStoppedDuplicateWindowSeconds
+    ) -> Bool {
+        guard let previous else { return false }
+        let elapsed = candidate.timestamp.timeIntervalSince(previous.timestamp)
+        guard elapsed >= 0, elapsed < max(0, recencyWindowSeconds) else { return false }
+        return !shouldForceNonDuplicateCapture(
+            candidate: candidate,
+            previous: previous,
+            duplicateRadiusMeters: duplicateRadiusMeters
+        )
+    }
+
+    public static func replacementMovementStateOverride(
+        requested: MovementStateOverride?,
+        previous: LocationEvent?
+    ) -> MovementStateOverride? {
+        requested ?? previous?.movementStateOverride
+    }
+
     public static func decision(
         candidate: LocationSample,
         previous: LocationEvent?,
@@ -38,7 +80,8 @@ public enum LocationFiltering {
         minimumDistanceMeters: Double = 100,
         pausedMinimumDistanceMeters: Double = 50,
         maximumHorizontalAccuracyMeters: Double = 100,
-        improvementWindowSeconds: TimeInterval = 300
+        improvementWindowSeconds: TimeInterval = 300,
+        stationarySpeedThreshold: Double = LocationTrackingThresholds().stationarySpeedThreshold
     ) -> LocationFilterDecision {
         guard let previous else {
             return .accept
@@ -69,7 +112,21 @@ public enum LocationFiltering {
                     || (candidateSpeedUnavailable && previous.speed <= 0)
                     || (previousSpeedUnavailable && candidate.speed <= 0)
                 )
-            if elapsed < improvementWindowSeconds && (isMoreAccurate || isAtLeastAsAccurateAndSlower) {
+            let candidateIsStopped = candidate.speed.isFinite
+                && candidate.speed >= 0
+                && candidate.speed <= stationarySpeedThreshold
+            let previousIsMoving = previous.speed.isFinite
+                && previous.speed > stationarySpeedThreshold
+            let candidateAccuracyIsUsable = candidate.horizontalAccuracy.isFinite
+                && candidate.horizontalAccuracy >= 0
+                && candidate.horizontalAccuracy <= maximumHorizontalAccuracyMeters
+            // REGRESSION GUARD: A usable stopped fix can be the destination even when
+            // it is slightly less accurate, so prefer it over the nearby moving fix.
+            let stoppedCandidateReplacesMovingEvent = candidateIsStopped
+                && previousIsMoving
+                && candidateAccuracyIsUsable
+            if elapsed < improvementWindowSeconds
+                && (isMoreAccurate || isAtLeastAsAccurateAndSlower || stoppedCandidateReplacesMovingEvent) {
                 return .acceptAndReplacePrevious
             }
             return .reject

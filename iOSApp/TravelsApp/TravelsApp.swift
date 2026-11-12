@@ -11,7 +11,7 @@ import TravelsCore
 
 @main
 struct TravelsApp: App {
-    @StateObject private var model = TravelsModel()
+    @StateObject private var model = TravelsModel.shared
 
     var body: some Scene {
         WindowGroup {

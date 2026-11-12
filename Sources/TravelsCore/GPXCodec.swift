@@ -54,14 +54,14 @@ public enum GPXExporter {
         return fractionalFormatter.string(from: date)
     }
 
-    public static func export(events: [EventDetail], title: String = "Travels life tracker log") throws -> String {
+    public static func export(events: [EventDetail], title: String = "Travels privacy-first location history") throws -> String {
         guard !events.isEmpty else { throw TravelsError.emptyExport }
         let bounds = coordinateBounds(for: events)
         let formatter = TravelsDateTools.gpxFormatter()
         let fractionalFormatter = TravelsDateTools.gpxFractionalSecondsFormatter()
         var xml = """
         <?xml version="1.0" encoding="UTF-8"?>
-        <gpx version="1.1" creator="Travels - life tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="\(travelsNamespace)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+        <gpx version="1.1" creator="Travels - privacy-first location tracking" xmlns="http://www.topografix.com/GPX/1/1" xmlns:travels="\(travelsNamespace)" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
           <metadata>
             <name>\(escape(title))</name>
             <time>\(timestampString(for: Date(), formatter: formatter, fractionalFormatter: fractionalFormatter))</time>
@@ -136,6 +136,7 @@ public enum GPXExporter {
         appendTravelsText("localizedDateKey", value: event.localizedDate, to: &xml)
         appendTravelsText("source", value: event.source.displayName, to: &xml)
         appendTravelsText("tripEndpointOverride", value: event.tripEndpointOverride?.gpxValue, to: &xml)
+        appendTravelsText("movementStateOverride", value: event.movementStateOverride?.gpxValue, to: &xml)
 
         if !event.tags.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let tags = tagTokens(from: event.tags)
@@ -341,6 +342,7 @@ private final class GPXTrackPointBuilder {
     private var eventExternalReferenceText: String?
     private var eventPhotoFilenameText: String?
     private var eventTripEndpointOverrideText: String?
+    private var eventMovementStateOverrideText: String?
     private var eventDemoDataText: String?
     private var eventSolarPeriodText: String?
     private var eventSolarPeriodPercentText: String?
@@ -407,7 +409,7 @@ private final class GPXTrackPointBuilder {
             store(text, in: &standardSourceText, namespaced: isNamespaced)
         case "source":
             store(text, in: &eventSourceText, namespaced: isNamespaced)
-        case "heading", "course":
+        case "heading", "headingDegrees", "course":
             store(text, in: &eventHeadingText, namespaced: isNamespaced)
         case "speed":
             store(text, in: &eventSpeedText, namespaced: isNamespaced)
@@ -474,6 +476,8 @@ private final class GPXTrackPointBuilder {
             store(text, in: &eventPhotoFilenameText, namespaced: isNamespaced)
         case "tripEndpointOverride":
             store(text, in: &eventTripEndpointOverrideText, namespaced: isNamespaced)
+        case "movementStateOverride":
+            store(text, in: &eventMovementStateOverrideText, namespaced: isNamespaced)
         case "demoData", "isDemo":
             store(text, in: &eventDemoDataText, namespaced: isNamespaced)
         case "period":
@@ -613,6 +617,7 @@ private final class GPXTrackPointBuilder {
         let eventTags = canonicalTags.isEmpty ? legacyTagsText ?? "" : canonicalTags.joined(separator: "\n")
         let solarPeriod = parseSolarPeriod(eventSolarPeriodText)
         let tripEndpointOverride = parseTripEndpointOverride(eventTripEndpointOverrideText)
+        let movementStateOverride = parseMovementStateOverride(eventMovementStateOverrideText)
         // BUGFIX: imported GPX events must always be recorded as imported, even when the file carries another source label for round-tripping.
         let source = EventSource.imported
         let solarCalculatedAt = parseDate(eventSolarCalculatedAtText, formatter: formatter)
@@ -636,7 +641,8 @@ private final class GPXTrackPointBuilder {
             solarPeriod: solarPeriod,
             solarPeriodPercent: parseDouble(eventSolarPeriodPercentText),
             solarPeriodCalculatedAt: solarCalculatedAt,
-            tripEndpointOverride: tripEndpointOverride
+            tripEndpointOverride: tripEndpointOverride,
+            movementStateOverride: movementStateOverride
         )
 
         return GPXTrackPoint(event: event, geolocation: geolocation(for: event, timeZoneIdentifier: eventTimeZoneIdentifier))
@@ -765,6 +771,20 @@ private final class GPXTrackPointBuilder {
             return .tripEndpoint
         case "0", "false", "no", "n":
             return .notTripEndpoint
+        default:
+            return nil
+        }
+    }
+
+    private func parseMovementStateOverride(_ value: String?) -> MovementStateOverride? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty else {
+            return nil
+        }
+        switch value.lowercased() {
+        case "1", "true", "stopped":
+            return .stopped
+        case "0", "false", "not_stopped", "not stopped", "moving":
+            return .notStopped
         default:
             return nil
         }

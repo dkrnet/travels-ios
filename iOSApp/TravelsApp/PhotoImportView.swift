@@ -18,6 +18,7 @@ struct PhotoImportView: View {
     @State private var drafts: [PhotoImportDraft] = []
     @State private var isLoadingPreviews = false
     @State private var isImporting = false
+    @State private var importMode: PhotoImportMode = .photoAndLocation
     @State private var statusMessage: String?
 
     var body: some View {
@@ -37,6 +38,14 @@ struct PhotoImportView: View {
                         Text("\(drafts.count) photo\(drafts.count == 1 ? "" : "s") selected")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section("Import Mode") {
+                    Picker("Import Mode", selection: $importMode) {
+                        ForEach(PhotoImportMode.allCases, id: \.self) { mode in
+                            Text(mode.displayName).tag(mode)
+                        }
                     }
                 }
 
@@ -182,14 +191,20 @@ struct PhotoImportView: View {
                 guard let assetIdentifier = draft.assetIdentifier, !assetIdentifier.isEmpty else {
                     throw TravelsError.photoImportFailed("Unable to retrieve photo metadata.")
                 }
-                let data = try await draft.item.loadTransferable(type: Data.self)
-                guard let data else {
-                    throw TravelsError.photoImportFailed("Unable to read image data.")
+                let data: Data?
+                if importMode == .photoAndLocation {
+                    data = try await draft.item.loadTransferable(type: Data.self)
+                    guard data != nil else {
+                        throw TravelsError.photoImportFailed("Unable to read image data.")
+                    }
+                } else {
+                    data = nil
                 }
                 let imported = try model.importPhoto(
                     assetIdentifier: assetIdentifier,
                     data: data,
-                    note: draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
+                    note: draft.note.trimmingCharacters(in: .whitespacesAndNewlines),
+                    mode: importMode
                 )
                 importedResults.append(imported)
             } catch {

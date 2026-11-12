@@ -20,7 +20,7 @@ This first pass is intentionally split into a reusable core package and an iOS S
 
 ## iOS App Decisions
 
-- The app assumes an in-place upgrade bundle identifier of `com.adigitalanalog.Travels`, pending verification.
+- The app uses the verified original App Store bundle identifier `com.adigitalanalog.travels` for in-place upgrades of the legacy product identity.
 - On first launch, the app looks for `Documents/travels.sqlite`, backs it up, and imports it before normal browsing.
 - The UI is SwiftUI-first with MapKit integration.
 - Privacy lock uses LocalAuthentication and hides map/list content until unlocked.
@@ -35,6 +35,7 @@ This first pass is intentionally split into a reusable core package and an iOS S
 - Add GPX export UI.
 - Add richer search filters for place hierarchy pickers.
 - Add App Store privacy strings and final permission copy.
+- Add external TestFlight archive validation, privacy manifest, and release checklist.
 - Add developer diagnostics for address-resolution debugging in debug builds.
 
 ## Still Needed
