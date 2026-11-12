@@ -35,6 +35,7 @@ This first pass is intentionally split into a reusable core package and an iOS S
 - Add GPX export UI.
 - Add richer search filters for place hierarchy pickers.
 - Add App Store privacy strings and final permission copy.
+- Add external TestFlight archive validation, privacy manifest, and release checklist.
 - Add developer diagnostics for address-resolution debugging in debug builds.
 
 ## Still Needed

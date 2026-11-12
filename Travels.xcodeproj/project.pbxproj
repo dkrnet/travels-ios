@@ -45,6 +45,7 @@
 		1D2A3B4C5D6E7F8100010065 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */; };
 		1D2A3B4C5D6E7F8100010067 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */; };
 		1D2A3B4C5D6E7F8100010069 /* iOSApp/TravelsApp/LocationCaptureIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001006A /* iOSApp/TravelsApp/LocationCaptureIntent.swift */; };
+		1D2A3B4C5D6E7F810001006B /* iOSApp/TravelsApp/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1D2A3B4C5D6E7F810001006C /* iOSApp/TravelsApp/PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -90,6 +91,8 @@
 		1D2A3B4C5D6E7F8100010066 /* Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/HybridPreciseLocationSamplingRules.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F8100010068 /* Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/TravelsCore/AdaptiveLocationDistanceCalculator.swift; sourceTree = SOURCE_ROOT; };
 		1D2A3B4C5D6E7F810001006A /* iOSApp/TravelsApp/LocationCaptureIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp/TravelsApp/LocationCaptureIntent.swift; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001006C /* iOSApp/TravelsApp/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = iOSApp/TravelsApp/PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
+		1D2A3B4C5D6E7F810001006D /* Config/TestFlightExportOptions.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config/TestFlightExportOptions.plist; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +144,7 @@
 				1D2A3B4C5D6E7F8100010039 /* iOSApp/TravelsApp/DeveloperDiagnosticsView.swift */,
 				1D2A3B4C5D6E7F8100010049 /* iOSApp/TravelsApp/Assets.xcassets */,
 				1D2A3B4C5D6E7F8100010017 /* iOSApp/TravelsApp/Info.plist */,
+				1D2A3B4C5D6E7F810001006C /* iOSApp/TravelsApp/PrivacyInfo.xcprivacy */,
 			);
 			path = iOSApp;
 			sourceTree = SOURCE_ROOT;
@@ -195,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				1D2A3B4C5D6E7F8100010051 /* Config/Signing.xcconfig */,
+				1D2A3B4C5D6E7F810001006D /* Config/TestFlightExportOptions.plist */,
 			);
 			path = Config;
 			sourceTree = SOURCE_ROOT;
@@ -264,6 +269,7 @@
 				1D2A3B4C5D6E7F810001003B /* Fixtures/demo-2018-01-05.gpx in Resources */,
 				1D2A3B4C5D6E7F810001003C /* Fixtures/demo-2018-07-06.gpx in Resources */,
 				1D2A3B4C5D6E7F810001003D /* iOSApp/TravelsApp/Assets.xcassets in Resources */,
+				1D2A3B4C5D6E7F810001006B /* iOSApp/TravelsApp/PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

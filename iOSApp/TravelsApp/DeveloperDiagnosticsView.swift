@@ -83,6 +83,19 @@ struct DeveloperDiagnosticsView: View {
                     }
                 }
 
+                Section("CarPlay Events") {
+                    if model.carPlayDiagnosticLog.isEmpty {
+                        Text("No CarPlay automation events recorded this session.")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(Array(model.carPlayDiagnosticLog.reversed().enumerated()), id: \.offset) { _, entry in
+                            Text(entry)
+                                .font(.footnote.monospaced())
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
+
                 Section("Recent Log") {
                     if model.addressResolutionLog.isEmpty {
                         Text("No diagnostics yet.")

@@ -39,6 +39,44 @@ public enum LocationTrackingState: Equatable, Sendable {
     case maybeStopped(anchor: LocationSample, samples: [LocationSample])
 }
 
+public enum LocationTrackingStateKind: String, Equatable, Sendable {
+    case idleDetection
+    case activeTracking
+    case maybeStopped
+}
+
+public extension LocationTrackingState {
+    var kind: LocationTrackingStateKind {
+        switch self {
+        case .idleDetection:
+            .idleDetection
+        case .activeTracking:
+            .activeTracking
+        case .maybeStopped:
+            .maybeStopped
+        }
+    }
+}
+
+public struct LocationTrackingTransitionRecord: Equatable, Sendable {
+    public let previousState: LocationTrackingStateKind
+    public let currentState: LocationTrackingStateKind
+    public let timestamp: Date
+    public let reason: String
+
+    public init(
+        previousState: LocationTrackingStateKind,
+        currentState: LocationTrackingStateKind,
+        timestamp: Date,
+        reason: String
+    ) {
+        self.previousState = previousState
+        self.currentState = currentState
+        self.timestamp = timestamp
+        self.reason = reason
+    }
+}
+
 public enum LocationTrackingTransition: Equatable, Sendable {
     case none
     case enterActiveTracking

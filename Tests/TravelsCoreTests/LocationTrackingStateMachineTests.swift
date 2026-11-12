@@ -30,6 +30,32 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTAssertFalse(machine.isHighPrecisionTrackingActive)
     }
 
+    func testTrackingStateKindsIgnoreMaybeStoppedAssociatedValues() {
+        let anchor = sample(at: 1)
+
+        XCTAssertEqual(LocationTrackingState.idleDetection.kind, .idleDetection)
+        XCTAssertEqual(LocationTrackingState.activeTracking.kind, .activeTracking)
+        XCTAssertEqual(
+            LocationTrackingState.maybeStopped(anchor: anchor, samples: [anchor]).kind,
+            .maybeStopped
+        )
+    }
+
+    func testTransitionRecordPreservesDiagnosticContext() {
+        let timestamp = Date(timeIntervalSinceReferenceDate: 123)
+        let record = LocationTrackingTransitionRecord(
+            previousState: .idleDetection,
+            currentState: .activeTracking,
+            timestamp: timestamp,
+            reason: "automatic location sample"
+        )
+
+        XCTAssertEqual(record.previousState, .idleDetection)
+        XCTAssertEqual(record.currentState, .activeTracking)
+        XCTAssertEqual(record.timestamp, timestamp)
+        XCTAssertEqual(record.reason, "automatic location sample")
+    }
+
     func testAlwaysOnPolicyDefaultsToActiveTracking() {
         let machine = LocationTrackingStateMachine(policy: .alwaysOnHighPrecision)
         XCTAssertEqual(machine.state, .activeTracking)

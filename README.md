@@ -19,7 +19,8 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Always-visible lower-right map scale marker
 - Date navigation with previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
-- Concisely named, silent, background-capable Shortcuts actions (`Add`, `Add Forced`, `Stopped`, `Stopped Forced`, `Non-Duplicate`, and `Stopped Non-Duplicate`) plus actions that persistently turn Automatic Location Tracking on or off. A stopped non-duplicate capture can mark the nearby previous event stopped when it is less than five minutes old instead of inserting a duplicate; stopped actions preserve measured speed, and trigger availability and background execution remain subject to iOS
+- A silent, background-capable `Add` Shortcuts action with `Forced`, `Stopped`, and `Non-Duplicate` parameters, plus actions that persistently turn Automatic Location Tracking on or off. A stopped non-duplicate capture can mark the nearby previous event stopped when it is less than five minutes old instead of inserting a duplicate; stopped captures preserve measured speed, and trigger availability and background execution remain subject to iOS
+- Developer builds include a silent parameterized `Log CarPlay Event` Shortcuts action that records Connect/Disconnect automation events, timestamps, current tracking state, and the latest tracking-state transition in the maintenance log without changing tracking behavior; TestFlight and App Store builds omit this temporary diagnostic action
 - A full-width date/count banner on the map and list screens with a trailing `Precise Location` indicator while high-precision tracking is running
 - Background-location option with adaptive Location Detail presets for High Detail, Balanced, Battery Saver, and Road Trip point density
 - Automatic Precise Location Mode makes its first active callback immediately available with temporarily unfiltered continuous delivery, uses a bounded background handoff that retains significant-change monitoring until a later callback confirms active delivery, retains background activity only for the active precise interval when Background Location is enabled, can enter active mode from fresh materially distant idle samples even when Core Location speed is unavailable, keeps precise tracking alive through the first hybrid watchdog recheck or a short minimum active interval, periodically rechecks Core Location with a bounded unfiltered continuous callback when movement quiets down, and recovers from prolonged active-stream silence with one stream restart whose stationary recovery sample confirms the existing stop episode before bounded final precise exit; normal active delivery filtering resumes after each requested callback or timeout, the background activity session ends immediately on return to low-power idle monitoring, and a short post-exit guard prevents queued or ambiguous samples from bouncing the app straight back into precise mode unless movement is clearly resumed. Always On keeps precise tracking active while automatic tracking is enabled, Always Off avoids automatic precise escalation while preserving manual current-location capture, and battery/low-power changes re-evaluate the active configuration without overriding the selected mode
@@ -136,6 +137,31 @@ The script never truncates the maintenance log if the app-support copy,
 database integrity check, or regular-file preflight for the exact on-device
 `Maintenance.log` path fails.
 
+### External TestFlight preparation
+
+Travels includes an App Store Connect export configuration, a bundled privacy
+manifest, and a release archive validator. Choose a numeric build number that
+has not previously been uploaded, then create a Release archive with:
+
+```bash
+scripts/archive_testflight.sh --build-number BUILD_NUMBER
+```
+
+The archive script automatically uses a valid full Xcode installation when the
+system-wide `xcode-select` setting points at Command Line Tools.
+
+Add `--export` to also create an App Store Connect IPA for Transporter. The
+script validates the shipping bundle identifier, marketing version, build
+number, encryption declaration, privacy manifest, and that every App Store
+icon is opaque. It intentionally does not upload anything. Follow
+`docs/testflight-release-checklist.md` for the manual App Store Connect
+metadata, TestFlight App Review, external group, and real-device validation
+steps.
+
+The public privacy policy is maintained in `PRIVACY.md`. App Store Connect's
+privacy answers and policy URL must be reviewed whenever Travels' data handling
+or third-party dependencies change.
+
 Real-device validation is required before release for background location, Always Location permission flow, photo metadata import, LocalAuthentication, and adaptive Location Detail behavior.
 
 ## Data storage
@@ -172,6 +198,8 @@ On first launch, the app checks for a legacy `Documents/travels.sqlite` database
 Your location history. On your device.
 
 Travels is a privacy-first location history app. It is local-first and does not require an account or include advertising, analytics, cloud tracking, or tracking SDKs. The database, notes, imported photo references, and photo attachments stay in app-controlled local storage unless the user explicitly exports or shares them.
+
+The full public policy is in [`PRIVACY.md`](PRIVACY.md).
 
 Address lookup is optional and sends coordinates to Apple only when enabled. Before queueing an Apple lookup, Travels conservatively reuses meaningful local place data that already covers the event coordinate. Address resolution is off by default and must be enabled by the user. Photo import can create an event from a photo's date and location metadata either with or without copying the photo into Travels storage. GPX exports and database backups can contain precise location history and should be handled as sensitive files.
 

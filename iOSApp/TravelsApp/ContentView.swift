@@ -518,7 +518,7 @@ struct AboutView: View {
                     GroupBox {
                         VStack(alignment: .leading, spacing: 12) {
                             contactRow(label: "Support:", title: "adigitalanalog@proton.me", url: URL(string: "mailto:adigitalanalog@proton.me"))
-                            contactRow(label: "Help:", title: "adigitalanalog.com/help", url: URL(string: "https://www.adigitalanalog.com/help"))
+                            contactRow(label: "Help:", title: "github.com/dkrnet/travels-ios", url: URL(string: "https://github.com/dkrnet/travels-ios"))
                         }
                         .font(.caption)
                     }

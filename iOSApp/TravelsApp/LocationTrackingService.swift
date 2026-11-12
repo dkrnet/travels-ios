@@ -143,6 +143,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var store: TravelsStore?
     private var settings = AppSettings()
     private var trackingStateMachine = LocationTrackingStateMachine()
+    private var mostRecentTrackingStateTransition: LocationTrackingTransitionRecord?
     private var latestAcceptedEvent: LocationEvent?
     private var isConfigured = false
     private var hasConfiguredStore = false
@@ -204,6 +205,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     var onStatusMessage: ((String) -> Void)?
     var onTraceMessage: ((String) -> Void)?
+    var onCarPlayDiagnosticMessage: ((String) -> Void)?
     var onTrackedEvent: (() -> Void)?
     var onManualTrackedEvent: ((Int64, Date) -> Void)?
     var onAuthorizationStateChanged: ((String?) -> Void)?
@@ -270,6 +272,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         self.latestAcceptedEvent = latestEvent
         let policy = settings.preciseLocationMode.locationTrackingPolicy
         self.trackingStateMachine = LocationTrackingStateMachine(policy: policy)
+        self.mostRecentTrackingStateTransition = nil
         self.hybridTrackingWatchdog.update(policy: policy)
         self.adaptiveDistanceCalculator = AdaptiveLocationDistanceCalculator(mode: settings.locationDetailMode)
         self.powerState = currentPowerState()
@@ -319,7 +322,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let previousBackgroundLocationEnabled = self.settings.backgroundLocationEnabled
         self.settings = settings
         let policy = settings.preciseLocationMode.locationTrackingPolicy
+        let previousTrackingState = trackingStateMachine.state
         _ = trackingStateMachine.update(policy: policy)
+        recordTrackingStateTransition(
+            from: previousTrackingState,
+            reason: "Precise Location Mode policy changed"
+        )
         hybridTrackingWatchdog.update(policy: policy)
         if previousPreciseLocationMode != settings.preciseLocationMode {
             cancelActiveTrackingHandoff(reason: "Precise Location Mode changed", stopSignificantChangeMonitoring: managerMode == .activeTracking)
@@ -366,6 +374,21 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         adaptiveDistanceCalculator = AdaptiveLocationDistanceCalculator(mode: settings.locationDetailMode)
         onAdaptiveDistanceChanged?(currentAdaptiveDistanceMeters)
         stopTrackingManager()
+    }
+
+    func recordCarPlayConnectionEvent(_ eventType: String, at timestamp: Date = Date()) {
+        let transitionDescription: String
+        if let transition = mostRecentTrackingStateTransition {
+            transitionDescription = "\(transition.previousState.rawValue)->\(transition.currentState.rawValue) at \(Self.iso8601Formatter.string(from: transition.timestamp)) reason=\"\(transition.reason)\""
+        } else {
+            transitionDescription = "none recorded since tracking service startup"
+        }
+
+        // REGRESSION GUARD: This diagnostic intent must remain observational. CarPlay
+        // events must not request a location or alter tracking/trip lifecycle state.
+        onCarPlayDiagnosticMessage?(
+            "[CarPlay] event=\(eventType) timestamp=\(Self.iso8601Formatter.string(from: timestamp)) currentTripState=\(trackingStateMachine.state.kind.rawValue) mostRecentTripStateTransition=\(transitionDescription)"
+        )
     }
 
     func requestCurrentLocation(forceStopped: Bool = false) {
@@ -1615,8 +1638,13 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                            : "Hybrid final precise exit completed; returning to idle detection mode.")
         // REGRESSION GUARD: timeout-based final exit must update the logical state as well as the
         // CLLocationManager mode, or a later synchronization can incorrectly restore precise mode.
+        let previousTrackingState = trackingStateMachine.state
         _ = trackingStateMachine.confirmSustainedStationaryPeriod(
             referenceSample: finalExitReference
+        )
+        recordTrackingStateTransition(
+            from: previousTrackingState,
+            reason: exitReason
         )
         applyIdleDetectionModeBypassingGuard(
             callSite: "completeFinalPreciseExit",
@@ -1987,6 +2015,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 idleFallbackReference = nil
             }
             _ = trackingStateMachine.record(sample: sample, idleFallbackReference: idleFallbackReference)
+            recordTrackingStateTransition(
+                from: previousTrackingState,
+                reason: "automatic location sample"
+            )
             if let trackingStateMessage = trackingStateMessage(
                 previous: previousTrackingState,
                 current: trackingStateMachine.state
@@ -2009,7 +2041,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 resetActiveTrackingSilenceFallback(reason: "active-silence recovery sample proved movement resumed")
             case .confirmsStop(let reason):
                 traceLocationEvent("Active-silence recovery sample confirms the sustained stop (\(reason)); starting bounded final precise exit.")
+                let stateBeforeConfirmation = trackingStateMachine.state
                 _ = trackingStateMachine.confirmSustainedStationaryPeriod(referenceSample: sample)
+                recordTrackingStateTransition(
+                    from: stateBeforeConfirmation,
+                    reason: "active-silence recovery confirmed stationary movement"
+                )
             case .rejects(let reason):
                 traceLocationEvent("Active-silence recovery sample was inconclusive (\(reason)); preserving the one-time restart latch for bounded final exit.")
             }
@@ -2289,14 +2326,23 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func trackingStateLabel(_ state: LocationTrackingState? = nil) -> String {
-        switch state ?? trackingStateMachine.state {
-        case .idleDetection:
-            return "idleDetection"
-        case .activeTracking:
-            return "activeTracking"
-        case .maybeStopped:
-            return "maybeStopped"
-        }
+        (state ?? trackingStateMachine.state).kind.rawValue
+    }
+
+    private func recordTrackingStateTransition(
+        from previousState: LocationTrackingState,
+        reason: String,
+        at timestamp: Date = Date()
+    ) {
+        let previousKind = previousState.kind
+        let currentKind = trackingStateMachine.state.kind
+        guard previousKind != currentKind else { return }
+        mostRecentTrackingStateTransition = LocationTrackingTransitionRecord(
+            previousState: previousKind,
+            currentState: currentKind,
+            timestamp: timestamp,
+            reason: reason
+        )
     }
 
     private func trackingModeLabel() -> String {
@@ -2618,6 +2664,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         formatter.timeStyle = .medium
         return formatter
     }()
+
+    private static let iso8601Formatter = ISO8601DateFormatter()
 
     private func save(event: LocationEvent, replacingEventID: Int64? = nil) async throws -> Int64 {
         guard let store else {

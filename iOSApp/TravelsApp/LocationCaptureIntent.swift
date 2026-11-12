@@ -5,83 +5,67 @@
 // REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 import AppIntents
 
-struct CaptureCurrentLocationIntent: AppIntent, LongRunningIntent {
+#if DEBUG
+enum CarPlayDiagnosticEventType: String, AppEnum {
+    case connected
+    case disconnected
+
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "CarPlay Event")
+    static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
+        .connected: "Connected",
+        .disconnected: "Disconnected"
+    ]
+}
+
+struct LogCarPlayEventIntent: AppIntent {
+    static let title: LocalizedStringResource = "Log CarPlay Event"
+    static let description = IntentDescription(
+        "Records a CarPlay connect or disconnect event with Travels' current tracking state for diagnostics."
+    )
+    static let openAppWhenRun = false
+
+    @Parameter(title: "Event Type")
+    var eventType: CarPlayDiagnosticEventType
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Log CarPlay \(\.$eventType)")
+    }
+
+    func perform() async throws -> some IntentResult {
+        await TravelsModel.shared.recordCarPlayConnectionEventFromShortcut(eventType.rawValue)
+        return .result()
+    }
+}
+#endif
+
+struct AddLocationIntent: AppIntent, LongRunningIntent {
     static let title: LocalizedStringResource = "Add"
     static let description = IntentDescription(
-        "Requests one location and processes it through Travels' normal automatic filtering and storage rules."
+        "Requests one location with optional forced, stopped, and non-duplicate behavior."
     )
     static let openAppWhenRun = false
 
-    func perform() async throws -> some IntentResult {
-        // REGRESSION GUARD: Automation-triggered captures must remain silent so they never require user interaction.
-        _ = await TravelsModel.shared.captureCurrentLocationFromShortcut()
-        return .result()
+    @Parameter(title: "Forced", default: false)
+    var forced: Bool
+
+    @Parameter(title: "Stopped", default: false)
+    var stopped: Bool
+
+    @Parameter(title: "Non-Duplicate", default: false)
+    var nonDuplicate: Bool
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Add location (Forced: \(\.$forced), Stopped: \(\.$stopped), Non-Duplicate: \(\.$nonDuplicate))")
     }
-}
-
-struct ForceAddCurrentLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Add Forced"
-    static let description = IntentDescription(
-        "Requests one location and saves it through Travels' manual Add path, bypassing normal location filtering."
-    )
-    static let openAppWhenRun = false
 
     func perform() async throws -> some IntentResult {
-        // REGRESSION GUARD: Automation-triggered captures must remain silent so they never require user interaction.
-        _ = await TravelsModel.shared.forceAddCurrentLocationFromShortcut()
-        return .result()
-    }
-}
-
-struct CaptureStoppedLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Stopped"
-    static let description = IntentDescription(
-        "Requests one normally filtered location and marks it as stopped if Travels accepts it."
-    )
-    static let openAppWhenRun = false
-
-    func perform() async throws -> some IntentResult {
-        // REGRESSION GUARD: This action remains silent and must not bypass normal filtering.
-        _ = await TravelsModel.shared.captureStoppedLocationFromShortcut()
-        return .result()
-    }
-}
-
-struct CaptureNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Non-Duplicate"
-    static let description = IntentDescription(
-        "Force adds the current location only when it is more than 20 meters from the previous event."
-    )
-    static let openAppWhenRun = false
-
-    func perform() async throws -> some IntentResult {
-        _ = await TravelsModel.shared.captureNonDuplicateLocationFromShortcut()
-        return .result()
-    }
-}
-
-struct CaptureStoppedNonDuplicateLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Stopped Non-Duplicate"
-    static let description = IntentDescription(
-        "Force adds the current location when it is more than 20 meters from the previous event and marks an accepted event as stopped."
-    )
-    static let openAppWhenRun = false
-
-    func perform() async throws -> some IntentResult {
-        _ = await TravelsModel.shared.captureNonDuplicateLocationFromShortcut(stopped: true)
-        return .result()
-    }
-}
-
-struct ForceAddStoppedLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Stopped Forced"
-    static let description = IntentDescription(
-        "Force adds the current location and marks it as stopped without changing its measured speed."
-    )
-    static let openAppWhenRun = false
-
-    func perform() async throws -> some IntentResult {
-        _ = await TravelsModel.shared.forceAddStoppedLocationFromShortcut()
+        // REGRESSION GUARD: Automation-triggered captures must remain silent. Non-Duplicate
+        // deliberately takes precedence over Forced so nearby locations are never inserted.
+        _ = await TravelsModel.shared.captureLocationFromShortcut(
+            forced: forced,
+            stopped: stopped,
+            nonDuplicate: nonDuplicate
+        )
         return .result()
     }
 }
@@ -110,59 +94,24 @@ struct EnableAutomaticLocationTrackingIntent: AppIntent {
 
 struct TravelsAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
+#if DEBUG
         AppShortcut(
-            intent: CaptureCurrentLocationIntent(),
+            intent: LogCarPlayEventIntent(),
             phrases: [
-                "Capture my current location in \(.applicationName)",
+                "Log a CarPlay event in \(.applicationName)"
+            ],
+            shortTitle: "Log CarPlay Event",
+            systemImageName: "car.side"
+        )
+#endif
+        AppShortcut(
+            intent: AddLocationIntent(),
+            phrases: [
+                "Add my current location in \(.applicationName)",
                 "Save my current location in \(.applicationName)"
             ],
             shortTitle: "Add",
             systemImageName: "location.fill"
-        )
-        AppShortcut(
-            intent: ForceAddCurrentLocationIntent(),
-            phrases: [
-                "Force add my current location in \(.applicationName)",
-                "Force save my current location in \(.applicationName)"
-            ],
-            shortTitle: "Add Forced",
-            systemImageName: "location.fill.viewfinder"
-        )
-        AppShortcut(
-            intent: CaptureStoppedLocationIntent(),
-            phrases: [
-                "Capture my stopped location in \(.applicationName)",
-                "Save my stopped location in \(.applicationName)"
-            ],
-            shortTitle: "Stopped",
-            systemImageName: "mappin.and.ellipse"
-        )
-        AppShortcut(
-            intent: ForceAddStoppedLocationIntent(),
-            phrases: [
-                "Force add a stopped location in \(.applicationName)",
-                "Force save a stopped location in \(.applicationName)"
-            ],
-            shortTitle: "Stopped Forced",
-            systemImageName: "mappin.and.ellipse.circle.fill"
-        )
-        AppShortcut(
-            intent: CaptureNonDuplicateLocationIntent(),
-            phrases: [
-                "Capture a non duplicate location in \(.applicationName)",
-                "Save a non duplicate location in \(.applicationName)"
-            ],
-            shortTitle: "Non-Duplicate",
-            systemImageName: "location.circle"
-        )
-        AppShortcut(
-            intent: CaptureStoppedNonDuplicateLocationIntent(),
-            phrases: [
-                "Capture a stopped non duplicate location in \(.applicationName)",
-                "Save a stopped non duplicate location in \(.applicationName)"
-            ],
-            shortTitle: "Stopped Non-Duplicate",
-            systemImageName: "mappin.circle"
         )
         AppShortcut(
             intent: DisableAutomaticLocationTrackingIntent(),

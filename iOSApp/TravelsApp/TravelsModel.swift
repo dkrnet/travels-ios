@@ -32,6 +32,7 @@ final class TravelsModel: ObservableObject {
     @Published var searchResults: [EventDetail] = []
     @Published var lastSearchCriteria = SearchCriteria()
     @Published var addressResolutionLog: [String] = []
+    @Published private(set) var carPlayDiagnosticLog: [String] = []
     @Published var addressResolutionStatus = "Idle"
     @Published var addressResolutionPendingCount = 0
     @Published var addressResolutionLastRunAt: Date?
@@ -96,6 +97,9 @@ final class TravelsModel: ObservableObject {
             locationService.onTraceMessage = { [weak self] message in
                 guard let self else { return }
                 self.appendAddressResolutionLog("[Location] \(message)")
+            }
+            locationService.onCarPlayDiagnosticMessage = { [weak self] message in
+                self?.appendDiagnosticsLog(message)
             }
             locationService.onAuthorizationStateChanged = { [weak self] message in
                 guard let self else { return }
@@ -180,34 +184,16 @@ final class TravelsModel: ObservableObject {
         }
     }
 
-    func captureCurrentLocationFromShortcut() async -> ShortcutLocationCaptureResult {
-        await bootstrap()
-        return await locationService.requestShortcutAutomationLocation()
-    }
-
-    func captureStoppedLocationFromShortcut() async -> ShortcutLocationCaptureResult {
-        await bootstrap()
-        return await locationService.requestShortcutAutomationLocation(movementStateOverride: .stopped)
-    }
-
-    func captureNonDuplicateLocationFromShortcut(stopped: Bool = false) async -> ShortcutLocationCaptureResult {
+    func captureLocationFromShortcut(
+        forced: Bool,
+        stopped: Bool,
+        nonDuplicate: Bool
+    ) async -> ShortcutLocationCaptureResult {
         await bootstrap()
         return await locationService.requestShortcutAutomationLocation(
+            force: forced && !nonDuplicate,
             movementStateOverride: stopped ? .stopped : nil,
-            nonDuplicateRadiusMeters: Self.shortcutNonDuplicateRadiusMeters
-        )
-    }
-
-    func forceAddCurrentLocationFromShortcut() async -> ShortcutLocationCaptureResult {
-        await bootstrap()
-        return await locationService.requestShortcutAutomationLocation(force: true)
-    }
-
-    func forceAddStoppedLocationFromShortcut() async -> ShortcutLocationCaptureResult {
-        await bootstrap()
-        return await locationService.requestShortcutAutomationLocation(
-            force: true,
-            movementStateOverride: .stopped
+            nonDuplicateRadiusMeters: nonDuplicate ? Self.shortcutNonDuplicateRadiusMeters : nil
         )
     }
 
@@ -215,6 +201,11 @@ final class TravelsModel: ObservableObject {
         await bootstrap()
         settings.autoAddLocations = enabled
         saveSettings()
+    }
+
+    func recordCarPlayConnectionEventFromShortcut(_ eventType: String) async {
+        await bootstrap()
+        locationService.recordCarPlayConnectionEvent(eventType)
     }
 
     func reloadEvents(recenterSelectedTrips: Bool = false) throws {
@@ -1348,6 +1339,12 @@ final class TravelsModel: ObservableObject {
         if addressResolutionLog.count > 100 {
             addressResolutionLog.removeFirst(addressResolutionLog.count - 100)
         }
+        if message.hasPrefix("[CarPlay] ") {
+            carPlayDiagnosticLog.append(displayEntry)
+            if carPlayDiagnosticLog.count > 100 {
+                carPlayDiagnosticLog.removeFirst(carPlayDiagnosticLog.count - 100)
+            }
+        }
         appendMaintenanceLogEntry(detailedEntry)
     }
 
@@ -1356,6 +1353,9 @@ final class TravelsModel: ObservableObject {
     }
 
     private func diagnosticsDisplaySummary(for message: String) -> String {
+        if message.hasPrefix("[CarPlay] ") {
+            return message.removingPrefix("[CarPlay] ")
+        }
         let rawMessage = message.removingPrefix("[Location] ")
         let lowercasedMessage = rawMessage.lowercased()
 
