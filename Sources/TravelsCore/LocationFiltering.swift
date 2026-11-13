@@ -30,6 +30,7 @@ public enum LocationFilterDecision: Equatable, Sendable {
 }
 
 public enum LocationFiltering {
+    public static let stoppedNonDuplicateRadiusMeters = 20.0
     public static let recentStoppedDuplicateWindowSeconds: TimeInterval = 5 * 60
 
     public static func shouldForceNonDuplicateCapture(
@@ -58,6 +59,33 @@ public enum LocationFiltering {
         guard let previous else { return false }
         let elapsed = candidate.timestamp.timeIntervalSince(previous.timestamp)
         guard elapsed >= 0, elapsed < max(0, recencyWindowSeconds) else { return false }
+        return !shouldForceNonDuplicateCapture(
+            candidate: candidate,
+            previous: previous,
+            duplicateRadiusMeters: duplicateRadiusMeters
+        )
+    }
+
+    public static func shouldMarkPreviousEventStoppedForConfirmedAutomaticStop(
+        candidate: LocationSample,
+        previous: LocationEvent?,
+        duplicateRadiusMeters: Double,
+        stationaryAnchorTimestamp: Date,
+        associationWindowSeconds: TimeInterval = recentStoppedDuplicateWindowSeconds
+    ) -> Bool {
+        guard let previous else { return false }
+        guard candidate.timestamp >= stationaryAnchorTimestamp,
+              previous.timestamp <= candidate.timestamp
+        else {
+            return false
+        }
+        // REGRESSION GUARD: automatic stop confirmation intentionally takes about five minutes.
+        // Associate the arrival event with the start of that stationary episode so the detection
+        // delay itself does not make the event too old to receive the stopped override.
+        let earliestAssociatedTimestamp = stationaryAnchorTimestamp.addingTimeInterval(
+            -max(0, associationWindowSeconds)
+        )
+        guard previous.timestamp >= earliestAssociatedTimestamp else { return false }
         return !shouldForceNonDuplicateCapture(
             candidate: candidate,
             previous: previous,

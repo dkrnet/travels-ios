@@ -184,6 +184,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var ignoreAutomaticLocationUpdatesUntil: Date?
     private var postExitPreciseGuard: PostExitPreciseGuard?
     private var pendingFinalPreciseExitSample: LocationSample?
+    private var pendingAutomaticStopAnchorTimestamp: Date?
     private var lastNotifiedTrackingModeIsActive: Bool?
     private var lastCoreLocationDeliveryAt: Date?
     private var activePreciseModeEntryAppState: UIApplication.State?
@@ -324,6 +325,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let policy = settings.preciseLocationMode.locationTrackingPolicy
         let previousTrackingState = trackingStateMachine.state
         _ = trackingStateMachine.update(policy: policy)
+        rememberAutomaticStopAnchorIfNeeded(from: previousTrackingState)
         recordTrackingStateTransition(
             from: previousTrackingState,
             reason: "Precise Location Mode policy changed"
@@ -1531,6 +1533,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         traceLocationEvent(
             "Active tracking silence fallback starting final precise exit; watchdog #\(watchdogID) silence=\(formatDuration(silence)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests) lastCoreLocationDelivery=\(lastCoreLocationDeliveryDescription()); cached location will not be used as stop or movement evidence; \(hybridWatchdogContext())."
         )
+        pendingAutomaticStopAnchorTimestamp = activeSilenceRecoveryStartedAt ?? latestDeliveryAt
         beginFinalPreciseExit(
             reason: "active tracking silence fallback after stale watchdog requests",
             evaluateCachedLocationFirst: false
@@ -1600,6 +1603,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         guard isCompletingHybridPreciseExit || finalPreciseExitTask != nil else { return }
         isCompletingHybridPreciseExit = false
         pendingFinalPreciseExitSample = nil
+        pendingAutomaticStopAnchorTimestamp = nil
         finalPreciseExitTask?.cancel()
         finalPreciseExitTask = nil
         if !keepActiveTracking {
@@ -1633,6 +1637,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             reason: afterTimeout ? "final precise exit timed out" : "final precise exit completed"
         )
         pendingFinalPreciseExitSample = nil
+        pendingAutomaticStopAnchorTimestamp = nil
         traceLocationEvent(afterTimeout
                            ? "Hybrid final precise exit timed out; returning to idle detection mode."
                            : "Hybrid final precise exit completed; returning to idle detection mode.")
@@ -2015,6 +2020,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 idleFallbackReference = nil
             }
             _ = trackingStateMachine.record(sample: sample, idleFallbackReference: idleFallbackReference)
+            rememberAutomaticStopAnchorIfNeeded(from: previousTrackingState)
             recordTrackingStateTransition(
                 from: previousTrackingState,
                 reason: "automatic location sample"
@@ -2042,6 +2048,8 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             case .confirmsStop(let reason):
                 traceLocationEvent("Active-silence recovery sample confirms the sustained stop (\(reason)); starting bounded final precise exit.")
                 let stateBeforeConfirmation = trackingStateMachine.state
+                pendingAutomaticStopAnchorTimestamp = activeSilenceRecoveryStartedAt
+                    ?? sample.timestamp.addingTimeInterval(-trackingStateMachine.thresholds.stationaryDuration)
                 _ = trackingStateMachine.confirmSustainedStationaryPeriod(referenceSample: sample)
                 recordTrackingStateTransition(
                     from: stateBeforeConfirmation,
@@ -2052,7 +2060,18 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             }
         }
 
-        let shouldForceNonDuplicateCapture = context.shortcutNonDuplicateRadiusMeters.map { radius in
+        // REGRESSION GUARD: the final sample for a confirmed automatic stop must use the same
+        // stopped/non-duplicate persistence rules as the Shortcuts action without becoming a
+        // manual or Shortcut capture. This preserves the bounded precise-exit behavior.
+        let isAutomaticStoppedNonDuplicateCapture = wasCompletingFinalPreciseExit
+            && !finalPreciseExitResumedMovement
+        let requestedMovementStateOverride: MovementStateOverride? = isAutomaticStoppedNonDuplicateCapture
+            ? .stopped
+            : context.shortcutMovementStateOverride
+        let nonDuplicateRadiusMeters: Double? = isAutomaticStoppedNonDuplicateCapture
+            ? LocationFiltering.stoppedNonDuplicateRadiusMeters
+            : context.shortcutNonDuplicateRadiusMeters
+        let shouldForceNonDuplicateCapture = nonDuplicateRadiusMeters.map { radius in
             LocationFiltering.shouldForceNonDuplicateCapture(
                 candidate: sample,
                 previous: latestAcceptedEvent,
@@ -2061,11 +2080,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         }
         let forceCapture = wasManualCapture || shouldForceNonDuplicateCapture == true
         let decision: LocationFilterDecision
-        if context.shortcutNonDuplicateRadiusMeters != nil, shouldForceNonDuplicateCapture == false {
-            // REGRESSION GUARD: non-duplicate shortcuts must not fall through to normal
+        if nonDuplicateRadiusMeters != nil, shouldForceNonDuplicateCapture == false {
+            // REGRESSION GUARD: non-duplicate captures must not fall through to normal
             // accuracy-improvement replacement while the prior event is within 20 meters.
             decision = .reject
-            traceLocationEvent("Non-duplicate shortcut rejected the sample because the previous event is within \(formatDistance(context.shortcutNonDuplicateRadiusMeters ?? 0)).")
+            let captureKind = isAutomaticStoppedNonDuplicateCapture ? "Automatic stopped capture" : "Non-duplicate shortcut"
+            traceLocationEvent("\(captureKind) rejected the sample because the previous event is within \(formatDistance(nonDuplicateRadiusMeters ?? 0)).")
         } else {
             decision = LocationFiltering.decision(
                 candidate: sample,
@@ -2082,30 +2102,48 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
         guard decision != .reject else {
             var completedShortcutByUpdatingRecentDuplicate = false
-            if wasShortcutAutomationCapture,
-               context.shortcutMovementStateOverride == .stopped,
-               let duplicateRadiusMeters = context.shortcutNonDuplicateRadiusMeters,
+            if requestedMovementStateOverride == .stopped,
+               let duplicateRadiusMeters = nonDuplicateRadiusMeters,
                let previous = latestAcceptedEvent,
-               let previousEventID = previous.id,
-               LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
-                   candidate: sample,
-                   previous: previous,
-                   duplicateRadiusMeters: duplicateRadiusMeters
-               ) {
-                do {
-                    try await updateExistingEventMovementOverride(
-                        eventID: previousEventID,
-                        movementStateOverride: .stopped
+               let previousEventID = previous.id {
+                let shouldReusePreviousEvent: Bool
+                if isAutomaticStoppedNonDuplicateCapture,
+                   let stationaryAnchorTimestamp = pendingAutomaticStopAnchorTimestamp {
+                    shouldReusePreviousEvent = LocationFiltering.shouldMarkPreviousEventStoppedForConfirmedAutomaticStop(
+                        candidate: sample,
+                        previous: previous,
+                        duplicateRadiusMeters: duplicateRadiusMeters,
+                        stationaryAnchorTimestamp: stationaryAnchorTimestamp
                     )
-                    completedShortcutByUpdatingRecentDuplicate = true
-                    let age = sample.timestamp.timeIntervalSince(previous.timestamp)
-                    traceLocationEvent("Stopped non-duplicate shortcut reused recent event #\(previousEventID); candidate was within \(formatDistance(duplicateRadiusMeters)) and event age was \(formatDuration(age)); movement override set to stopped without inserting a new event.")
-                    completeShortcutAutomationCapture(with: .saved(eventID: previousEventID))
-                } catch {
-                    completedShortcutByUpdatingRecentDuplicate = true
-                    traceLocationEvent("Stopped non-duplicate shortcut could not update recent event #\(previousEventID): \(error.localizedDescription)")
-                    onStatusMessage?(error.localizedDescription)
-                    completeShortcutAutomationCapture(with: .failed)
+                } else {
+                    shouldReusePreviousEvent = LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                        candidate: sample,
+                        previous: previous,
+                        duplicateRadiusMeters: duplicateRadiusMeters
+                    )
+                }
+                if shouldReusePreviousEvent {
+                    do {
+                        try await updateExistingEventMovementOverride(
+                            eventID: previousEventID,
+                            movementStateOverride: .stopped
+                        )
+                        completedShortcutByUpdatingRecentDuplicate = wasShortcutAutomationCapture
+                        let age = sample.timestamp.timeIntervalSince(previous.timestamp)
+                        let captureKind = isAutomaticStoppedNonDuplicateCapture ? "Confirmed automatic stop" : "Stopped non-duplicate shortcut"
+                        traceLocationEvent("\(captureKind) reused event #\(previousEventID); candidate was within \(formatDistance(duplicateRadiusMeters)) and event age was \(formatDuration(age)); movement override set to stopped without inserting a new event.")
+                        if wasShortcutAutomationCapture {
+                            completeShortcutAutomationCapture(with: .saved(eventID: previousEventID))
+                        }
+                    } catch {
+                        completedShortcutByUpdatingRecentDuplicate = wasShortcutAutomationCapture
+                        let captureKind = isAutomaticStoppedNonDuplicateCapture ? "Confirmed automatic stop" : "Stopped non-duplicate shortcut"
+                        traceLocationEvent("\(captureKind) could not update event #\(previousEventID): \(error.localizedDescription)")
+                        onStatusMessage?(error.localizedDescription)
+                        if wasShortcutAutomationCapture {
+                            completeShortcutAutomationCapture(with: .failed)
+                        }
+                    }
                 }
             }
             if wasShortcutAutomationCapture && !completedShortcutByUpdatingRecentDuplicate {
@@ -2132,9 +2170,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         }
 
         var event = LocationFiltering.event(from: sample, source: .locationServices)
-        // REGRESSION GUARD: the stopped shortcut must use normal filtering and preserve
-        // measured speed; only an accepted event receives the movement override.
-        event.movementStateOverride = context.shortcutMovementStateOverride
+        // REGRESSION GUARD: stopped captures preserve measured speed; the stopped value is
+        // a movement override applied only to an accepted or intentionally reused event.
+        event.movementStateOverride = requestedMovementStateOverride
         if decision == .acceptAndReplacePrevious {
             event.geolocationID = latestAcceptedEvent?.geolocationID
             // REGRESSION GUARD: an automatic accuracy replacement must not erase a
@@ -2342,6 +2380,19 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             currentState: currentKind,
             timestamp: timestamp,
             reason: reason
+        )
+    }
+
+    private func rememberAutomaticStopAnchorIfNeeded(from previousState: LocationTrackingState) {
+        guard trackingStateMachine.policy == .hybridAutomatic,
+              case .idleDetection = trackingStateMachine.state,
+              case .maybeStopped(let anchor, _) = previousState
+        else {
+            return
+        }
+        pendingAutomaticStopAnchorTimestamp = anchor.timestamp
+        traceLocationEvent(
+            "Confirmed automatic stop retained stationary anchor at \(Self.traceDateFormatter.string(from: anchor.timestamp)) for final stopped non-duplicate capture."
         )
     }
 

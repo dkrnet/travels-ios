@@ -16,7 +16,6 @@ import TravelsCore
 @MainActor
 final class TravelsModel: ObservableObject {
     static let shared = TravelsModel()
-    private static let shortcutNonDuplicateRadiusMeters = 20.0
 
     @Published var selectedDate = Calendar.current.startOfDay(for: Date())
     @Published var events: [EventDetail] = []
@@ -192,7 +191,7 @@ final class TravelsModel: ObservableObject {
         let options = ShortcutLocationCaptureOptions(
             mode: mode,
             movement: movement,
-            nonDuplicateRadiusMeters: Self.shortcutNonDuplicateRadiusMeters
+            nonDuplicateRadiusMeters: LocationFiltering.stoppedNonDuplicateRadiusMeters
         )
         return await locationService.requestShortcutAutomationLocation(
             force: options.force,
