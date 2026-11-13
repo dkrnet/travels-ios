@@ -55,7 +55,7 @@ public enum MovementStateOverride: Int, Codable, CaseIterable, Sendable {
     public var displayName: String {
         switch self {
         case .notStopped:
-            return "Not stopped"
+            return "Moving"
         case .stopped:
             return "Stopped"
         }
@@ -68,6 +68,58 @@ public enum MovementStateOverride: Int, Codable, CaseIterable, Sendable {
         case .stopped:
             return "stopped"
         }
+    }
+}
+
+public enum LocationCaptureMode: String, Codable, CaseIterable, Sendable {
+    case normal
+    case force
+    case ifNew
+}
+
+public enum LocationCaptureMovement: String, Codable, CaseIterable, Sendable {
+    case automatic
+    case stopped
+    case moving
+
+    public var movementStateOverride: MovementStateOverride? {
+        switch self {
+        case .automatic:
+            return nil
+        case .stopped:
+            return .stopped
+        case .moving:
+            // REGRESSION GUARD: "Moving" is presentation terminology for the existing
+            // not-stopped override. Keep the stored raw value unchanged for compatibility.
+            return .notStopped
+        }
+    }
+
+    public init(movementStateOverride: MovementStateOverride?) {
+        switch movementStateOverride {
+        case nil:
+            self = .automatic
+        case .stopped:
+            self = .stopped
+        case .notStopped:
+            self = .moving
+        }
+    }
+}
+
+public struct ShortcutLocationCaptureOptions: Equatable, Sendable {
+    public let force: Bool
+    public let movementStateOverride: MovementStateOverride?
+    public let nonDuplicateRadiusMeters: Double?
+
+    public init(
+        mode: LocationCaptureMode,
+        movement: LocationCaptureMovement,
+        nonDuplicateRadiusMeters: Double
+    ) {
+        force = mode == .force
+        movementStateOverride = movement.movementStateOverride
+        self.nonDuplicateRadiusMeters = mode == .ifNew ? nonDuplicateRadiusMeters : nil
     }
 }
 

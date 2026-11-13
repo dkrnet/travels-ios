@@ -8,6 +8,30 @@ import XCTest
 @testable import TravelsCore
 
 final class TravelsCoreTests: XCTestCase {
+    func testShortcutLocationCaptureOptionsSupportEveryModeAndMovementCombination() {
+        for mode in LocationCaptureMode.allCases {
+            for movement in LocationCaptureMovement.allCases {
+                let options = ShortcutLocationCaptureOptions(
+                    mode: mode,
+                    movement: movement,
+                    nonDuplicateRadiusMeters: 20
+                )
+
+                XCTAssertEqual(options.force, mode == .force)
+                XCTAssertEqual(options.nonDuplicateRadiusMeters, mode == .ifNew ? 20 : nil)
+                XCTAssertEqual(options.movementStateOverride, movement.movementStateOverride)
+            }
+        }
+    }
+
+    func testLocationCaptureMovementPreservesExistingStoredOverrideSemantics() {
+        XCTAssertEqual(LocationCaptureMovement(movementStateOverride: nil), .automatic)
+        XCTAssertEqual(LocationCaptureMovement(movementStateOverride: .stopped), .stopped)
+        XCTAssertEqual(LocationCaptureMovement(movementStateOverride: .notStopped), .moving)
+        XCTAssertEqual(LocationCaptureMovement.moving.movementStateOverride?.rawValue, MovementStateOverride.notStopped.rawValue)
+        XCTAssertEqual(MovementStateOverride.notStopped.displayName, "Moving")
+    }
+
     private func makeDate(
         year: Int,
         month: Int,

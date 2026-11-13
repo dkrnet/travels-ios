@@ -5,6 +5,24 @@
 // REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
 import AppIntents
 
+extension LocationCaptureMode: AppEnum {
+    public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Mode")
+    public static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
+        .normal: "Normal",
+        .force: "Force",
+        .ifNew: "If New"
+    ]
+}
+
+extension LocationCaptureMovement: AppEnum {
+    public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Movement")
+    public static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
+        .automatic: "Automatic",
+        .stopped: "Stopped",
+        .moving: "Moving"
+    ]
+}
+
 #if DEBUG
 enum CarPlayDiagnosticEventType: String, AppEnum {
     case connected
@@ -41,30 +59,66 @@ struct LogCarPlayEventIntent: AppIntent {
 struct AddLocationIntent: AppIntent, LongRunningIntent {
     static let title: LocalizedStringResource = "Add"
     static let description = IntentDescription(
-        "Requests one location with optional forced, stopped, and non-duplicate behavior."
+        "Requests one location using the selected recording mode and movement classification."
     )
     static let openAppWhenRun = false
 
-    @Parameter(title: "Forced", default: false)
-    var forced: Bool
+    @Parameter(
+        title: "Mode",
+        description: "Choose normal filtering, force recording, or record only when the location is new.",
+        default: .normal
+    )
+    var mode: LocationCaptureMode
 
-    @Parameter(title: "Stopped", default: false)
-    var stopped: Bool
-
-    @Parameter(title: "Non-Duplicate", default: false)
-    var nonDuplicate: Bool
+    @Parameter(
+        title: "Movement",
+        description: "Choose automatic detection or explicitly classify the location as stopped or moving.",
+        default: .automatic
+    )
+    var movement: LocationCaptureMovement
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Add location (Forced: \(\.$forced), Stopped: \(\.$stopped), Non-Duplicate: \(\.$nonDuplicate))")
+        When(\.$mode, .equalTo, .normal) {
+            When(\.$movement, .equalTo, .automatic) {
+                Summary("Add location")
+            } otherwise: {
+                When(\.$movement, .equalTo, .stopped) {
+                    Summary("Add stopped location")
+                } otherwise: {
+                    Summary("Add moving location")
+                }
+            }
+        } otherwise: {
+            When(\.$mode, .equalTo, .force) {
+                When(\.$movement, .equalTo, .automatic) {
+                    Summary("Force add location")
+                } otherwise: {
+                    When(\.$movement, .equalTo, .stopped) {
+                        Summary("Force add stopped location")
+                    } otherwise: {
+                        Summary("Force add moving location")
+                    }
+                }
+            } otherwise: {
+                When(\.$movement, .equalTo, .automatic) {
+                    Summary("Add location if new")
+                } otherwise: {
+                    When(\.$movement, .equalTo, .stopped) {
+                        Summary("Add stopped location if new")
+                    } otherwise: {
+                        Summary("Add moving location if new")
+                    }
+                }
+            }
+        }
     }
 
     func perform() async throws -> some IntentResult {
-        // REGRESSION GUARD: Automation-triggered captures must remain silent. Non-Duplicate
-        // deliberately takes precedence over Forced so nearby locations are never inserted.
+        // REGRESSION GUARD: Automation-triggered captures must remain silent. Keep the
+        // existing intent type stable so saved Shortcuts retain their action identity.
         _ = await TravelsModel.shared.captureLocationFromShortcut(
-            forced: forced,
-            stopped: stopped,
-            nonDuplicate: nonDuplicate
+            mode: mode,
+            movement: movement
         )
         return .result()
     }

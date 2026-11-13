@@ -185,15 +185,19 @@ final class TravelsModel: ObservableObject {
     }
 
     func captureLocationFromShortcut(
-        forced: Bool,
-        stopped: Bool,
-        nonDuplicate: Bool
+        mode: LocationCaptureMode,
+        movement: LocationCaptureMovement
     ) async -> ShortcutLocationCaptureResult {
         await bootstrap()
+        let options = ShortcutLocationCaptureOptions(
+            mode: mode,
+            movement: movement,
+            nonDuplicateRadiusMeters: Self.shortcutNonDuplicateRadiusMeters
+        )
         return await locationService.requestShortcutAutomationLocation(
-            force: forced && !nonDuplicate,
-            movementStateOverride: stopped ? .stopped : nil,
-            nonDuplicateRadiusMeters: nonDuplicate ? Self.shortcutNonDuplicateRadiusMeters : nil
+            force: options.force,
+            movementStateOverride: options.movementStateOverride,
+            nonDuplicateRadiusMeters: options.nonDuplicateRadiusMeters
         )
     }
 
