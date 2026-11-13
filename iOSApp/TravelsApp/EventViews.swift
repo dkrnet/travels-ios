@@ -940,14 +940,14 @@ struct EventDetailView: View {
     @EnvironmentObject private var model: TravelsModel
     let detail: EventDetail
     @State private var note: String
-    @State private var movementStateOverrideSelectionValue: MovementStateOverrideSelection
+    @State private var movementStateOverrideSelectionValue: LocationCaptureMovement
     @State private var tripEndpointOverrideSelectionValue: TripEndpointOverrideSelection
     @State private var confirmDelete = false
 
     init(detail: EventDetail) {
         self.detail = detail
         _note = State(initialValue: detail.event.note)
-        _movementStateOverrideSelectionValue = State(initialValue: MovementStateOverrideSelection(movementStateOverride: detail.event.movementStateOverride) ?? .automatic)
+        _movementStateOverrideSelectionValue = State(initialValue: LocationCaptureMovement(movementStateOverride: detail.event.movementStateOverride))
         _tripEndpointOverrideSelectionValue = State(initialValue: TripEndpointOverrideSelection(tripEndpointOverride: detail.event.tripEndpointOverride) ?? .automatic)
     }
 
@@ -1000,7 +1000,7 @@ struct EventDetailView: View {
                     }
                     labeled("Source", detail.event.source.displayName)
                     Picker("Movement", selection: $movementStateOverrideSelectionValue) {
-                        ForEach(MovementStateOverrideSelection.allCases) { option in
+                        ForEach(LocationCaptureMovement.allCases, id: \.self) { option in
                             Text(option.displayName).tag(option)
                         }
                     }
@@ -1241,43 +1241,15 @@ struct EventDetailView: View {
     }
 }
 
-private enum MovementStateOverrideSelection: String, CaseIterable, Identifiable {
-    case automatic
-    case stopped
-    case notStopped
-
-    var id: Self { self }
-
+private extension LocationCaptureMovement {
     var displayName: String {
         switch self {
         case .automatic:
             return "Automatic"
         case .stopped:
             return "Stopped"
-        case .notStopped:
-            return "Not stopped"
-        }
-    }
-
-    var movementStateOverride: MovementStateOverride? {
-        switch self {
-        case .automatic:
-            return nil
-        case .stopped:
-            return .stopped
-        case .notStopped:
-            return .notStopped
-        }
-    }
-
-    init?(movementStateOverride: MovementStateOverride?) {
-        switch movementStateOverride {
-        case nil:
-            self = .automatic
-        case .stopped:
-            self = .stopped
-        case .notStopped:
-            self = .notStopped
+        case .moving:
+            return "Moving"
         }
     }
 }
