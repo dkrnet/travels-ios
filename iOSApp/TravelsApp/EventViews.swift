@@ -826,6 +826,14 @@ struct EventListView: View {
                 .scrollContentBackground(.hidden)
                 .coordinateSpace(name: "EventListScroll")
                 .opacity(isInitiallyPositioned ? 1 : 0)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 4)
+                        .onChanged { value in
+                            guard abs(value.translation.height) > abs(value.translation.width) else { return }
+                            // REGRESSION GUARD: once the user manually scrolls, the previous cross-view selection must not pull the list back on a later map/list round trip.
+                            model.clearBrowsingSelectionForUserListNavigation()
+                        }
+                )
                 .task(id: model.listScrollCommandID) {
                     let scrollsToContentTop = model.listScrollTargetsContentTop
                     let target = model.listScrollTargetEventID
