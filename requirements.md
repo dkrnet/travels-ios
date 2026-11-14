@@ -276,6 +276,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The hybrid watchdog shall cancel when automatic tracking is disabled, active tracking stops, or Precise Location Mode switches away from Automatic.
 - Battery-state and low-power-mode changes shall cause the active location configuration to be re-evaluated, but they shall not disable Always On Precise Location Mode, switch Always Off Precise Location Mode into active high-fidelity tracking, or rely on Bluetooth/Wi-Fi state changes as tracking triggers.
 - Travels shall provide one silent `Add` Shortcuts action with independent three-state `Mode` (`Normal`, `Force`, or `If New`) and `Movement` (`Automatic`, `Stopped`, or `Moving`) parameters. The existing action identity shall remain stable where possible; shortcuts saved with superseded actions or Boolean parameters may require reconfiguration when iOS cannot migrate their parameter schema.
+- The `Add` action shall use a stable summary and concise descriptions for each Mode and Movement choice in the Shortcuts editor; understanding the selected behavior shall not depend on Shortcuts refreshing a conditional summary.
 - With the default `Normal` and `Automatic` values, `Add` shall request one automatic location sample and process it through the existing filtering and persistence path without treating it as a manual Add capture or starting a continuous background session solely for the shortcut.
 - `Force` mode shall bypass normal filtering. `If New` mode shall force-add a sample only when the previous accepted event is more than 20 meters away. `Normal` mode shall preserve standard filtering behavior.
 - `Stopped` movement shall set an accepted event's movement override to stopped, `Moving` shall set the existing not-stopped movement override, and `Automatic` shall preserve movement detection. Movement selection shall not change measured speed.
@@ -341,7 +342,10 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The map shall provide sensible full-day and recent-event zoom behavior.
 - On initial app launch into the map view, the first loaded event set for the selected day shall be framed using the full-day show-all view rather than retaining a temporary camera established before events finished loading.
 - After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
-- Passive map redraws caused by automatic location additions, address-resolution updates, or other event reloads shall preserve the user's current camera position and zoom level.
+- Show All and Show Latest map actions shall remain active follow modes: newly added events shall respectively reframe the complete displayed set or keep the newest event framed.
+- Manually panning or zooming the map shall cancel automatic map following, make full-day zoom the next toolbar action, and preserve the user's camera position through automatic location additions, address-resolution updates, and other passive reloads.
+- Scrolling the list to the bottom with the toolbar action shall keep it following newly appended events until the user manually scrolls or chooses another list navigation action. Manual list scrolling shall preserve the user's position during passive event additions. Scroll to Top shall retain its existing behavior.
+- Persistent map and list follow actions shall minimize the need for repeated interaction as new events arrive, particularly when a user may have left the display open while traveling; passive updates shall not require repeated toolbar taps to maintain an explicitly selected view.
 - Photo-source events shall use the photo marker glyph even when their recorded speed would otherwise classify them as moving.
 - Map marker thinning shall prioritize every stopped event over nearby moving events, and a moving marker shall not hide or displace a stopped marker.
 

@@ -13,6 +13,18 @@ import SwiftUI
 import TravelsCore
 #endif
 
+enum MapCameraFollowMode {
+    case manual
+    case showAll
+    case showLatest
+}
+
+enum ListScrollFollowMode {
+    case manual
+    case top
+    case bottom
+}
+
 @MainActor
 final class TravelsModel: ObservableObject {
     static let shared = TravelsModel()
@@ -52,6 +64,8 @@ final class TravelsModel: ObservableObject {
     @Published var mapCenterTargetEventID: Int64?
     @Published var mapCameraCommandID = UUID()
     @Published var mapCameraRegion: MKCoordinateRegion?
+    @Published private(set) var mapCameraFollowMode: MapCameraFollowMode = .showAll
+    @Published private(set) var listScrollFollowMode: ListScrollFollowMode = .top
     @Published private(set) var dateSelectionLowerBound = Calendar.current.startOfDay(for: Date())
     @Published private(set) var dateSelectionUpperBound = Calendar.current.startOfDay(for: Date())
 
@@ -224,6 +238,7 @@ final class TravelsModel: ObservableObject {
 
     func reloadEvents(recenterSelectedTrips: Bool = false) throws {
         guard let store else { return }
+        let previousBottomEventID = displayedEvents.last?.id
         let selectedTripIDs: Set<DetectedTrip.ID>?
         if case .trips(let tripIDs) = selectedMapDisplay {
             selectedTripIDs = tripIDs
@@ -240,12 +255,22 @@ final class TravelsModel: ObservableObject {
             // REGRESSION GUARD: trip endpoint overrides can change trip grouping without changing the selected trip IDs, so re-focus the selected trips after reload to force the map/list to pick up the new trip composition.
             focusSelectedTrips(selectedTripIDs)
         }
+        if listScrollFollowMode == .bottom,
+           let bottomEventID = displayedEvents.last?.id,
+           bottomEventID != previousBottomEventID {
+            // REGRESSION GUARD: Bottom is a follow-latest instruction, not a
+            // one-time scroll. Keep newly appended events visible until the
+            // user manually scrolls or chooses another navigation action.
+            requestListScrollTarget(bottomEventID, anchor: .bottom, followMode: .bottom)
+        }
         refreshDateSelectionBounds()
         refreshSelectedEventIfNeeded()
     }
 
     func selectDate(_ date: Date) {
         selectedDate = Calendar.current.startOfDay(for: date)
+        mapCameraFollowMode = .showAll
+        listScrollFollowMode = .top
         do {
             try reloadEvents()
             mapVisibleEventIDs = []
@@ -369,8 +394,12 @@ final class TravelsModel: ObservableObject {
     }
 
     func clearBrowsingSelectionForUserListNavigation() {
-        guard browsingSelectionEventID != nil else { return }
         browsingSelectionEventID = nil
+        listScrollFollowMode = .manual
+    }
+
+    func registerManualMapNavigation() {
+        mapCameraFollowMode = .manual
     }
 
     func prepareMapFocusFromList() {
@@ -378,9 +407,11 @@ final class TravelsModel: ObservableObject {
             // REGRESSION GUARD: selecting a list event must center that same event on the map without zooming back out to the full day.
             mapFocusEventIDs = nil
             mapCenterTargetEventID = selectedID
+            mapCameraFollowMode = .manual
             mapCameraCommandID = UUID()
         } else if mapCameraRegion == nil {
             mapFocusEventIDs = listVisibleEventIDs
+            mapCameraFollowMode = .manual
             mapCameraCommandID = UUID()
         }
     }
@@ -401,6 +432,7 @@ final class TravelsModel: ObservableObject {
     }
 
     func resetMapZoomToFullDay() {
+        mapCameraFollowMode = .showAll
         mapFocusEventIDs = nil
         mapCameraRegion = nil
         mapCameraCommandID = UUID()
@@ -408,16 +440,19 @@ final class TravelsModel: ObservableObject {
 
     func panMapToMostRecentEvent() {
         guard let lastEventID = displayedEvents.last?.id ?? events.last?.id else { return }
+        mapCameraFollowMode = .showLatest
         mapFocusEventIDs = [lastEventID]
         mapCameraCommandID = UUID()
     }
 
     func scrollListToTop() {
         clearBrowsingSelectionForUserListNavigation()
+        listScrollFollowMode = .top
         requestListScrollToContentTop()
     }
 
     private func requestListScrollToContentTop() {
+        listScrollFollowMode = .top
         listScrollTargetEventID = nil
         listScrollTargetAnchor = .top
         listScrollTargetsContentTop = true
@@ -427,7 +462,7 @@ final class TravelsModel: ObservableObject {
     func scrollListToBottom() {
         // BUGFIX: scroll relative to the currently displayed subset so the bottom button reaches the last visible row.
         clearBrowsingSelectionForUserListNavigation()
-        requestListScrollTarget(displayedEvents.last?.id, anchor: .bottom)
+        requestListScrollTarget(displayedEvents.last?.id, anchor: .bottom, followMode: .bottom)
     }
 
     func addCurrentLocation(forceStopped: Bool = false) {
@@ -436,6 +471,7 @@ final class TravelsModel: ObservableObject {
 
     func selectAllMapDisplay() {
         selectedMapDisplay = .all
+        mapCameraFollowMode = .showAll
         mapFocusEventIDs = nil
         mapCameraRegion = nil
         listScrollTargetEventID = nil
@@ -449,6 +485,7 @@ final class TravelsModel: ObservableObject {
 
     func selectStoppedOnlyMapDisplay() {
         selectedMapDisplay = .stoppedOnly
+        mapCameraFollowMode = .showAll
         mapFocusEventIDs = nil
         mapCameraRegion = nil
         listScrollTargetEventID = nil
@@ -547,7 +584,12 @@ final class TravelsModel: ObservableObject {
         events.contains(where: { isStoppedLocationEvent($0.event) })
     }
 
-    func requestListScrollTarget(_ eventID: Int64?, anchor: UnitPoint = .center) {
+    func requestListScrollTarget(
+        _ eventID: Int64?,
+        anchor: UnitPoint = .center,
+        followMode: ListScrollFollowMode = .manual
+    ) {
+        listScrollFollowMode = followMode
         listScrollTargetEventID = eventID
         listScrollTargetAnchor = anchor
         listScrollTargetsContentTop = false
@@ -755,6 +797,7 @@ final class TravelsModel: ObservableObject {
             partialResult.append(eventID)
         }
         requestListScrollTarget(distinctEventIDs.first)
+        mapCameraFollowMode = .manual
         mapFocusEventIDs = distinctEventIDs.isEmpty ? nil : distinctEventIDs
         mapCameraCommandID = UUID()
     }
@@ -1269,6 +1312,7 @@ final class TravelsModel: ObservableObject {
         if isListView {
             requestListScrollTarget(firstEventID)
         } else {
+            mapCameraFollowMode = .manual
             mapFocusEventIDs = tripEvents.compactMap(\.id)
             mapCameraCommandID = UUID()
         }
@@ -1277,6 +1321,7 @@ final class TravelsModel: ObservableObject {
     private func clearTripFocus() {
         mapFocusEventIDs = nil
         if !isListView {
+            mapCameraFollowMode = .showAll
             mapCameraRegion = nil
             mapCameraCommandID = UUID()
         }

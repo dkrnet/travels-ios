@@ -32,6 +32,8 @@ Read the complete [Travels Privacy Policy](https://github.com/dkrnet/travels-ios
 
 Browse a day's history on a map or in a chronological list. Travels identifies likely trips and stopped locations, keeps map and list navigation connected, and uses local solar periods to give each event a time-of-day color.
 
+Choose **Show All**, **Show Latest**, or scroll the list to the bottom and Travels keeps that view current as new locations arrive. If you manually pan, zoom, or scroll, Travels instead preserves the position you chose. This reduces the need to keep interacting with the display while traveling.
+
 Open an event to inspect its recorded details, add a note, correct how its movement or trip-endpoint status should be interpreted, resolve its address when desired, or remove it.
 
 <p align="center">

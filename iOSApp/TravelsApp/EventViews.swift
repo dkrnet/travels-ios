@@ -23,7 +23,6 @@ struct EventMapView: View {
     @EnvironmentObject private var model: TravelsModel
     let day: Date
     let events: [EventDetail]
-    let onManualZoom: () -> Void
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
@@ -57,12 +56,20 @@ struct EventMapView: View {
                 isAwaitingInitialEventFraming = model.mapCameraRegion == nil && events.isEmpty
                 updateCameraPosition()
             }
-            .onChange(of: events.compactMap(\.id)) { _, eventIDs in
-                guard isAwaitingInitialEventFraming, !eventIDs.isEmpty else { return }
-                // REGRESSION GUARD: startup can lay out an empty Map before events load; frame the first loaded day once instead of retaining MapKit's temporary automatic region.
-                isAwaitingInitialEventFraming = false
-                model.updateMapCameraRegion(nil)
-                scaleRegion = nil
+            .onChange(of: cameraEventSignatures) { _, signatures in
+                guard !signatures.isEmpty else { return }
+                if isAwaitingInitialEventFraming {
+                    // REGRESSION GUARD: startup can lay out an empty Map before events load; frame the first loaded day once instead of retaining MapKit's temporary automatic region.
+                    isAwaitingInitialEventFraming = false
+                    model.updateMapCameraRegion(nil)
+                    scaleRegion = nil
+                    updateCameraPosition()
+                    return
+                }
+                guard model.mapCameraFollowMode != .manual else { return }
+                // REGRESSION GUARD: Show All and Show Latest are persistent
+                // follow choices. Passive inserts must reapply the selected
+                // framing, while manual camera placement remains untouched.
                 updateCameraPosition()
             }
             .onChange(of: geometry.size) { _, newSize in
@@ -79,9 +86,10 @@ struct EventMapView: View {
                 let previousRegion = scaleRegion ?? model.mapCameraRegion
                 if Date() > suppressManualZoomDetectionUntil,
                    let previousRegion,
-                   spansDiffer(previousRegion.span, context.region.span) {
-                    // REGRESSION GUARD: after any user-driven map zoom, the toolbar action must offer full-day zoom next.
-                    onManualZoom()
+                   regionsDiffer(previousRegion, context.region) {
+                    // REGRESSION GUARD: any user-driven pan or zoom cancels
+                    // automatic framing and makes full-day zoom the next action.
+                    model.registerManualMapNavigation()
                 }
                 scaleRegion = context.region
                 model.updateMapCameraRegion(context.region)
@@ -107,6 +115,17 @@ struct EventMapView: View {
                 id: "\(index)-\(index + 1)",
                 coordinates: [orderedEvents[index].coordinate, orderedEvents[index + 1].coordinate],
                 color: color(for: orderedEvents[index + 1]).opacity(0.9)
+            )
+        }
+    }
+
+    private var cameraEventSignatures: [MapCameraEventSignature] {
+        events.map {
+            MapCameraEventSignature(
+                id: $0.id,
+                latitude: $0.event.latitude,
+                longitude: $0.event.longitude,
+                timestamp: $0.event.timestamp
             )
         }
     }
@@ -169,16 +188,18 @@ struct EventMapView: View {
         }
 
         let focusEvents = focusedEvents()
-        if focusEvents.isEmpty, let retainedRegion = model.mapCameraRegion {
+        if focusEvents.isEmpty,
+           model.mapCameraFollowMode == .manual,
+           let retainedRegion = model.mapCameraRegion {
             // REGRESSION GUARD: recreating the map after viewing the list must restore the user's prior pan and zoom instead of fitting the full day again.
             cameraPosition = .region(retainedRegion)
             scaleRegion = retainedRegion
             updateVisibleEventIDs(in: retainedRegion)
             return
         }
-        let visibleEvents = focusEvents.isEmpty
-            ? fullDayEvents()
-            : Self.spacedEvents(
+        let visibleEvents: [EventDetail]
+        if !focusEvents.isEmpty {
+            visibleEvents = Self.spacedEvents(
                 from: focusEvents,
                 selectedEventID: model.selectedEvent?.id,
                 region: model.mapCameraRegion,
@@ -186,6 +207,12 @@ struct EventMapView: View {
                 minimumSpacing: minimumMarkerSpacing,
                 detectedTrips: model.detectedTrips
             )
+        } else if model.mapCameraFollowMode == .showLatest,
+                  let latestEvent = fullDayEvents().last {
+            visibleEvents = [latestEvent]
+        } else {
+            visibleEvents = fullDayEvents()
+        }
 
         guard !visibleEvents.isEmpty else {
             cameraPosition = .automatic
@@ -240,11 +267,13 @@ struct EventMapView: View {
         events
     }
 
-    private func spansDiffer(_ lhs: MKCoordinateSpan, _ rhs: MKCoordinateSpan) -> Bool {
-        let latitudeTolerance = max(max(abs(lhs.latitudeDelta), abs(rhs.latitudeDelta)), 0.000_001) * 0.001
-        let longitudeTolerance = max(max(abs(lhs.longitudeDelta), abs(rhs.longitudeDelta)), 0.000_001) * 0.001
-        return abs(lhs.latitudeDelta - rhs.latitudeDelta) > latitudeTolerance
-            || abs(lhs.longitudeDelta - rhs.longitudeDelta) > longitudeTolerance
+    private func regionsDiffer(_ lhs: MKCoordinateRegion, _ rhs: MKCoordinateRegion) -> Bool {
+        let latitudeTolerance = max(max(abs(lhs.span.latitudeDelta), abs(rhs.span.latitudeDelta)), 0.000_001) * 0.001
+        let longitudeTolerance = max(max(abs(lhs.span.longitudeDelta), abs(rhs.span.longitudeDelta)), 0.000_001) * 0.001
+        return abs(lhs.span.latitudeDelta - rhs.span.latitudeDelta) > latitudeTolerance
+            || abs(lhs.span.longitudeDelta - rhs.span.longitudeDelta) > longitudeTolerance
+            || abs(lhs.center.latitude - rhs.center.latitude) > latitudeTolerance
+            || abs(lhs.center.longitude - rhs.center.longitude) > longitudeTolerance
     }
 
     private func focusedEvents() -> [EventDetail] {
@@ -684,6 +713,13 @@ struct EventMapView: View {
             && coordinate.longitude >= longitudeMin
             && coordinate.longitude <= longitudeMax
     }
+}
+
+private struct MapCameraEventSignature: Equatable {
+    let id: Int64?
+    let latitude: Double
+    let longitude: Double
+    let timestamp: Date
 }
 
 private struct MapScaleMarker: View {
