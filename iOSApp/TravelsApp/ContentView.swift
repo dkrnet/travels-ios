@@ -24,7 +24,6 @@ struct ContentView: View {
     @State private var openSettingsAfterWelcome = false
     @State private var shareItem: ShareItem?
     @State private var datePickerSelection = Date()
-    @State private var mapQuickActionShowsLatest = true
     @State private var listQuickActionShowsTop = false
     @State private var topOverlayHeight: CGFloat = 0
 
@@ -38,10 +37,7 @@ struct ContentView: View {
                     } else {
                         EventMapView(
                             day: model.selectedDate,
-                            events: model.displayedEvents,
-                            onManualZoom: {
-                                mapQuickActionShowsLatest = false
-                            }
+                            events: model.displayedEvents
                         )
                             .id(model.selectedDate)
                     }
@@ -132,17 +128,16 @@ struct ContentView: View {
                             }
                             listQuickActionShowsTop.toggle()
                         } else {
-                            if mapQuickActionShowsLatest {
+                            if model.mapCameraFollowMode == .showAll {
                                 model.panMapToMostRecentEvent()
                             } else {
                                 model.resetMapZoomToFullDay()
                             }
-                            mapQuickActionShowsLatest.toggle()
                         }
                     } label: {
                         Image(systemName: model.isListView
                               ? (listQuickActionShowsTop ? "arrow.up.to.line.compact" : "arrow.down.to.line.compact")
-                              : (mapQuickActionShowsLatest ? "location.fill" : "arrow.up.left.and.arrow.down.right"))
+                              : (model.mapCameraFollowMode == .showAll ? "location.fill" : "arrow.up.left.and.arrow.down.right"))
                     }
                     .disabled(model.events.isEmpty)
                     Menu {
@@ -307,11 +302,9 @@ struct ContentView: View {
                 Text(model.statusMessage ?? "")
             }
             .onChange(of: model.selectedDate) { _, _ in
-                mapQuickActionShowsLatest = true
                 listQuickActionShowsTop = false
             }
             .onChange(of: model.isListView) { _, _ in
-                mapQuickActionShowsLatest = true
                 if model.isListView {
                     listQuickActionShowsTop = false
                 }

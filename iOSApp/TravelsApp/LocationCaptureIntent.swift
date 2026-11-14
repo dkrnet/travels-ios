@@ -8,18 +8,36 @@ import AppIntents
 extension LocationCaptureMode: AppEnum {
     public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Mode")
     public static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
-        .normal: "Normal",
-        .force: "Force",
-        .ifNew: "If New"
+        .normal: DisplayRepresentation(
+            title: "Normal",
+            subtitle: "Use standard recording rules."
+        ),
+        .force: DisplayRepresentation(
+            title: "Force",
+            subtitle: "Record even when standard rules would reject it."
+        ),
+        .ifNew: DisplayRepresentation(
+            title: "If New",
+            subtitle: "Record only when the location is not a duplicate."
+        )
     ]
 }
 
 extension LocationCaptureMovement: AppEnum {
     public static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Movement")
     public static let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
-        .automatic: "Automatic",
-        .stopped: "Stopped",
-        .moving: "Moving"
+        .automatic: DisplayRepresentation(
+            title: "Automatic",
+            subtitle: "Use Travels' movement detection."
+        ),
+        .stopped: DisplayRepresentation(
+            title: "Stopped",
+            subtitle: "Treat the location as stopped."
+        ),
+        .moving: DisplayRepresentation(
+            title: "Moving",
+            subtitle: "Treat the location as moving."
+        )
     ]
 }
 
@@ -65,51 +83,25 @@ struct AddLocationIntent: AppIntent, LongRunningIntent {
 
     @Parameter(
         title: "Mode",
-        description: "Choose normal filtering, force recording, or record only when the location is new.",
+        description: "Normal uses standard rules. Force bypasses them. If New records only when the location is not a duplicate.",
         default: .normal
     )
     var mode: LocationCaptureMode
 
     @Parameter(
         title: "Movement",
-        description: "Choose automatic detection or explicitly classify the location as stopped or moving.",
+        description: "Automatic detects movement. Stopped or Moving explicitly classifies the location without changing its measured speed.",
         default: .automatic
     )
     var movement: LocationCaptureMovement
 
     static var parameterSummary: some ParameterSummary {
-        When(\.$mode, .equalTo, .normal) {
-            When(\.$movement, .equalTo, .automatic) {
-                Summary("Add location")
-            } otherwise: {
-                When(\.$movement, .equalTo, .stopped) {
-                    Summary("Add stopped location")
-                } otherwise: {
-                    Summary("Add moving location")
-                }
-            }
-        } otherwise: {
-            When(\.$mode, .equalTo, .force) {
-                When(\.$movement, .equalTo, .automatic) {
-                    Summary("Force add location")
-                } otherwise: {
-                    When(\.$movement, .equalTo, .stopped) {
-                        Summary("Force add stopped location")
-                    } otherwise: {
-                        Summary("Force add moving location")
-                    }
-                }
-            } otherwise: {
-                When(\.$movement, .equalTo, .automatic) {
-                    Summary("Add location if new")
-                } otherwise: {
-                    When(\.$movement, .equalTo, .stopped) {
-                        Summary("Add stopped location if new")
-                    } otherwise: {
-                        Summary("Add moving location if new")
-                    }
-                }
-            }
+        // REGRESSION GUARD: Shortcuts does not reliably refresh conditional
+        // summaries while editing. Keep this title stable and explain choices
+        // through the parameter and AppEnum display descriptions instead.
+        Summary("Add location") {
+            \.$mode
+            \.$movement
         }
     }
 

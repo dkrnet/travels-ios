@@ -18,8 +18,8 @@ The app is not intended to be a public tracking service, fleet-management platfo
 
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
-- Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, positions the list before displaying it, and treats subsequent manual or top/bottom list navigation as the user's new browsing position
-- Initial map launch frames the complete loaded day while later passive event and address updates preserve the user's camera
+- Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, positions the list before displaying it, follows new events after explicit Show All, Show Latest, or list Bottom actions, and preserves subsequent manual map/list navigation so passive updates do not require repeated interaction while traveling
+- Initial map launch frames the complete loaded day while later passive updates honor the selected Show All, Show Latest, or manual camera behavior
 - Always-visible lower-right map scale marker
 - Date navigation with non-demo previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
