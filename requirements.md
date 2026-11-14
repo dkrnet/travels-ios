@@ -319,7 +319,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall present events on a map and in a list.
 - The user shall be able to switch between map and list views.
 - The preferred view shall be persisted.
-- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row.
+- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows.
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.

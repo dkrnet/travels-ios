@@ -779,6 +779,7 @@ struct EventListView: View {
     @EnvironmentObject private var model: TravelsModel
     let events: [EventDetail]
     let topContentInset: CGFloat
+    @State private var isInitiallyPositioned = false
     private let topAnchorID = "EventListTopAnchor"
 
     init(events: [EventDetail], topContentInset: CGFloat = 0) {
@@ -824,31 +825,62 @@ struct EventListView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .coordinateSpace(name: "EventListScroll")
-                .onAppear {
-                }
+                .opacity(isInitiallyPositioned ? 1 : 0)
                 .task(id: model.listScrollCommandID) {
                     let scrollsToContentTop = model.listScrollTargetsContentTop
                     let target = model.listScrollTargetEventID
                     let targetAnchor = model.listScrollTargetAnchor
-                    guard scrollsToContentTop || target != nil else { return }
+                    let hasScrollTarget = scrollsToContentTop || target != nil
+
+                    if !hasScrollTarget {
+                        isInitiallyPositioned = true
+                        return
+                    }
+
                     await Task.yield()
                     await MainActor.run {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            if scrollsToContentTop {
-                                proxy.scrollTo(topAnchorID, anchor: .top)
-                            } else if let target {
-                                proxy.scrollTo(target, anchor: targetAnchor)
+                        if isInitiallyPositioned {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                scroll(proxy: proxy, toContentTop: scrollsToContentTop, target: target, anchor: targetAnchor)
+                            }
+                        } else {
+                            // REGRESSION GUARD: map-to-list handoff must position the hidden list before revealing it; animating this first scroll makes the list visibly jump from the top.
+                            var transaction = Transaction(animation: nil)
+                            transaction.disablesAnimations = true
+                            withTransaction(transaction) {
+                                scroll(proxy: proxy, toContentTop: scrollsToContentTop, target: target, anchor: targetAnchor)
                             }
                         }
+
                         model.listScrollTargetAnchor = .top
                         model.listScrollTargetsContentTop = false
                         model.listScrollTargetEventID = nil
+                    }
+
+                    if !isInitiallyPositioned {
+                        await Task.yield()
+                        await MainActor.run {
+                            isInitiallyPositioned = true
+                        }
                     }
                 }
                 .onPreferenceChange(EventListRowFramesKey.self) { frames in
                     updateVisibleEventIDs(in: geometry.size, frames: frames)
                 }
             }
+        }
+    }
+
+    private func scroll(
+        proxy: ScrollViewProxy,
+        toContentTop: Bool,
+        target: Int64?,
+        anchor: UnitPoint
+    ) {
+        if toContentTop {
+            proxy.scrollTo(topAnchorID, anchor: .top)
+        } else if let target {
+            proxy.scrollTo(target, anchor: anchor)
         }
     }
 
