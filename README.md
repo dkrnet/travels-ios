@@ -2,6 +2,8 @@
 
 Travels iOS is a modern rebuild of the legacy Travels iOS app. It preserves the original product model while emphasizing privacy-first location tracking: local storage, map/list browsing, GPX import/export, legacy SQLite migration, search, notes, demo history, optional reverse geocoding, photo attachments, and privacy-aware settings.
 
+The public-facing product overview is maintained in [`docs/index.md`](docs/index.md).
+
 The application is designed around a reusable Swift package core and a SwiftUI iOS app shell. The core package owns model, SQLite, GPX, search, migration, filtering, trip-detection, solar-period, and color logic so those behaviors can be tested independently from iOS UI, Core Location, Photos, LocalAuthentication, and MapKit.
 
 ## Intended use

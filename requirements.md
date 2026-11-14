@@ -13,6 +13,7 @@ A future developer should be able to regenerate the application from scratch wit
 - `AGENTS.md` is the authoritative AI/LLM editing guardrail document.
 - `CONTRIBUTING.md` is the concise contribution workflow document.
 - `SECURITY.md` is the privacy and vulnerability-reporting policy.
+- `docs/index.md` is the public marketing-page source and shall accurately describe Travels' user-visible capabilities, privacy posture, platform limitations, support paths, and licensing without overstating background-location reliability or local-only data handling.
 - Non-trivial behavior changes shall update requirements, README, and tests as applicable in the same change set.
 - Requirements shall describe observable behavior, required compatibility outcomes, data-safety constraints, privacy/security obligations, build/test commands, and other constraints needed for correct minimal functionality.
 - Requirements shall not prescribe implementation details, internal class names, algorithms, UI framework mechanics, or storage internals unless those details are necessary for compatibility, security, privacy, build reproducibility, migration safety, or preserving the intended look, feel, and behavior.
