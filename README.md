@@ -104,7 +104,7 @@ Build for a connected physical iPhone:
 scripts/build_device.sh
 ```
 
-After a successful device build, the script prints the built app path, numeric bundle version, and custom Travels build ID read from the completed app bundle.
+After a successful device build, the script validates and prints the built app path, positive numeric bundle version, and Git-based custom Travels build ID read from the completed app bundle. It fails rather than accepting an app whose generated version metadata was not applied.
 
 Build and install over the existing phone app without uninstalling or deleting the app data container:
 

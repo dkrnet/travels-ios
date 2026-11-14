@@ -70,6 +70,7 @@ A future developer should be able to regenerate the application from scratch wit
 - The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
 - Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.0.0+<git-short-sha>` and reset the development counter to `0`.
 - The About screen shall display the human-readable development version, for example `Version 2.0.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
+- The physical-device build helper shall validate the completed app bundle and fail if its numeric bundle version or Git-based display version was not stamped successfully.
 
 ## Data storage requirements
 
