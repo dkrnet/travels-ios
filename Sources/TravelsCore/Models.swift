@@ -611,6 +611,29 @@ public struct AppSettings: Codable, Equatable, Sendable {
     }
 }
 
+public enum FirstLaunchWelcomeDisposition: String, Equatable, Sendable {
+    case pending
+    case completed
+    case suppressedForExistingStore
+
+    public var shouldPresent: Bool {
+        self == .pending
+    }
+}
+
+public enum FirstLaunchWelcomePolicy {
+    public static func disposition(
+        storedValue: String?,
+        storeExistedBeforeLaunch: Bool
+    ) -> FirstLaunchWelcomeDisposition {
+        if let storedValue,
+           let storedDisposition = FirstLaunchWelcomeDisposition(rawValue: storedValue) {
+            return storedDisposition
+        }
+        return storeExistedBeforeLaunch ? .suppressedForExistingStore : .pending
+    }
+}
+
 public enum TravelsError: Error, Equatable, LocalizedError, Sendable {
     case databaseOpenFailed(String)
     case databaseExecutionFailed(String)

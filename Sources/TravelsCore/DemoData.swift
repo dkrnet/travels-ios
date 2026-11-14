@@ -7,6 +7,7 @@ import Foundation
 
 public enum DemoData {
     public static let seedVersion = "gpx-demo-metadata-v2"
+    private static let targetDayOffsets = [-3, -2, -1]
 
     private static let resourceNames = [
         "demo-2017-06-30",
@@ -48,14 +49,13 @@ public enum DemoData {
     public static func trackPoints(anchoredTo referenceDate: Date, trackURLs: [URL]) throws -> [GPXTrackPoint] {
         let calendar = Calendar.current
         let launchDay = calendar.startOfDay(for: referenceDate)
-        let targetOffsets = [-3, -2, -1]
         var points: [GPXTrackPoint] = []
-        for (index, trackURL) in trackURLs.prefix(targetOffsets.count).enumerated() {
+        for (index, trackURL) in trackURLs.prefix(targetDayOffsets.count).enumerated() {
             let imported = try GPXImporter.parse(url: trackURL)
             let eventsWithMotion = synthesizeMotionMetadata(for: imported.trackPoints.map(\.event))
             guard let firstTimestamp = eventsWithMotion.first?.timestamp else { continue }
             let sourceDay = calendar.startOfDay(for: firstTimestamp)
-            let targetDay = calendar.date(byAdding: .day, value: targetOffsets[index], to: launchDay) ?? launchDay
+            let targetDay = calendar.date(byAdding: .day, value: targetDayOffsets[index], to: launchDay) ?? launchDay
             let shift = targetDay.timeIntervalSince(sourceDay)
 
             for (importedTrackPoint, importedEvent) in zip(imported.trackPoints, eventsWithMotion) {
@@ -80,6 +80,11 @@ public enum DemoData {
             }
         }
         return points
+    }
+
+    public static func displayedDates(anchoredTo referenceDate: Date, calendar: Calendar = .current) -> [Date] {
+        let launchDay = calendar.startOfDay(for: referenceDate)
+        return targetDayOffsets.compactMap { calendar.date(byAdding: .day, value: $0, to: launchDay) }
     }
 
     private static func synthesizeMotionMetadata(for events: [LocationEvent]) -> [LocationEvent] {

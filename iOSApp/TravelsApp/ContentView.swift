@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var showingImporter = false
     @State private var showingPhotoImporter = false
     @State private var showingDeveloperDiagnostics = false
+    @State private var openSettingsAfterWelcome = false
     @State private var shareItem: ShareItem?
     @State private var datePickerSelection = Date()
     @State private var mapQuickActionShowsLatest = true
@@ -240,6 +241,33 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(
+                isPresented: Binding(
+                    get: { model.shouldShowFirstLaunchWelcome },
+                    set: { isPresented in
+                        if !isPresented {
+                            model.dismissFirstLaunchWelcome()
+                        }
+                    }
+                ),
+                onDismiss: {
+                    if openSettingsAfterWelcome {
+                        openSettingsAfterWelcome = false
+                        showingSettings = true
+                    }
+                }
+            ) {
+                FirstLaunchWelcomeView(
+                    demoDates: model.firstLaunchDemoDates,
+                    onNotNow: {
+                        model.dismissFirstLaunchWelcome()
+                    },
+                    onOpenSettings: {
+                        openSettingsAfterWelcome = true
+                        model.dismissFirstLaunchWelcome()
+                    }
+                )
             }
             .sheet(isPresented: $showingSearch) {
                 SearchView(initialCriteria: model.lastSearchCriteria)

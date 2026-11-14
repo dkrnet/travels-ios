@@ -226,6 +226,13 @@ On launch, the app shall:
 - Queue missing reverse-geocode work when enabled.
 - Apply privacy lock state when required.
 
+- A new installation that creates a fresh modern store shall present a one-time welcome sheet explaining Travels' local privacy model and the steps required for background capture.
+- The welcome sheet shall accurately state that Automatic Location Tracking is enabled by default, Background Location is disabled until the user enables it, and Always location permission is required for background capture.
+- The welcome sheet shall explain Automatic Precise Location Mode's lower-power/temporary-precision behavior, potential battery and iOS location-indicator effects, and that address lookup sends coordinates to Apple only when enabled.
+- The welcome sheet shall identify the dates of the seeded demo trips and explain that Include Demo Data can hide them from normal views.
+- The welcome sheet shall let the user defer configuration or open the existing Settings screen; it shall not silently change tracking settings or request authorization.
+- An interrupted first-launch welcome shall remain eligible to appear again until dismissed, while an app upgrade with an existing database shall not present new-install onboarding solely because the welcome feature was added.
+
 Startup shall fail gracefully with user-visible recovery options when the database cannot be opened or repaired.
 
 ## Location capture requirements
@@ -314,7 +321,8 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The user shall be able to choose a date from a date picker.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
 - Changing the selected date shall reload events and reset stale focused-selection state.
-- When previous-day context is enabled, the most recent visible event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
+- When previous-day context is enabled, the most recent non-demo event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
+- Demo events shall never be used as previous-day context, even when Include Demo Data is enabled.
 
 ## Map and list requirements
 
@@ -516,9 +524,12 @@ The active export scope is the complete set of exportable events selected by the
 - The project shall build through the Xcode project and Travels scheme for the iOS app.
 - The standard package test command shall be `swift test`.
 - The standard iOS build command shall be equivalent to `xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build`, with simulator destination updated only when intentionally changed.
-- Repository scripts may wrap the standard regression-test, physical-device build, and non-destructive physical-device install commands so they can be run consistently outside an AI/LLM-assisted session.
+- Repository scripts may wrap the standard regression-test, simulator build/install, physical-device build, and non-destructive physical-device install commands so they can be run consistently outside an AI/LLM-assisted session.
+- The simulator build script shall accept an exact simulator name or UDID, default to the iPhone 17 Pro, and print the completed app path and generated build metadata.
+- Simulator installation shall preserve the existing app data by default and shall require an explicit fresh-install option before uninstalling the app and deleting its simulator data.
 - After a successful physical-device build, the device build script shall print the completed app path, numeric bundle version, and custom Travels build ID from the built app's `Info.plist`.
 - Physical-device install scripts shall install over the existing app bundle without uninstalling the app or deleting the app data container.
+- Physical-device install and backup scripts shall ignore simulators reported as connected by `devicectl`; simulator installation shall use the dedicated simulator script.
 - Background location, permission prompts, Photos metadata import, LocalAuthentication, and real device behavior shall be validated on-device before release.
 - Non-simulator device installs shall not be performed unless explicitly directed when the install, reinstall, upgrade, migration, signing change, bundle-identifier change, data-container change, or test workflow could overwrite, remove, migrate, corrupt, or otherwise risk live user data on the device.
 - External TestFlight archives shall use the restored `com.adigitalanalog.travels` identity, the semantic marketing version, and an explicit unused numeric build number higher than any build already uploaded to App Store Connect.

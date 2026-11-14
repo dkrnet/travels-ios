@@ -1171,6 +1171,37 @@ final class TravelsCoreTests: XCTestCase {
         XCTAssertTrue(eventsWithoutContext.isEmpty)
     }
 
+    func testDemoEventIsNeverReturnedAsPreviousDayContext() throws {
+        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let store = try TravelsStore(url: url)
+        let timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let previousDayDemo = makeDate(year: 2026, month: 6, day: 7, hour: 23, minute: 50, timeZone: timeZone)
+        let selectedDay = makeDate(year: 2026, month: 6, day: 8, hour: 12, timeZone: timeZone)
+
+        _ = try store.saveEvent(
+            LocationEvent(
+                latitude: 61.2181,
+                longitude: -149.9003,
+                timestamp: previousDayDemo,
+                localizedDate: TravelsDateTools.localizedDayString(for: previousDayDemo, timeZoneIdentifier: timeZone.identifier),
+                source: .simulated,
+                note: "Alaska demo",
+                isDemo: true
+            ),
+            isDemo: true
+        )
+
+        let events = try store.events(
+            on: selectedDay,
+            includePreviousDayContext: true,
+            includeDemo: true
+        )
+
+        XCTAssertTrue(events.isEmpty)
+    }
+
     func testMigrationAddsTwilightCalculatedAtWithoutDestroyingExistingEvents() throws {
         let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString + ".sqlite")
         defer { try? FileManager.default.removeItem(at: url) }
