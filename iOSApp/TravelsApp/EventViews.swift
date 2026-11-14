@@ -26,7 +26,6 @@ struct EventMapView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
-    @State private var suppressManualZoomDetectionUntil = Date.distantPast
     @State private var isAwaitingInitialEventFraming = false
     private let minimumMarkerSpacing: CGFloat = 35
 
@@ -84,11 +83,12 @@ struct EventMapView: View {
             }
             .onMapCameraChange(frequency: .onEnd) { context in
                 let previousRegion = scaleRegion ?? model.mapCameraRegion
-                if Date() > suppressManualZoomDetectionUntil,
+                if cameraPosition.positionedByUser,
                    let previousRegion,
                    regionsDiffer(previousRegion, context.region) {
-                    // REGRESSION GUARD: any user-driven pan or zoom cancels
-                    // automatic framing and makes full-day zoom the next action.
+                    // REGRESSION GUARD: only a genuine user gesture cancels a
+                    // persistent follow mode. MapKit may finish or normalize a
+                    // programmatic Show Latest camera after an arbitrary delay.
                     model.registerManualMapNavigation()
                 }
                 scaleRegion = context.region
@@ -175,7 +175,6 @@ struct EventMapView: View {
                 ?? scaleRegion?.span
                 ?? MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             let region = MKCoordinateRegion(center: target.coordinate, span: retainedSpan)
-            suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
             withAnimation(.easeInOut(duration: 0.25)) {
                 cameraPosition = .region(region)
             }
@@ -233,7 +232,6 @@ struct EventMapView: View {
                 center: coordinate,
                 span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
             )
-            suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
             withAnimation(.easeInOut(duration: 0.25)) {
                 cameraPosition = .region(region)
             }
@@ -253,7 +251,6 @@ struct EventMapView: View {
             center: center,
             span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
         )
-        suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
         withAnimation(.easeInOut(duration: 0.25)) {
             cameraPosition = .region(region)
         }
