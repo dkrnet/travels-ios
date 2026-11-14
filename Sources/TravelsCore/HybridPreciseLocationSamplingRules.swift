@@ -162,14 +162,14 @@ public enum HybridPreciseLocationSamplingRules {
 
     public static func sampleIndicatesMovementResumed(
         sample: LocationSample,
-        latestAcceptedEvent: LocationEvent?,
+        stationaryReference: LocationSample?,
         stationarySpeedThreshold: Double,
         stationaryRadiusMeters: Double,
         minimumUsableHorizontalAccuracyMeters: Double
     ) -> Bool {
         finalPreciseExitSampleAssessment(
             sample: sample,
-            latestAcceptedEvent: latestAcceptedEvent,
+            stationaryReference: stationaryReference,
             stationarySpeedThreshold: stationarySpeedThreshold,
             stationaryRadiusMeters: stationaryRadiusMeters,
             minimumUsableHorizontalAccuracyMeters: minimumUsableHorizontalAccuracyMeters,
@@ -179,7 +179,7 @@ public enum HybridPreciseLocationSamplingRules {
 
     public static func finalPreciseExitSampleAssessment(
         sample: LocationSample,
-        latestAcceptedEvent: LocationEvent?,
+        stationaryReference: LocationSample?,
         stationarySpeedThreshold: Double,
         stationaryRadiusMeters: Double,
         minimumUsableHorizontalAccuracyMeters: Double,
@@ -206,22 +206,22 @@ public enum HybridPreciseLocationSamplingRules {
             return .movementResumed(reason: "speed is meaningfully above the resume threshold")
         }
 
-        guard let latestAcceptedEvent else {
-            return .confirmsStop(reason: "no previous event is available for distance comparison")
+        guard let stationaryReference else {
+            return .confirmsStop(reason: "no stationary reference is available for distance comparison")
         }
 
-        guard sample.timestamp > latestAcceptedEvent.timestamp else {
+        guard sample.timestamp > stationaryReference.timestamp else {
             return .rejects(reason: "sample is not newer than the stationary reference")
         }
 
         let distance = haversineMeters(
-            fromLatitude: latestAcceptedEvent.latitude,
-            longitude: latestAcceptedEvent.longitude,
+            fromLatitude: stationaryReference.latitude,
+            longitude: stationaryReference.longitude,
             toLatitude: sample.latitude,
             longitude: sample.longitude
         )
-        let referenceAccuracy = latestAcceptedEvent.horizontalAccuracy.isFinite && latestAcceptedEvent.horizontalAccuracy >= 0
-            ? latestAcceptedEvent.horizontalAccuracy
+        let referenceAccuracy = stationaryReference.horizontalAccuracy.isFinite && stationaryReference.horizontalAccuracy >= 0
+            ? stationaryReference.horizontalAccuracy
             : 0
         let materialMovementThreshold = stationaryRadiusMeters + max(sample.horizontalAccuracy, referenceAccuracy, 10)
         if distance >= materialMovementThreshold {

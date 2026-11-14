@@ -184,6 +184,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var ignoreAutomaticLocationUpdatesUntil: Date?
     private var postExitPreciseGuard: PostExitPreciseGuard?
     private var pendingFinalPreciseExitSample: LocationSample?
+    private var pendingAutomaticStopReferenceSample: LocationSample?
     private var pendingAutomaticStopAnchorTimestamp: Date?
     private var lastNotifiedTrackingModeIsActive: Bool?
     private var lastCoreLocationDeliveryAt: Date?
@@ -1534,6 +1535,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             "Active tracking silence fallback starting final precise exit; watchdog #\(watchdogID) silence=\(formatDuration(silence)) staleWatchdogRequests=\(consecutiveStaleWatchdogFreshLocationRequests) lastCoreLocationDelivery=\(lastCoreLocationDeliveryDescription()); cached location will not be used as stop or movement evidence; \(hybridWatchdogContext())."
         )
         pendingAutomaticStopAnchorTimestamp = activeSilenceRecoveryStartedAt ?? latestDeliveryAt
+        pendingAutomaticStopReferenceSample = latestAcceptedEvent.map(locationSample)
         beginFinalPreciseExit(
             reason: "active tracking silence fallback after stale watchdog requests",
             evaluateCachedLocationFirst: false
@@ -1600,9 +1602,14 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     }
 
     private func cancelFinalPreciseExit(keepActiveTracking: Bool = false) {
-        guard isCompletingHybridPreciseExit || finalPreciseExitTask != nil else { return }
+        guard isCompletingHybridPreciseExit
+                || finalPreciseExitTask != nil
+                || pendingAutomaticStopReferenceSample != nil
+                || pendingAutomaticStopAnchorTimestamp != nil
+        else { return }
         isCompletingHybridPreciseExit = false
         pendingFinalPreciseExitSample = nil
+        pendingAutomaticStopReferenceSample = nil
         pendingAutomaticStopAnchorTimestamp = nil
         finalPreciseExitTask?.cancel()
         finalPreciseExitTask = nil
@@ -1637,6 +1644,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             reason: afterTimeout ? "final precise exit timed out" : "final precise exit completed"
         )
         pendingFinalPreciseExitSample = nil
+        pendingAutomaticStopReferenceSample = nil
         pendingAutomaticStopAnchorTimestamp = nil
         traceLocationEvent(afterTimeout
                            ? "Hybrid final precise exit timed out; returning to idle detection mode."
@@ -1961,7 +1969,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             traceLocationEvent("Final precise exit sample received; sampleContext=\(locationContextDescription(context)).")
             let assessment = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
                 sample: sample,
-                latestAcceptedEvent: latestAcceptedEvent,
+                stationaryReference: pendingAutomaticStopReferenceSample ?? latestAcceptedEvent.map(locationSample),
                 stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
                 stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
                 minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
@@ -1971,6 +1979,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 finalPreciseExitResumedMovement = true
                 traceLocationEvent("Final precise exit sample proves movement resumed (\(reason)); staying in active tracking.")
                 pendingFinalPreciseExitSample = nil
+                let stateBeforeResuming = trackingStateMachine.state
+                _ = trackingStateMachine.resumeActiveTracking()
+                recordTrackingStateTransition(
+                    from: stateBeforeResuming,
+                    reason: "final precise-exit sample proved movement resumed"
+                )
                 cancelFinalPreciseExit(keepActiveTracking: true)
             case .confirmsStop(let reason):
                 pendingFinalPreciseExitSample = sample
@@ -2036,7 +2050,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         if context.isActiveSilenceRecoverySample, !wasManualCapture {
             let assessment = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
                 sample: sample,
-                latestAcceptedEvent: latestAcceptedEvent,
+                stationaryReference: pendingAutomaticStopReferenceSample ?? latestAcceptedEvent.map(locationSample),
                 stationarySpeedThreshold: trackingStateMachine.thresholds.stationarySpeedThreshold,
                 stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters,
                 minimumUsableHorizontalAccuracyMeters: trackingStateMachine.thresholds.minimumUsableHorizontalAccuracyMeters
@@ -2050,6 +2064,9 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 let stateBeforeConfirmation = trackingStateMachine.state
                 pendingAutomaticStopAnchorTimestamp = activeSilenceRecoveryStartedAt
                     ?? sample.timestamp.addingTimeInterval(-trackingStateMachine.thresholds.stationaryDuration)
+                var inferredStationaryReference = sample
+                inferredStationaryReference.timestamp = pendingAutomaticStopAnchorTimestamp ?? sample.timestamp
+                pendingAutomaticStopReferenceSample = inferredStationaryReference
                 _ = trackingStateMachine.confirmSustainedStationaryPeriod(referenceSample: sample)
                 recordTrackingStateTransition(
                     from: stateBeforeConfirmation,
@@ -2391,6 +2408,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             return
         }
         pendingAutomaticStopAnchorTimestamp = anchor.timestamp
+        // REGRESSION GUARD: compare the final precise-exit sample with the detector's actual
+        // stationary anchor, not the last persisted moving event. A destination is expected to
+        // be materially distant from that moving event and must not be mistaken for resumed travel.
+        pendingAutomaticStopReferenceSample = anchor
         traceLocationEvent(
             "Confirmed automatic stop retained stationary anchor at \(Self.traceDateFormatter.string(from: anchor.timestamp)) for final stopped non-duplicate capture."
         )

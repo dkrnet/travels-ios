@@ -41,11 +41,13 @@ final class TravelsModel: ObservableObject {
     @Published var locationAuthorizationMessage: String?
     var mapVisibleEventIDs: [Int64] = []
     var listVisibleEventIDs: [Int64] = []
+    var browsingSelectionEventID: Int64?
     @Published var listScrollTargetEventID: Int64?
     @Published var listScrollTargetAnchor: UnitPoint = .top
     @Published var listScrollTargetsContentTop = false
     @Published var listScrollCommandID = UUID()
     @Published var mapFocusEventIDs: [Int64]?
+    @Published var mapCenterTargetEventID: Int64?
     @Published var mapCameraCommandID = UUID()
     @Published var mapCameraRegion: MKCoordinateRegion?
     @Published private(set) var dateSelectionLowerBound = Calendar.current.startOfDay(for: Date())
@@ -243,6 +245,9 @@ final class TravelsModel: ObservableObject {
             listScrollTargetAnchor = .top
             listScrollTargetsContentTop = false
             mapFocusEventIDs = nil
+            mapCenterTargetEventID = nil
+            mapCameraRegion = nil
+            browsingSelectionEventID = nil
         } catch {
             statusMessage = error.localizedDescription
         }
@@ -337,27 +342,41 @@ final class TravelsModel: ObservableObject {
         listVisibleEventIDs = eventIDs
     }
 
+    func selectEventForDetails(_ detail: EventDetail) {
+        browsingSelectionEventID = detail.id
+        selectedEvent = detail
+    }
+
     func prepareMapFocusFromList() {
-        mapFocusEventIDs = listVisibleEventIDs
-        mapCameraCommandID = UUID()
+        if let selectedID = validBrowsingSelectionEventID() {
+            // REGRESSION GUARD: selecting a list event must center that same event on the map without zooming back out to the full day.
+            mapFocusEventIDs = nil
+            mapCenterTargetEventID = selectedID
+            mapCameraCommandID = UUID()
+        } else if mapCameraRegion == nil {
+            mapFocusEventIDs = listVisibleEventIDs
+            mapCameraCommandID = UUID()
+        }
     }
 
     func prepareListScrollTargetFromMap() {
-        if case .all = selectedMapDisplay {
-            requestListScrollToContentTop()
+        if let selectedID = validBrowsingSelectionEventID() {
+            // REGRESSION GUARD: selecting a map event must return to that event in the list instead of resetting the list to its first row.
+            requestListScrollTarget(selectedID, anchor: .center)
             return
         }
 
-        let visibleIDs = currentMapVisibleEventIDs()
-        if let targetEventID = eventIDClosestToMapCenter()
-            ?? visibleIDs.first
-            ?? mapVisibleEventIDs.first {
-            requestListScrollTarget(targetEventID, anchor: .center)
+        if let previousTopEventID = listVisibleEventIDs.first,
+           displayedEvents.contains(where: { $0.id == previousTopEventID }) {
+            requestListScrollTarget(previousTopEventID, anchor: .top)
+        } else {
+            requestListScrollToContentTop()
         }
     }
 
     func resetMapZoomToFullDay() {
         mapFocusEventIDs = nil
+        mapCameraRegion = nil
         mapCameraCommandID = UUID()
     }
 
@@ -390,6 +409,7 @@ final class TravelsModel: ObservableObject {
     func selectAllMapDisplay() {
         selectedMapDisplay = .all
         mapFocusEventIDs = nil
+        mapCameraRegion = nil
         listScrollTargetEventID = nil
         listScrollTargetAnchor = .top
         listScrollTargetsContentTop = false
@@ -402,6 +422,7 @@ final class TravelsModel: ObservableObject {
     func selectStoppedOnlyMapDisplay() {
         selectedMapDisplay = .stoppedOnly
         mapFocusEventIDs = nil
+        mapCameraRegion = nil
         listScrollTargetEventID = nil
         listScrollTargetAnchor = .top
         listScrollTargetsContentTop = false
@@ -1184,6 +1205,14 @@ final class TravelsModel: ObservableObject {
         self.selectedEvent = displayedEvents.first(where: { $0.id == id }) ?? nil
     }
 
+    private func validBrowsingSelectionEventID() -> Int64? {
+        guard let browsingSelectionEventID,
+              displayedEvents.contains(where: { $0.id == browsingSelectionEventID }) else {
+            return nil
+        }
+        return browsingSelectionEventID
+    }
+
     private func focusSelectedTrips(_ tripIDs: Set<DetectedTrip.ID>) {
         let selectedTrips = detectedTrips.filter { tripIDs.contains($0.id) }
         guard !selectedTrips.isEmpty else {
@@ -1220,6 +1249,7 @@ final class TravelsModel: ObservableObject {
     private func clearTripFocus() {
         mapFocusEventIDs = nil
         if !isListView {
+            mapCameraRegion = nil
             mapCameraCommandID = UUID()
         }
     }
@@ -1260,10 +1290,6 @@ final class TravelsModel: ObservableObject {
         return .current
     }
 
-    private func currentMapVisibleEventIDs() -> [Int64] {
-        mapVisibleEventIDs(in: mapCameraRegion)
-    }
-
     private func mapVisibleEventIDs(in region: MKCoordinateRegion?) -> [Int64] {
         guard let region else { return mapVisibleEventIDs }
         return displayedEvents.compactMap { detail -> Int64? in
@@ -1271,19 +1297,6 @@ final class TravelsModel: ObservableObject {
             guard isCoordinate(detail.coordinate, inside: region) else { return nil }
             return id
         }
-    }
-
-    private func eventIDClosestToMapCenter() -> Int64? {
-        guard let region = mapCameraRegion else { return nil }
-        return displayedEvents
-            .compactMap { detail -> (id: Int64, distanceSquared: Double)? in
-                guard let id = detail.id else { return nil }
-                let latitudeDelta = detail.coordinate.latitude - region.center.latitude
-                let longitudeDelta = detail.coordinate.longitude - region.center.longitude
-                return (id, latitudeDelta * latitudeDelta + longitudeDelta * longitudeDelta)
-            }
-            .min { lhs, rhs in lhs.distanceSquared < rhs.distanceSquared }?
-            .id
     }
 
     private func isCoordinate(_ coordinate: CLLocationCoordinate2D, inside region: MKCoordinateRegion) -> Bool {

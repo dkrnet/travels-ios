@@ -40,7 +40,7 @@ struct EventMapView: View {
                 ForEach(displayedEvents) { detail in
                     Annotation(markerTitle(for: detail), coordinate: detail.coordinate) {
                         Button {
-                            model.selectedEvent = detail
+                            model.selectEventForDetails(detail)
                         } label: {
                             EventMapBadge(detail: detail)
                                 // REGRESSION GUARD: selected moving events may intentionally
@@ -140,7 +140,32 @@ struct EventMapView: View {
     }
 
     private func updateCameraPosition() {
+        if let targetID = model.mapCenterTargetEventID,
+           let target = events.first(where: { $0.id == targetID }) {
+            let retainedSpan = model.mapCameraRegion?.span
+                ?? scaleRegion?.span
+                ?? MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            let region = MKCoordinateRegion(center: target.coordinate, span: retainedSpan)
+            suppressManualZoomDetectionUntil = Date().addingTimeInterval(1)
+            withAnimation(.easeInOut(duration: 0.25)) {
+                cameraPosition = .region(region)
+            }
+            scaleRegion = region
+            model.updateMapCameraRegion(region)
+            updateVisibleEventIDs(in: region)
+            model.mapCenterTargetEventID = nil
+            model.mapFocusEventIDs = nil
+            return
+        }
+
         let focusEvents = focusedEvents()
+        if focusEvents.isEmpty, let retainedRegion = model.mapCameraRegion {
+            // REGRESSION GUARD: recreating the map after viewing the list must restore the user's prior pan and zoom instead of fitting the full day again.
+            cameraPosition = .region(retainedRegion)
+            scaleRegion = retainedRegion
+            updateVisibleEventIDs(in: retainedRegion)
+            return
+        }
         let visibleEvents = focusEvents.isEmpty
             ? fullDayEvents()
             : Self.spacedEvents(
@@ -774,7 +799,7 @@ struct EventListView: View {
 
                     ForEach(events) { detail in
                         Button {
-                            model.selectedEvent = detail
+                            model.selectEventForDetails(detail)
                         } label: {
                             EventRow(detail: detail)
                                 .padding(.horizontal)
