@@ -130,3 +130,72 @@ struct SettingsView: View {
         }
     }
 }
+
+struct FirstLaunchWelcomeView: View {
+    let demoDates: [Date]
+    let onNotNow: () -> Void
+    let onOpenSettings: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Label {
+                        Text("Travels keeps a private history of the places you've been. Your location history is stored only on this device and is never sent to the developer.")
+                    } icon: {
+                        Image(systemName: "hand.raised.fill")
+                            .foregroundStyle(.blue)
+                    }
+                }
+
+                Section("Record in the Background") {
+                    Text("Automatic Location Tracking is enabled by default. Background Location remains off until you choose to enable it.")
+                    VStack(alignment: .leading, spacing: 10) {
+                        welcomeStep(1, "Open Travels Settings.")
+                        welcomeStep(2, "Leave Automatic Location Tracking on and enable Background Location.")
+                        welcomeStep(3, "Choose Always Allow when iOS asks for location access.")
+                    }
+                }
+
+                Section("What to Expect") {
+                    Text("With Precise Location Mode set to Automatic, Travels normally uses lower-power monitoring and temporarily increases location accuracy when movement is detected.")
+                    Text("Background tracking uses additional battery and may cause iOS to display its location indicator.")
+                    Text("Address lookup is optional and sends coordinates to Apple only when enabled.")
+                }
+
+                if let firstDemoDate = demoDates.first, let lastDemoDate = demoDates.last {
+                    Section("Demo Data") {
+                        Text("Sample trips dated \(firstDemoDate.formatted(date: .abbreviated, time: .omitted)) through \(lastDemoDate.formatted(date: .abbreviated, time: .omitted)) have been added. You can hide them by turning off Include Demo Data in Settings.")
+                    }
+                }
+
+                Section {
+                    Text("You can change these options at any time from the Travels menu under Settings.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("Welcome")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Not Now", action: onNotNow)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Open Settings", action: onOpenSettings)
+                }
+            }
+        }
+    }
+
+    private func welcomeStep(_ number: Int, _ text: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text("\(number)")
+                .font(.caption.bold())
+                .foregroundStyle(.white)
+                .frame(width: 22, height: 22)
+                .background(.blue, in: Circle())
+            Text(text)
+        }
+    }
+}

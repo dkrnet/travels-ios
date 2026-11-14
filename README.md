@@ -21,8 +21,9 @@ The app is not intended to be a public tracking service, fleet-management platfo
 - Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, positions the list before displaying it, and treats subsequent manual or top/bottom list navigation as the user's new browsing position
 - Initial map launch frames the complete loaded day while later passive event and address updates preserve the user's camera
 - Always-visible lower-right map scale marker
-- Date navigation with previous-day context for continuity, including otherwise empty selected days and full-day map framing
+- Date navigation with non-demo previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
+- One-time new-install guidance that explains private local storage and how to opt into background capture from Settings
 - A silent, background-capable `Add` Shortcuts action with independent `Mode` (`Normal`, `Force`, or `If New`) and `Movement` (`Automatic`, `Stopped`, or `Moving`) parameters, plus actions that persistently turn Automatic Location Tracking on or off. An `If New` stopped capture can mark the nearby previous event stopped when it is less than five minutes old instead of inserting a duplicate; explicit movement choices preserve measured speed, and trigger availability and background execution remain subject to iOS
 - Developer builds include a silent parameterized `Log CarPlay Event` Shortcuts action that records Connect/Disconnect automation events, timestamps, current tracking state, and the latest tracking-state transition in the maintenance log without changing tracking behavior; TestFlight and App Store builds omit this temporary diagnostic action
 - A full-width date/count banner on the map and list screens with a trailing `Precise Location` indicator while high-precision tracking is running
@@ -101,6 +102,22 @@ Open the repository in Xcode and use the `Travels` scheme for Simulator/device d
 xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build
 ```
 
+Build for the default iPhone 17 Pro simulator and print the generated build metadata:
+
+```bash
+scripts/build_simulator.sh
+```
+
+Use `--name "SIMULATOR NAME"` or `--device SIMULATOR_UDID` to select another available simulator. To build, delete the existing simulator app and its data, install, and launch a true first-run build:
+
+```bash
+scripts/install_simulator.sh --build --fresh --launch
+```
+
+Omit `--fresh` to preserve the simulator's existing Travels data.
+Do not pass a simulator UDID to `install_device.sh`; that script intentionally
+accepts only physical iOS devices.
+
 Build for a connected physical iPhone:
 
 ```bash
@@ -115,7 +132,8 @@ Build and install over the existing phone app without uninstalling or deleting t
 scripts/install_device.sh --build
 ```
 
-If more than one paired phone is available, pass the device identifier from `xcrun devicectl list devices`:
+If more than one paired physical phone is available, pass its physical-device
+identifier from `xcrun devicectl list devices`:
 
 ```bash
 scripts/install_device.sh --build --device DEVICE_ID

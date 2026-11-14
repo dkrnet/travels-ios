@@ -39,6 +39,8 @@ final class TravelsModel: ObservableObject {
     @Published var addressResolutionLastError: String?
     @Published var addressResolutionCurrentTarget: String?
     @Published var locationAuthorizationMessage: String?
+    @Published private(set) var shouldShowFirstLaunchWelcome = false
+    @Published private(set) var firstLaunchDemoDates: [Date] = []
     var mapVisibleEventIDs: [Int64] = []
     var listVisibleEventIDs: [Int64] = []
     var browsingSelectionEventID: Int64?
@@ -63,6 +65,7 @@ final class TravelsModel: ObservableObject {
     private var addressResolutionTimerTask: Task<Void, Never>?
     private var addressResolutionNeedsRerun = false
     private var bootstrapTask: Task<Void, Never>?
+    private static let firstLaunchWelcomeSettingKey = "onboarding.backgroundTrackingWelcome"
 
     func bootstrap() async {
         if let bootstrapTask {
@@ -86,11 +89,16 @@ final class TravelsModel: ObservableObject {
             try repairAppSupportDirectory(root: appSupportRoot, appSupport: appSupport)
             appSupportURL = appSupport
             let storeURL = appSupport.appendingPathComponent("Travels.sqlite")
+            let storeExistedBeforeLaunch = FileManager.default.fileExists(atPath: storeURL.path)
             let launch = try openOrRepairStore(storeURL: storeURL)
             self.store = launch.store
             self.storeURL = storeURL
             self.settingsStore = SettingsStore(store: launch.store)
             self.settings = try settingsStore?.load() ?? AppSettings()
+            try configureFirstLaunchWelcome(
+                store: launch.store,
+                storeExistedBeforeLaunch: storeExistedBeforeLaunch
+            )
             self.isListView = settings.preferListView
             locationService.onStatusMessage = { [weak self] message in
                 self?.statusMessage = message
@@ -151,6 +159,7 @@ final class TravelsModel: ObservableObject {
             let didRepairDatabase = launch.repairMessage != nil
             if settings.includeDemoData && !didRepairDatabase {
                 try self.ensureDemoReferenceDate(referenceDate: Date())
+                self.firstLaunchDemoDates = DemoData.displayedDates(anchoredTo: try self.demoReferenceDate())
                 try self.seedDemoDataIfNeeded()
             }
             Task(priority: .userInitiated) { [weak self, launch, settings] in
@@ -266,6 +275,18 @@ final class TravelsModel: ObservableObject {
             } else {
                 try reloadEvents()
             }
+        } catch {
+            statusMessage = error.localizedDescription
+        }
+    }
+
+    func dismissFirstLaunchWelcome() {
+        shouldShowFirstLaunchWelcome = false
+        do {
+            try store?.setSetting(
+                Self.firstLaunchWelcomeSettingKey,
+                value: FirstLaunchWelcomeDisposition.completed.rawValue
+            )
         } catch {
             statusMessage = error.localizedDescription
         }
@@ -1548,6 +1569,27 @@ final class TravelsModel: ObservableObject {
             return "manual capture"
         }
         return firstClause.diagnosticSentence(maxLength: 82, lowercasingFirstLetter: true)
+    }
+
+    private func configureFirstLaunchWelcome(
+        store: TravelsStore,
+        storeExistedBeforeLaunch: Bool
+    ) throws {
+        let storedValue = try store.setting(Self.firstLaunchWelcomeSettingKey)
+        let disposition = FirstLaunchWelcomePolicy.disposition(
+            storedValue: storedValue,
+            storeExistedBeforeLaunch: storeExistedBeforeLaunch
+        )
+        // REGRESSION GUARD: Persist pending before presenting so an interrupted
+        // first launch shows the welcome again, while upgrades with an existing
+        // database do not unexpectedly present new-install onboarding.
+        if storedValue == nil, disposition == .pending {
+            try store.setSetting(
+                Self.firstLaunchWelcomeSettingKey,
+                value: FirstLaunchWelcomeDisposition.pending.rawValue
+            )
+        }
+        shouldShowFirstLaunchWelcome = disposition.shouldPresent
     }
 
     private var maintenanceLogURL: URL? {

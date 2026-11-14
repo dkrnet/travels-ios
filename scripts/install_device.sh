@@ -103,10 +103,11 @@ if [[ -z "$device_id" ]]; then
     available_device_ids+=("$candidate_device_id")
   done < <(
       xcrun devicectl list devices | awk '
-        /available|connected/ {
+        # REGRESSION GUARD: A booted simulator is reported as "connected" by
+        # devicectl, but physical-device installs must never select it.
+        $NF == "physical" && /available|connected/ {
           for (i = 1; i <= NF; i++) {
-            # REGRESSION GUARD: current devicectl labels physical devices "connected" and uses a 25-character hardware UDID rather than a simulator-style UUID.
-            if ($i ~ /^[0-9A-Fa-f-]+$/ && (length($i) == 25 || length($i) == 36)) {
+            if ($i ~ /^[0-9A-Fa-f-]+$/ && length($i) == 25) {
               print $i
             }
           }
@@ -124,6 +125,21 @@ if [[ -z "$device_id" ]]; then
     exit 1
   fi
   device_id="${available_device_ids[0]}"
+fi
+
+if xcrun devicectl list devices | awk -v target="$device_id" '
+  $NF == "simulated" {
+    for (i = 1; i <= NF; i++) {
+      if ($i == target) {
+        found = 1
+      }
+    }
+  }
+  END { exit(found ? 0 : 1) }
+'; then
+  echo "error: $device_id is a simulator, not a physical iOS device" >&2
+  echo "hint: use scripts/install_simulator.sh --device $device_id --build --launch" >&2
+  exit 2
 fi
 
 echo "==> Installing non-destructively onto device $device_id"

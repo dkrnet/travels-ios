@@ -8,6 +8,19 @@ import XCTest
 @testable import TravelsCore
 
 final class AppSettingsTests: XCTestCase {
+    func testDemoDataDatesAreTheThreeDaysBeforeFirstLaunch() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let referenceDate = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 11, day: 14, hour: 12)))
+
+        let dates = DemoData.displayedDates(anchoredTo: referenceDate, calendar: calendar)
+        let components = dates.map { calendar.dateComponents([.year, .month, .day], from: $0) }
+
+        XCTAssertEqual(components.map(\.year), [2026, 2026, 2026])
+        XCTAssertEqual(components.map(\.month), [11, 11, 11])
+        XCTAssertEqual(components.map(\.day), [11, 12, 13])
+    }
+
     func testFreshSettingsStoreDisablesAddressResolution() throws {
         let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         let databaseURL = rootURL.appendingPathComponent("Travels.sqlite")
@@ -94,5 +107,43 @@ final class AppSettingsTests: XCTestCase {
         let settings = try JSONDecoder().decode(AppSettings.self, from: Data(json.utf8))
 
         XCTAssertEqual(settings.preciseLocationMode, .automatic)
+    }
+
+    func testFreshStorePresentsFirstLaunchWelcome() {
+        let disposition = FirstLaunchWelcomePolicy.disposition(
+            storedValue: nil,
+            storeExistedBeforeLaunch: false
+        )
+
+        XCTAssertEqual(disposition, .pending)
+        XCTAssertTrue(disposition.shouldPresent)
+    }
+
+    func testExistingStoreDoesNotReceiveNewInstallWelcomeAfterUpgrade() {
+        let disposition = FirstLaunchWelcomePolicy.disposition(
+            storedValue: nil,
+            storeExistedBeforeLaunch: true
+        )
+
+        XCTAssertEqual(disposition, .suppressedForExistingStore)
+        XCTAssertFalse(disposition.shouldPresent)
+    }
+
+    func testPendingWelcomeRemainsPendingAfterInterruptedLaunch() {
+        let disposition = FirstLaunchWelcomePolicy.disposition(
+            storedValue: FirstLaunchWelcomeDisposition.pending.rawValue,
+            storeExistedBeforeLaunch: true
+        )
+
+        XCTAssertTrue(disposition.shouldPresent)
+    }
+
+    func testCompletedWelcomeDoesNotPresentAgain() {
+        let disposition = FirstLaunchWelcomePolicy.disposition(
+            storedValue: FirstLaunchWelcomeDisposition.completed.rawValue,
+            storeExistedBeforeLaunch: true
+        )
+
+        XCTAssertFalse(disposition.shouldPresent)
     }
 }

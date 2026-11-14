@@ -397,9 +397,10 @@ public final class TravelsStore: @unchecked Sendable {
         var predicate = "e.localizedDate = ?"
         if includePreviousDayContext {
             let previous = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
-            predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? AND (? = 1 OR isDemo = 0) ORDER BY timestamp DESC LIMIT 1))"
+            // REGRESSION GUARD: demo events must never become previous-day context. A synthetic
+            // long-distance marker is misleading when a user opens a real day with no activity.
+            predicate = "(e.localizedDate = ? OR e.id = (SELECT id FROM events WHERE localizedDate = ? AND isDemo = 0 ORDER BY timestamp DESC LIMIT 1))"
             parameters.append(.text(TravelsDateTools.localizedDayString(for: previous, timeZoneIdentifier: nil)))
-            parameters.append(.integer(includeDemo ? 1 : 0))
         }
         if !includeDemo {
             predicate += " AND e.isDemo = 0"

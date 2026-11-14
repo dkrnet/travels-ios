@@ -98,10 +98,11 @@ if [[ -z "$device_id" ]]; then
     available_device_ids+=("$candidate_device_id")
   done < <(
       "${devicectl_command[@]}" list devices | awk '
-        /available|connected/ {
+        # REGRESSION GUARD: A booted simulator is reported as "connected" by
+        # devicectl, but live-data backups must select only physical devices.
+        $NF == "physical" && /available|connected/ {
           for (i = 1; i <= NF; i++) {
-            # REGRESSION GUARD: current devicectl labels physical devices "connected" and uses a 25-character hardware UDID rather than a simulator-style UUID.
-            if ($i ~ /^[0-9A-Fa-f-]+$/ && (length($i) == 25 || length($i) == 36)) {
+            if ($i ~ /^[0-9A-Fa-f-]+$/ && length($i) == 25) {
               print $i
             }
           }
