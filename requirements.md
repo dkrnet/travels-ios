@@ -547,6 +547,7 @@ The project shall support AI/LLM-assisted development without allowing documenta
 - Bug fixes shall include or update regression tests when practical.
 - Behavior changes shall update requirements and README in the same change set.
 - Changes shall preserve privacy/local-first assumptions unless the requirement is explicitly changed.
+- Before follow-up commits or description updates are applied to an existing pull request, its current state shall be verified. Work discovered after a pull request has merged or closed shall use a new branch from the current base and a new pull request.
 
 ## Regression testing requirements
 
