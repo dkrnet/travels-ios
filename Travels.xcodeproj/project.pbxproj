@@ -303,10 +303,14 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(PROJECT_DIR)/iOSApp/TravelsApp/Info.plist",
+				"$(PROJECT_DIR)/scripts/stamp_build_version.sh",
 			);
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/TravelsStampedInfo.plist",
+				"$(DERIVED_FILE_DIR)/TravelsStampBuildVersion.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -377,7 +381,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
-				INFOPLIST_FILE = iOSApp/TravelsApp/Info.plist;
+				INFOPLIST_FILE = "$(DERIVED_FILE_DIR)/TravelsStampedInfo.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -412,7 +416,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Sources/CSQLite";
-				INFOPLIST_FILE = iOSApp/TravelsApp/Info.plist;
+				INFOPLIST_FILE = "$(DERIVED_FILE_DIR)/TravelsStampedInfo.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

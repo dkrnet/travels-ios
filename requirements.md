@@ -71,6 +71,7 @@ A future developer should be able to regenerate the application from scratch wit
 - The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
 - Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.0.0+<git-short-sha>` and reset the development counter to `0`.
 - The About screen shall display the human-readable development version, for example `Version 2.0.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
+- The physical-device build helper shall validate the completed app bundle and fail if its numeric bundle version or Git-based display version was not stamped successfully.
 
 ## Data storage requirements
 
@@ -320,7 +321,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall present events on a map and in a list.
 - The user shall be able to switch between map and list views.
 - The preferred view shall be persisted.
-- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row.
+- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows.
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.

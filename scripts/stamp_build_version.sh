@@ -9,6 +9,7 @@ display_state_file="${state_dir}/travels-version-state"
 bundle_state_file="${state_dir}/travels-bundle-build-state"
 minimum_bundle_build="${TRAVELS_MINIMUM_BUNDLE_BUILD:-311}"
 source_plist="${project_dir}/iOSApp/TravelsApp/Info.plist"
+# REGRESSION GUARD: Xcode processes Info.plist after this build phase, so the target must consume this generated plist; stamping only the product plist is overwritten with build-setting defaults.
 generated_plist="${DERIVED_FILE_DIR:-${state_dir}}/TravelsStampedInfo.plist"
 product_plist="${TARGET_BUILD_DIR:-}/$(basename "${FULL_PRODUCT_NAME:-Travels.app}")/Info.plist"
 

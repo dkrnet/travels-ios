@@ -142,6 +142,18 @@ plist_value() {
 bundle_version="$(plist_value CFBundleVersion)"
 display_version="$(plist_value TravelsDisplayVersion)"
 
+# REGRESSION GUARD: Xcode once overwrote the stamped plist after the version phase, producing installable builds with bundle version 0 and no Git-based build ID.
+if [[ ! "$bundle_version" =~ ^[1-9][0-9]*$ ]]; then
+  echo "error: built app has invalid or unstamped CFBundleVersion: ${bundle_version:-unavailable}" >&2
+  echo "==> Full xcodebuild log: $xcode_log" >&2
+  exit 1
+fi
+if [[ ! "$display_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-dev\.[0-9]+|\.[0-9]+)\+[0-9A-Fa-f]+$ ]]; then
+  echo "error: built app has invalid or unstamped TravelsDisplayVersion: ${display_version:-unavailable}" >&2
+  echo "==> Full xcodebuild log: $xcode_log" >&2
+  exit 1
+fi
+
 echo "==> Build metadata:"
 echo "    Bundle version: ${bundle_version:-unavailable}"
 echo "    Build ID:       ${display_version:-unavailable}"

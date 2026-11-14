@@ -18,7 +18,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
-- Map/list handoff that preserves each viewport and keeps a selected event centered when switching views
+- Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, and positions the list before displaying it
 - Always-visible lower-right map scale marker
 - Date navigation with previous-day context for continuity, including otherwise empty selected days and full-day map framing
 - Automatic and manual location capture, including a Precise Location Mode setting with Automatic hybrid tracking, Always On high precision, and Always Off lower-power monitoring
@@ -106,7 +106,7 @@ Build for a connected physical iPhone:
 scripts/build_device.sh
 ```
 
-After a successful device build, the script prints the built app path, numeric bundle version, and custom Travels build ID read from the completed app bundle.
+After a successful device build, the script validates and prints the built app path, positive numeric bundle version, and Git-based custom Travels build ID read from the completed app bundle. It fails rather than accepting an app whose generated version metadata was not applied.
 
 Build and install over the existing phone app without uninstalling or deleting the app data container:
 
