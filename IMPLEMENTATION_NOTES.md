@@ -26,6 +26,12 @@ This first pass is intentionally split into a reusable core package and an iOS S
 - Privacy lock uses LocalAuthentication and hides map/list content until unlocked.
 - Settings include separate powered and battery update distances, matching the old develop-branch TODO.
 
+## Public Product Documentation
+
+- `docs/index.md` is the source for the public Travels marketing page and must remain consistent with the app's current capabilities, privacy posture, support paths, and licensing.
+- Web-optimized promotional screenshots are stored in `docs/assets/screenshots`. They use demo data and should be refreshed when material user-interface changes make the published images inaccurate.
+- `PRIVACY.md` remains the canonical public privacy policy; the marketing page links to it rather than duplicating the complete policy.
+
 ## Completed
 
 - Create an Xcode iOS app target and set the bundle identifier.
@@ -36,6 +42,7 @@ This first pass is intentionally split into a reusable core package and an iOS S
 - Add richer search filters for place hierarchy pickers.
 - Add App Store privacy strings and final permission copy.
 - Add external TestFlight archive validation, privacy manifest, and release checklist.
+- Add a public marketing page with optimized product screenshots, privacy messaging, support links, and licensing information.
 - Add developer diagnostics for address-resolution debugging in debug builds.
 
 ## Still Needed
