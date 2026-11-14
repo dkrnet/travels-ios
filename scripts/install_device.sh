@@ -103,9 +103,10 @@ if [[ -z "$device_id" ]]; then
     available_device_ids+=("$candidate_device_id")
   done < <(
       xcrun devicectl list devices | awk '
-        /available/ {
+        /available|connected/ {
           for (i = 1; i <= NF; i++) {
-            if ($i ~ /^[0-9A-Fa-f-]{36}$/) {
+            # REGRESSION GUARD: current devicectl labels physical devices "connected" and uses a 25-character hardware UDID rather than a simulator-style UUID.
+            if ($i ~ /^[0-9A-Fa-f-]+$/ && (length($i) == 25 || length($i) == 36)) {
               print $i
             }
           }

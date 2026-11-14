@@ -444,4 +444,15 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTAssertEqual(transition, .none)
         XCTAssertEqual(machine.state, .activeTracking)
     }
+
+    func testResumingMovementAfterFinalExitRestoresActiveState() {
+        var machine = LocationTrackingStateMachine()
+        _ = machine.confirmSustainedStationaryPeriod(referenceSample: sample(at: 370, speed: 0))
+
+        let transition = machine.resumeActiveTracking()
+
+        XCTAssertEqual(transition, .enterActiveTracking)
+        XCTAssertEqual(machine.state, .activeTracking)
+        XCTAssertTrue(machine.isHighPrecisionTrackingActive)
+    }
 }

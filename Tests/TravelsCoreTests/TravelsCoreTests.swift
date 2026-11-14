@@ -315,6 +315,63 @@ final class TravelsCoreTests: XCTestCase {
         )
     }
 
+    func testConfirmedAutomaticStopUsesStationaryAnchorInsteadOfDelayedFinalSampleTime() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 100),
+            source: .locationServices
+        )
+        let stationaryAnchor = Date(timeIntervalSinceReferenceDate: 340)
+        let delayedFinalSample = LocationSample(
+            latitude: 0.0001,
+            longitude: 0,
+            horizontalAccuracy: 5,
+            timestamp: Date(timeIntervalSinceReferenceDate: 650)
+        )
+
+        XCTAssertFalse(
+            LocationFiltering.shouldMarkPreviousEventStoppedForRecentDuplicate(
+                candidate: delayedFinalSample,
+                previous: previous,
+                duplicateRadiusMeters: LocationFiltering.stoppedNonDuplicateRadiusMeters
+            )
+        )
+        XCTAssertTrue(
+            LocationFiltering.shouldMarkPreviousEventStoppedForConfirmedAutomaticStop(
+                candidate: delayedFinalSample,
+                previous: previous,
+                duplicateRadiusMeters: LocationFiltering.stoppedNonDuplicateRadiusMeters,
+                stationaryAnchorTimestamp: stationaryAnchor
+            )
+        )
+    }
+
+    func testConfirmedAutomaticStopDoesNotReuseEventUnrelatedToStationaryEpisode() {
+        let previous = LocationEvent(
+            latitude: 0,
+            longitude: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1),
+            source: .locationServices
+        )
+        let stationaryAnchor = Date(timeIntervalSinceReferenceDate: 400)
+        let finalSample = LocationSample(
+            latitude: 0.0001,
+            longitude: 0,
+            horizontalAccuracy: 5,
+            timestamp: Date(timeIntervalSinceReferenceDate: 710)
+        )
+
+        XCTAssertFalse(
+            LocationFiltering.shouldMarkPreviousEventStoppedForConfirmedAutomaticStop(
+                candidate: finalSample,
+                previous: previous,
+                duplicateRadiusMeters: LocationFiltering.stoppedNonDuplicateRadiusMeters,
+                stationaryAnchorTimestamp: stationaryAnchor
+            )
+        )
+    }
+
     func testReplacementPreservesExistingMovementOverrideUnlessNewOverrideIsRequested() {
         let previous = LocationEvent(
             latitude: 0,

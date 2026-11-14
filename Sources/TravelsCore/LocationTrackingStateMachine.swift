@@ -216,6 +216,20 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         return .enterIdleDetection
     }
 
+    /// Restores active tracking when the bounded final-exit sample proves that movement resumed.
+    @discardableResult
+    public mutating func resumeActiveTracking() -> LocationTrackingTransition {
+        guard policy != .alwaysOffHighPrecision, state.kind != .activeTracking else {
+            return .none
+        }
+        // REGRESSION GUARD: final-exit cancellation must restore the logical tracking state as
+        // well as retain the active CLLocationManager mode, or synchronization immediately
+        // starts another final-exit attempt with the same cached sample.
+        state = .activeTracking
+        idleReferenceSample = nil
+        return .enterActiveTracking
+    }
+
     private func shouldStop(anchor: LocationSample, samples: [LocationSample]) -> Bool {
         guard samples.count >= 2, let first = samples.first, let last = samples.last else {
             return false

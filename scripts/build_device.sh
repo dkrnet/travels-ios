@@ -6,7 +6,7 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/build_device.sh [--configuration Debug|Release] [--clean] [--no-allow-provisioning-updates]
 
-Builds the Travels iOS app for a physical device and prints the .app path.
+Builds the Travels iOS app for a physical device and prints its metadata and .app path.
 
 Options:
   --configuration NAME  Xcode build configuration. Defaults to Debug.
@@ -133,3 +133,15 @@ fi
 
 echo "==> Built app:"
 echo "$app_path"
+
+app_info_plist="${app_path}/Info.plist"
+plist_value() {
+  /usr/libexec/PlistBuddy -c "Print :$1" "$app_info_plist" 2>/dev/null || true
+}
+
+bundle_version="$(plist_value CFBundleVersion)"
+display_version="$(plist_value TravelsDisplayVersion)"
+
+echo "==> Build metadata:"
+echo "    Bundle version: ${bundle_version:-unavailable}"
+echo "    Build ID:       ${display_version:-unavailable}"

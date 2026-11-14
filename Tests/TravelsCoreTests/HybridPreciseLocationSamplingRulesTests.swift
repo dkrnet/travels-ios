@@ -1,3 +1,8 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, you can obtain one at https://mozilla.org/MPL/2.0/.
+// REQUIREMENTS: Before making non-trivial edits to this file, read requirements.md, README.md, and AGENTS.md.
+
 import Foundation
 import XCTest
 @testable import TravelsCore
@@ -190,17 +195,13 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
     }
 
     func testMovementResumedDetectionUsesSpeedThenDistance() {
-        let previous = LocationEvent(
-            id: 1,
+        let previous = LocationSample(
             latitude: 33.0,
             longitude: -118.0,
             horizontalAccuracy: 10,
-            verticalAccuracy: 10,
-            altitude: 0,
             course: -1,
             speed: 0,
-            timestamp: Date(timeIntervalSinceReferenceDate: 1000),
-            source: .locationServices
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
         )
 
         XCTAssertTrue(
@@ -213,7 +214,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                     speed: 2.0,
                     timestamp: Date(timeIntervalSinceReferenceDate: 1010)
                 ),
-                latestAcceptedEvent: previous,
+                stationaryReference: previous,
                 stationarySpeedThreshold: 0.7,
                 stationaryRadiusMeters: 50,
                 minimumUsableHorizontalAccuracyMeters: 100
@@ -230,7 +231,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                     speed: -1,
                     timestamp: Date(timeIntervalSinceReferenceDate: 1010)
                 ),
-                latestAcceptedEvent: previous,
+                stationaryReference: previous,
                 stationarySpeedThreshold: 0.7,
                 stationaryRadiusMeters: 50,
                 minimumUsableHorizontalAccuracyMeters: 100
@@ -247,7 +248,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                     speed: 0.1,
                     timestamp: Date(timeIntervalSinceReferenceDate: 1010)
                 ),
-                latestAcceptedEvent: previous,
+                stationaryReference: previous,
                 stationarySpeedThreshold: 0.7,
                 stationaryRadiusMeters: 50,
                 minimumUsableHorizontalAccuracyMeters: 100
@@ -256,17 +257,13 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
     }
 
     func testFinalPreciseExitSampleRequiresFreshUsableMaterialMovement() {
-        let previous = LocationEvent(
-            id: 1,
+        let previous = LocationSample(
             latitude: 33.0,
             longitude: -118.0,
             horizontalAccuracy: 10,
-            verticalAccuracy: 10,
-            altitude: 0,
             course: -1,
             speed: 0,
-            timestamp: Date(timeIntervalSinceReferenceDate: 1000),
-            source: .locationServices
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
         )
         let now = Date(timeIntervalSinceReferenceDate: 1020)
 
@@ -279,7 +276,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 speed: 0.2,
                 timestamp: Date(timeIntervalSinceReferenceDate: 1010)
             ),
-            latestAcceptedEvent: previous,
+            stationaryReference: previous,
             stationarySpeedThreshold: 0.7,
             stationaryRadiusMeters: 50,
             minimumUsableHorizontalAccuracyMeters: 100,
@@ -296,7 +293,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 speed: 3,
                 timestamp: Date(timeIntervalSinceReferenceDate: 900)
             ),
-            latestAcceptedEvent: previous,
+            stationaryReference: previous,
             stationarySpeedThreshold: 0.7,
             stationaryRadiusMeters: 50,
             minimumUsableHorizontalAccuracyMeters: 100,
@@ -313,7 +310,7 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 speed: 3,
                 timestamp: Date(timeIntervalSinceReferenceDate: 1010)
             ),
-            latestAcceptedEvent: previous,
+            stationaryReference: previous,
             stationarySpeedThreshold: 0.7,
             stationaryRadiusMeters: 50,
             minimumUsableHorizontalAccuracyMeters: 100,
@@ -330,13 +327,41 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
                 speed: -1,
                 timestamp: Date(timeIntervalSinceReferenceDate: 1010)
             ),
-            latestAcceptedEvent: previous,
+            stationaryReference: previous,
             stationarySpeedThreshold: 0.7,
             stationaryRadiusMeters: 50,
             minimumUsableHorizontalAccuracyMeters: 100,
             now: now
         )
         XCTAssertTrue(realMovement.indicatesMovementResumed)
+    }
+
+    func testFinalPreciseExitUsesStationaryAnchorInsteadOfEarlierMovingEvent() {
+        let stationaryAnchor = LocationSample(
+            latitude: 33.803714,
+            longitude: -118.040184,
+            horizontalAccuracy: 10,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
+        )
+        let finalSample = LocationSample(
+            latitude: 33.803720,
+            longitude: -118.040190,
+            horizontalAccuracy: 9,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1310)
+        )
+
+        let assessment = HybridPreciseLocationSamplingRules.finalPreciseExitSampleAssessment(
+            sample: finalSample,
+            stationaryReference: stationaryAnchor,
+            stationarySpeedThreshold: 0.7,
+            stationaryRadiusMeters: 50,
+            minimumUsableHorizontalAccuracyMeters: 100,
+            now: Date(timeIntervalSinceReferenceDate: 1311)
+        )
+
+        XCTAssertEqual(assessment, .confirmsStop(reason: "sample remains within the stationary reference area"))
     }
 
     func testPostExitGuardSuppressesAmbiguousImmediateSamples() {
