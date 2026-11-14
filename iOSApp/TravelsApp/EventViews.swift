@@ -28,6 +28,7 @@ struct EventMapView: View {
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
     @State private var suppressManualZoomDetectionUntil = Date.distantPast
+    @State private var isAwaitingInitialEventFraming = false
     private let minimumMarkerSpacing: CGFloat = 35
 
     var body: some View {
@@ -53,6 +54,15 @@ struct EventMapView: View {
             }
             .onAppear {
                 mapViewportSize = geometry.size
+                isAwaitingInitialEventFraming = model.mapCameraRegion == nil && events.isEmpty
+                updateCameraPosition()
+            }
+            .onChange(of: events.compactMap(\.id)) { _, eventIDs in
+                guard isAwaitingInitialEventFraming, !eventIDs.isEmpty else { return }
+                // REGRESSION GUARD: startup can lay out an empty Map before events load; frame the first loaded day once instead of retaining MapKit's temporary automatic region.
+                isAwaitingInitialEventFraming = false
+                model.updateMapCameraRegion(nil)
+                scaleRegion = nil
                 updateCameraPosition()
             }
             .onChange(of: geometry.size) { _, newSize in
