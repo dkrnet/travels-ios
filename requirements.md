@@ -321,7 +321,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall present events on a map and in a list.
 - The user shall be able to switch between map and list views.
 - The preferred view shall be persisted.
-- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows.
+- Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows. Manually scrolling the list or using its top/bottom navigation action shall clear the cross-view event selection so a later map/list round trip preserves the user's new list position instead of returning to the formerly selected event.
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
@@ -331,6 +331,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
 - The map shall provide sensible full-day and recent-event zoom behavior.
+- On initial app launch into the map view, the first loaded event set for the selected day shall be framed using the full-day show-all view rather than retaining a temporary camera established before events finished loading.
 - After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
 - Passive map redraws caused by automatic location additions, address-resolution updates, or other event reloads shall preserve the user's current camera position and zoom level.
 - Photo-source events shall use the photo marker glyph even when their recorded speed would otherwise classify them as moving.
@@ -546,6 +547,7 @@ The project shall support AI/LLM-assisted development without allowing documenta
 - Bug fixes shall include or update regression tests when practical.
 - Behavior changes shall update requirements and README in the same change set.
 - Changes shall preserve privacy/local-first assumptions unless the requirement is explicitly changed.
+- Before follow-up commits or description updates are applied to an existing pull request, its current state shall be verified. Work discovered after a pull request has merged or closed shall use a new branch from the current base and a new pull request.
 
 ## Regression testing requirements
 

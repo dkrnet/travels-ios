@@ -347,6 +347,11 @@ final class TravelsModel: ObservableObject {
         selectedEvent = detail
     }
 
+    func clearBrowsingSelectionForUserListNavigation() {
+        guard browsingSelectionEventID != nil else { return }
+        browsingSelectionEventID = nil
+    }
+
     func prepareMapFocusFromList() {
         if let selectedID = validBrowsingSelectionEventID() {
             // REGRESSION GUARD: selecting a list event must center that same event on the map without zooming back out to the full day.
@@ -387,6 +392,7 @@ final class TravelsModel: ObservableObject {
     }
 
     func scrollListToTop() {
+        clearBrowsingSelectionForUserListNavigation()
         requestListScrollToContentTop()
     }
 
@@ -399,6 +405,7 @@ final class TravelsModel: ObservableObject {
 
     func scrollListToBottom() {
         // BUGFIX: scroll relative to the currently displayed subset so the bottom button reaches the last visible row.
+        clearBrowsingSelectionForUserListNavigation()
         requestListScrollTarget(displayedEvents.last?.id, anchor: .bottom)
     }
 

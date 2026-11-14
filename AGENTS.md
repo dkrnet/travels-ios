@@ -105,6 +105,7 @@ Repository-connected AI/LLM changes must:
 - Keep commits focused and reviewable.
 - Use clear commit messages.
 - Open or update a pull request unless explicitly instructed not to.
+- Verify that a pull request is still open immediately before pushing follow-up work or editing that pull request. If it has already merged or closed, create a new branch from the current base branch and open a new pull request rather than pushing additional commits to the old branch.
 - Summarize the change, affected files, validation performed, and any skipped validation.
 - Keep changes scoped to the request.
 - Avoid unrelated cleanup or formatting churn.

@@ -28,6 +28,7 @@ struct EventMapView: View {
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
     @State private var suppressManualZoomDetectionUntil = Date.distantPast
+    @State private var isAwaitingInitialEventFraming = false
     private let minimumMarkerSpacing: CGFloat = 35
 
     var body: some View {
@@ -53,6 +54,15 @@ struct EventMapView: View {
             }
             .onAppear {
                 mapViewportSize = geometry.size
+                isAwaitingInitialEventFraming = model.mapCameraRegion == nil && events.isEmpty
+                updateCameraPosition()
+            }
+            .onChange(of: events.compactMap(\.id)) { _, eventIDs in
+                guard isAwaitingInitialEventFraming, !eventIDs.isEmpty else { return }
+                // REGRESSION GUARD: startup can lay out an empty Map before events load; frame the first loaded day once instead of retaining MapKit's temporary automatic region.
+                isAwaitingInitialEventFraming = false
+                model.updateMapCameraRegion(nil)
+                scaleRegion = nil
                 updateCameraPosition()
             }
             .onChange(of: geometry.size) { _, newSize in
@@ -826,6 +836,14 @@ struct EventListView: View {
                 .scrollContentBackground(.hidden)
                 .coordinateSpace(name: "EventListScroll")
                 .opacity(isInitiallyPositioned ? 1 : 0)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 4)
+                        .onChanged { value in
+                            guard abs(value.translation.height) > abs(value.translation.width) else { return }
+                            // REGRESSION GUARD: once the user manually scrolls, the previous cross-view selection must not pull the list back on a later map/list round trip.
+                            model.clearBrowsingSelectionForUserListNavigation()
+                        }
+                )
                 .task(id: model.listScrollCommandID) {
                     let scrollsToContentTop = model.listScrollTargetsContentTop
                     let target = model.listScrollTargetEventID
