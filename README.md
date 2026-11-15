@@ -18,7 +18,7 @@ The app is not intended to be a public tracking service, fleet-management platfo
 
 - Local-first SQLite-backed location history
 - SwiftUI iOS app with map and list browsing
-- Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, positions the list before displaying it, follows new events after explicit Show All, Show Latest, or list Bottom actions, and preserves subsequent manual map/list navigation so passive updates do not require repeated interaction while traveling
+- Map/list handoff that preserves each viewport, keeps a selected event centered when switching views, positions the list before displaying it, follows new events after explicit Show All, Show Latest, or list Bottom actions, preserves subsequent manual map/list navigation, and keeps toolbar actions available through native overflow under Display Zoom and Larger Text
 - Initial map launch frames the complete loaded day while later passive updates honor the selected Show All, Show Latest, or manual camera behavior
 - Always-visible lower-right map scale marker
 - Date navigation with non-demo previous-day context for continuity, including otherwise empty selected days and full-day map framing
@@ -80,7 +80,9 @@ Builds use a numeric `CFBundleVersion` suitable for App Store Connect and a
 separate human-readable version containing development count and Git SHA for
 the About screen. The numeric sequence starts above the legacy build `310`.
 Set `TRAVELS_BUNDLE_BUILD_NUMBER` to an unused positive integer when an archive
-must use a build number higher than the local automatic state.
+must use a build number higher than the local automatic state. Monotonic local
+version counters are retained in the gitignored `Config/BuildState.local`
+directory so cleaning disposable `.build` output does not reset them.
 
 Run the core package tests:
 

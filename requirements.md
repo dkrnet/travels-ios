@@ -68,7 +68,7 @@ A future developer should be able to regenerate the application from scratch wit
 - Travels shall use semantic marketing versions for the App Store-facing version number.
 - Travels shall use a positive numeric, monotonically increasing App Store bundle build number in `CFBundleVersion` so archives are valid for App Store Connect and TestFlight.
 - The initial marketing version shall be `2.0.0` unless intentionally changed.
-- The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
+- The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file outside disposable build output so routine build cleanup does not reset it. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
 - Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.0.0+<git-short-sha>` and reset the development counter to `0`.
 - The About screen shall display the human-readable development version, for example `Version 2.0.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
 - The physical-device build helper shall validate the completed app bundle and fail if its numeric bundle version or Git-based display version was not stamped successfully.
@@ -330,6 +330,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The app shall present events on a map and in a list.
 - The user shall be able to switch between map and list views.
 - The preferred view shall be persisted.
+- Date navigation, map/list switching, map zoom or list top/bottom navigation, and More actions shall remain accessible when Display Zoom or Larger Text reduces available toolbar width; actions that do not fit may use the native toolbar overflow menu but shall not be dropped or hidden behind a second overflow level.
 - Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows. Manually scrolling the list or using its top/bottom navigation action shall clear the cross-view event selection so a later map/list round trip preserves the user's new list position instead of returning to the formerly selected event.
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
