@@ -15,3 +15,4 @@ xcuserdata/
 *.sqlite-wal
 !Fixtures/*.sqlite
 Config/Signing.local.xcconfig
+Config/BuildState.local/

@@ -424,7 +424,7 @@ private struct PartialTrip {
         )
 
         return DetectedTrip(
-            id: Self.identifier(for: firstMoving, lastMoving: lastMoving),
+            id: Self.identifier(for: firstMoving),
             movingStartDate: firstMoving.timestamp,
             movingEndDate: lastMoving.timestamp,
             movingEventIDs: movingEventIDs,
@@ -434,8 +434,9 @@ private struct PartialTrip {
         )
     }
 
-    private static func identifier(for firstMoving: LocationEvent, lastMoving: LocationEvent) -> String {
-        "trip-\(identityString(for: firstMoving))-\(identityString(for: lastMoving))"
+    private static func identifier(for firstMoving: LocationEvent) -> String {
+        // REGRESSION GUARD: appending movement must not change a trip's identity and clear the user's selected-trip filter during passive map/list following.
+        "trip-\(identityString(for: firstMoving))"
     }
 
     private static func identityString(for event: LocationEvent) -> String {

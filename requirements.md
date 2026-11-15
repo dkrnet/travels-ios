@@ -68,7 +68,7 @@ A future developer should be able to regenerate the application from scratch wit
 - Travels shall use semantic marketing versions for the App Store-facing version number.
 - Travels shall use a positive numeric, monotonically increasing App Store bundle build number in `CFBundleVersion` so archives are valid for App Store Connect and TestFlight.
 - The initial marketing version shall be `2.0.0` unless intentionally changed.
-- The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
+- The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file outside disposable build output so routine build cleanup does not reset it. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
 - Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.0.0+<git-short-sha>` and reset the development counter to `0`.
 - The About screen shall display the human-readable development version, for example `Version 2.0.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
 - The physical-device build helper shall validate the completed app bundle and fail if its numeric bundle version or Git-based display version was not stamped successfully.
@@ -494,6 +494,7 @@ The active export scope is the complete set of exportable events selected by the
 - Trip detection shall honor an explicit per-event trip-endpoint override when present.
 - Stopped-location presentation and trip detection shall honor an explicit per-event movement-state override while preserving the event's recorded speed.
 - Movement-state and trip-endpoint overrides shall remain independent so an event's stopped treatment does not implicitly force or suppress its endpoint treatment.
+- Detected trip identities shall remain stable when later movement is appended to the same trip so passive event additions do not clear selected trips. Map Show All, Map Show Latest, and list Bottom following shall operate only on the selected display subset; an event outside the selected trips shall not change the selection or move the map/list.
 - Trip detection shall treat sufficiently separated moving samples as trip boundaries and preserve those boundary samples as endpoint markers for neighboring trips.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 

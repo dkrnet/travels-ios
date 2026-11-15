@@ -4,14 +4,16 @@ set -euo pipefail
 
 project_dir="${PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 marketing_version="${MARKETING_VERSION:-2.0.0}"
-state_dir="${project_dir}/.build"
+state_dir="${TRAVELS_VERSION_STATE_DIR:-${project_dir}/Config/BuildState.local}"
 display_state_file="${state_dir}/travels-version-state"
 bundle_state_file="${state_dir}/travels-bundle-build-state"
-minimum_bundle_build="${TRAVELS_MINIMUM_BUNDLE_BUILD:-311}"
+minimum_bundle_build="${TRAVELS_MINIMUM_BUNDLE_BUILD:-467}"
 source_plist="${project_dir}/iOSApp/TravelsApp/Info.plist"
 # REGRESSION GUARD: Xcode processes Info.plist after this build phase, so the target must consume this generated plist; stamping only the product plist is overwritten with build-setting defaults.
-generated_plist="${DERIVED_FILE_DIR:-${state_dir}}/TravelsStampedInfo.plist"
+generated_plist="${DERIVED_FILE_DIR:-${project_dir}/.build}/TravelsStampedInfo.plist"
 product_plist="${TARGET_BUILD_DIR:-}/$(basename "${FULL_PRODUCT_NAME:-Travels.app}")/Info.plist"
+
+# REGRESSION GUARD: build cleanup deletes .build, so monotonic version counters must live in separately ignored local state rather than disposable build output.
 
 if ! command -v git >/dev/null 2>&1; then
   exit 0
