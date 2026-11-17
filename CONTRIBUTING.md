@@ -134,6 +134,39 @@ python3 scripts/recover_location_events.py \
 2. Follow `docs/testflight-release-checklist.md` for manual App Store Connect metadata, TestFlight App Review, external group setup, and real-device validation steps.
 3. Review `PRIVACY.md` and App Store Connect privacy answers whenever data handling or dependencies change.
 
+### Production App Store Build
+Production and TestFlight use the same signed Release archive format. The public release differs in App Store Connect, where the processed build is attached to an App Store version and submitted for App Review.
+
+1. Merge every intended release change, then update and verify a clean `main` branch:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git status
+   ```
+2. Run the regression suite and complete the applicable simulator and real-device checks:
+   ```bash
+   scripts/run_regression_tests.sh
+   ```
+3. Confirm `Config/Signing.local.xcconfig` contains the correct Apple development team and choose an unused numeric build number higher than every build already uploaded to App Store Connect.
+4. Tag the exact release commit with the marketing version before archiving. The release tag removes `-dev` from the About-screen build identifier; setting `--build-number` alone does not.
+   ```bash
+   git tag -a v2.0.0 -m "Travels 2.0.0"
+   git push origin v2.0.0
+   ```
+   The tag must match the current marketing version as either `2.0.0` or `v2.0.0`. Do not move or reuse a published release tag; update these examples when the marketing version changes.
+5. Create and export the validated Release archive, replacing `BUILD_NUMBER` with the unused App Store Connect number:
+   ```bash
+   scripts/archive_testflight.sh --build-number BUILD_NUMBER --export
+   ```
+   For build 499 of version 2.0.0, the default outputs are:
+   ```text
+   .build/testflight/Travels-2.0.0-499.xcarchive
+   .build/testflight/Travels-2.0.0-499/Travels.ipa
+   ```
+   The archive uses `com.adigitalanalog.travels`, excludes debug-only diagnostics, and is validated for version/build metadata, encryption declaration, privacy manifest, and opaque App Store icons.
+6. Upload the exported `Travels.ipa` with Transporter, or distribute the `.xcarchive` through Xcode Organizer. The repository script intentionally never uploads a build.
+7. After App Store Connect finishes processing, attach the build to the intended App Store version, complete the required metadata and privacy/export-compliance answers, submit it for App Review, and choose the desired manual, automatic, or scheduled release option.
+
 ---
 
 ## License Notices
