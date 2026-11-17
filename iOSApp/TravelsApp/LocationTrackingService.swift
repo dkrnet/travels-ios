@@ -98,6 +98,11 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         var firstWatchdogRecheckCompleted: Bool
     }
 
+    private struct PendingStoppedIntentEvent {
+        let eventID: Int64
+        let anchorSample: LocationSample
+    }
+
     private struct PendingLocationContext {
         let reason: String
         let source: String
@@ -186,6 +191,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
     private var pendingFinalPreciseExitSample: LocationSample?
     private var pendingAutomaticStopReferenceSample: LocationSample?
     private var pendingAutomaticStopAnchorTimestamp: Date?
+    private var pendingStoppedIntentEvent: PendingStoppedIntentEvent?
     private var lastNotifiedTrackingModeIsActive: Bool?
     private var lastCoreLocationDeliveryAt: Date?
     private var activePreciseModeEntryAppState: UIApplication.State?
@@ -275,6 +281,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         let policy = settings.preciseLocationMode.locationTrackingPolicy
         self.trackingStateMachine = LocationTrackingStateMachine(policy: policy)
         self.mostRecentTrackingStateTransition = nil
+        self.pendingStoppedIntentEvent = nil
         self.hybridTrackingWatchdog.update(policy: policy)
         self.adaptiveDistanceCalculator = AdaptiveLocationDistanceCalculator(mode: settings.locationDetailMode)
         self.powerState = currentPowerState()
@@ -333,6 +340,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         )
         hybridTrackingWatchdog.update(policy: policy)
         if previousPreciseLocationMode != settings.preciseLocationMode {
+            clearPendingStoppedIntentEvent(reason: "Precise Location Mode changed")
             cancelActiveTrackingHandoff(reason: "Precise Location Mode changed", stopSignificantChangeMonitoring: managerMode == .activeTracking)
             clearActiveTrackingEntryGuard(reason: "Precise Location Mode changed")
             clearPostExitPreciseGuard(reason: "Precise Location Mode changed")
@@ -925,6 +933,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
 
     private func stopTrackingManager() {
         traceLocationEvent("Direct idle apply bypassing guard; reason=explicit stop/disable: tracking manager stopped; \(hybridWatchdogContext()).")
+        clearPendingStoppedIntentEvent(reason: "tracking manager stopped")
         clearActiveTrackingEntryGuard(reason: "tracking manager stopped")
         clearPostExitPreciseGuard(reason: "tracking manager stopped")
         cancelFinalPreciseExit()
@@ -1646,6 +1655,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         pendingFinalPreciseExitSample = nil
         pendingAutomaticStopReferenceSample = nil
         pendingAutomaticStopAnchorTimestamp = nil
+        clearPendingStoppedIntentEvent(reason: exitReason)
         traceLocationEvent(afterTimeout
                            ? "Hybrid final precise exit timed out; returning to idle detection mode."
                            : "Hybrid final precise exit completed; returning to idle detection mode.")
@@ -1985,6 +1995,7 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                     from: stateBeforeResuming,
                     reason: "final precise-exit sample proved movement resumed"
                 )
+                clearPendingStoppedIntentEvent(reason: "final precise-exit sample proved movement resumed")
                 cancelFinalPreciseExit(keepActiveTracking: true)
             case .confirmsStop(let reason):
                 pendingFinalPreciseExitSample = sample
@@ -2039,6 +2050,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                 from: previousTrackingState,
                 reason: "automatic location sample"
             )
+            clearPendingStoppedIntentEventIfMovementResumed(
+                from: previousTrackingState,
+                reason: "automatic location sample proved movement resumed"
+            )
             if let trackingStateMessage = trackingStateMessage(
                 previous: previousTrackingState,
                 current: trackingStateMachine.state
@@ -2082,6 +2097,31 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         // manual or Shortcut capture. This preserves the bounded precise-exit behavior.
         let isAutomaticStoppedNonDuplicateCapture = wasCompletingFinalPreciseExit
             && !finalPreciseExitResumedMovement
+        if isAutomaticStoppedNonDuplicateCapture,
+           let pendingStoppedIntentEvent {
+            let distanceFromIntent = distanceMeters(
+                from: pendingStoppedIntentEvent.anchorSample,
+                to: sample
+            )
+            if HybridPreciseLocationSamplingRules.shouldReuseStoppedIntentEvent(
+                intentSample: pendingStoppedIntentEvent.anchorSample,
+                confirmedStopSample: sample,
+                stationaryRadiusMeters: trackingStateMachine.thresholds.stationaryRadiusMeters
+            ) {
+                // REGRESSION GUARD: a stopped Shortcuts event that initiated this exact stationary
+                // episode is already the user's chosen endpoint. Do not insert a second automatic
+                // stopped event after the confirmation delay.
+                traceLocationEvent("Confirmed stop reused stopped intent event #\(pendingStoppedIntentEvent.eventID); final sample remained \(formatDistance(distanceFromIntent)) from the intent event and will not insert a duplicate stopped event.")
+                completeFinalPreciseExit()
+                if isPausing {
+                    isPausing = false
+                }
+                return
+            }
+            clearPendingStoppedIntentEvent(
+                reason: "final stop location moved \(formatDistance(distanceFromIntent)) from the stopped intent event"
+            )
+        }
         let requestedMovementStateOverride: MovementStateOverride? = isAutomaticStoppedNonDuplicateCapture
             ? .stopped
             : context.shortcutMovementStateOverride
@@ -2145,6 +2185,12 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
                             eventID: previousEventID,
                             movementStateOverride: .stopped
                         )
+                        if wasShortcutAutomationCapture {
+                            beginStoppedIntentEpisode(
+                                eventID: previousEventID,
+                                sample: sample
+                            )
+                        }
                         completedShortcutByUpdatingRecentDuplicate = wasShortcutAutomationCapture
                         let age = sample.timestamp.timeIntervalSince(previous.timestamp)
                         let captureKind = isAutomaticStoppedNonDuplicateCapture ? "Confirmed automatic stop" : "Stopped non-duplicate shortcut"
@@ -2207,6 +2253,10 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             )
             traceLocationEvent(savedLocationRecoveryDetails(eventID: eventID, event: event, savedKind: savedKind, context: context, manual: wasManualCapture, replacingEventID: decision == .acceptAndReplacePrevious ? latestAcceptedEvent?.id : nil))
             traceLocationEvent("Saved location event #\(eventID) as \(savedKind) record.")
+            if wasShortcutAutomationCapture,
+               requestedMovementStateOverride == .stopped {
+                beginStoppedIntentEpisode(eventID: eventID, sample: sample)
+            }
             if wasShortcutAutomationCapture {
                 completeShortcutAutomationCapture(with: .saved(eventID: eventID))
             }
@@ -2398,6 +2448,69 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
             timestamp: timestamp,
             reason: reason
         )
+    }
+
+    private func beginStoppedIntentEpisode(eventID: Int64, sample: LocationSample) {
+        guard settings.autoAddLocations else {
+            traceLocationEvent("Stopped intent event #\(eventID) did not begin maybe-stopped mode because Automatic Location Tracking is off.")
+            return
+        }
+        guard trackingStateMachine.policy != .alwaysOffHighPrecision else {
+            traceLocationEvent("Stopped intent event #\(eventID) did not begin maybe-stopped mode because Precise Location Mode is Always Off.")
+            return
+        }
+        guard authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse else {
+            traceLocationEvent("Stopped intent event #\(eventID) did not begin maybe-stopped mode because location authorization is unavailable.")
+            return
+        }
+        guard UIApplication.shared.applicationState == .active || settings.backgroundLocationEnabled else {
+            traceLocationEvent("Stopped intent event #\(eventID) did not begin maybe-stopped mode because Travels is backgrounded and Background Location is off.")
+            return
+        }
+
+        let previousState = trackingStateMachine.state
+        guard trackingStateMachine.beginPossibleStop(at: sample) else {
+            traceLocationEvent("Stopped intent event #\(eventID) did not begin maybe-stopped mode because its timestamp or horizontal accuracy was not usable for stop detection.")
+            return
+        }
+
+        // REGRESSION GUARD: retain only the event accepted for this stationary episode. If
+        // movement resumes, the association is cleared so it cannot suppress a later stop event.
+        pendingStoppedIntentEvent = PendingStoppedIntentEvent(
+            eventID: eventID,
+            anchorSample: sample
+        )
+        recordTrackingStateTransition(
+            from: previousState,
+            reason: "accepted stopped Shortcuts event"
+        )
+        traceLocationEvent("Stopped intent event #\(eventID) entered maybe-stopped mode; measuredSpeed=\(formatSpeed(sample.speed)) remains unchanged; stationary confirmation window restarted.")
+
+        let managerWasAlreadyActive = managerMode == .activeTracking
+        syncTrackingMode()
+        if managerWasAlreadyActive,
+           managerMode == .activeTracking,
+           trackingStateMachine.policy == .hybridAutomatic {
+            restartHybridTrackingWatchdog(reason: "stopped intent began a new stationary confirmation window")
+        }
+    }
+
+    private func clearPendingStoppedIntentEvent(reason: String) {
+        guard let pendingStoppedIntentEvent else { return }
+        self.pendingStoppedIntentEvent = nil
+        traceLocationEvent("Stopped intent event #\(pendingStoppedIntentEvent.eventID) no longer represents the active stop episode; reason=\(reason).")
+    }
+
+    private func clearPendingStoppedIntentEventIfMovementResumed(
+        from previousState: LocationTrackingState,
+        reason: String
+    ) {
+        guard previousState.kind == .maybeStopped,
+              trackingStateMachine.state.kind == .activeTracking
+        else {
+            return
+        }
+        clearPendingStoppedIntentEvent(reason: reason)
     }
 
     private func rememberAutomaticStopAnchorIfNeeded(from previousState: LocationTrackingState) {

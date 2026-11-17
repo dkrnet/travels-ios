@@ -364,6 +364,45 @@ final class HybridPreciseLocationSamplingRulesTests: XCTestCase {
         XCTAssertEqual(assessment, .confirmsStop(reason: "sample remains within the stationary reference area"))
     }
 
+    func testConfirmedStopReusesNearbyStoppedIntentEventOnly() {
+        let intentSample = LocationSample(
+            latitude: 33.803714,
+            longitude: -118.040184,
+            horizontalAccuracy: 10,
+            speed: 8,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1000)
+        )
+        let nearbyConfirmation = LocationSample(
+            latitude: 33.803720,
+            longitude: -118.040190,
+            horizontalAccuracy: 8,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 1310)
+        )
+        let laterUnrelatedStop = LocationSample(
+            latitude: 33.805,
+            longitude: -118.042,
+            horizontalAccuracy: 8,
+            speed: 0,
+            timestamp: Date(timeIntervalSinceReferenceDate: 2000)
+        )
+
+        XCTAssertTrue(
+            HybridPreciseLocationSamplingRules.shouldReuseStoppedIntentEvent(
+                intentSample: intentSample,
+                confirmedStopSample: nearbyConfirmation,
+                stationaryRadiusMeters: 50
+            )
+        )
+        XCTAssertFalse(
+            HybridPreciseLocationSamplingRules.shouldReuseStoppedIntentEvent(
+                intentSample: intentSample,
+                confirmedStopSample: laterUnrelatedStop,
+                stationaryRadiusMeters: 50
+            )
+        )
+    }
+
     func testPostExitGuardSuppressesAmbiguousImmediateSamples() {
         let exitSample = LocationSample(
             latitude: 33.0,

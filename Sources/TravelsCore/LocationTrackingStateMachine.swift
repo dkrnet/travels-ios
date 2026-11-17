@@ -109,6 +109,31 @@ public struct LocationTrackingStateMachine: Equatable, Sendable {
         }
     }
 
+    /// Starts a stationary confirmation window after the user explicitly records a stopped
+    /// location. The measured speed remains part of the stored event, but the detector treats
+    /// this one anchor as stationary intent until later samples confirm stopping or movement.
+    @discardableResult
+    public mutating func beginPossibleStop(at sample: LocationSample) -> Bool {
+        guard policy != .alwaysOffHighPrecision,
+              sample.horizontalAccuracy.isFinite,
+              sample.horizontalAccuracy >= 0,
+              sample.horizontalAccuracy <= thresholds.minimumUsableHorizontalAccuracyMeters,
+              lastSampleTimestamp.map({ sample.timestamp >= $0 }) ?? true
+        else {
+            return false
+        }
+
+        var stationaryAnchor = sample
+        // REGRESSION GUARD: a stopped intent expresses how the event should be treated; it must
+        // not rewrite measured speed. Use unavailable speed only in the detector's private copy.
+        stationaryAnchor.speed = -1
+        lastSampleTimestamp = sample.timestamp
+        idleReferenceSample = nil
+        state = .maybeStopped(anchor: stationaryAnchor, samples: [stationaryAnchor])
+
+        return true
+    }
+
     @discardableResult
     public mutating func update(policy newPolicy: LocationTrackingPolicy) -> LocationTrackingTransition {
         guard policy != newPolicy else { return .none }

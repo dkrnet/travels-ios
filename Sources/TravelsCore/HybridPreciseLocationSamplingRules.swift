@@ -160,6 +160,19 @@ public enum HybridPreciseLocationSamplingRules {
             && !isCompletingFinalPreciseExit
     }
 
+    public static func shouldReuseStoppedIntentEvent(
+        intentSample: LocationSample,
+        confirmedStopSample: LocationSample,
+        stationaryRadiusMeters: Double
+    ) -> Bool {
+        haversineMeters(
+            fromLatitude: intentSample.latitude,
+            longitude: intentSample.longitude,
+            toLatitude: confirmedStopSample.latitude,
+            longitude: confirmedStopSample.longitude
+        ) <= max(0, stationaryRadiusMeters)
+    }
+
     public static func sampleIndicatesMovementResumed(
         sample: LocationSample,
         stationaryReference: LocationSample?,

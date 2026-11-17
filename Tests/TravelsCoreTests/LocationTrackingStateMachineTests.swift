@@ -186,6 +186,84 @@ final class LocationTrackingStateMachineTests: XCTestCase {
         XCTFail("Expected a maybe-stopped state after one stationary sample.")
     }
 
+    func testStoppedIntentBeginsPossibleStopFromIdleWithoutChangingMeasuredSpeed() {
+        var machine = LocationTrackingStateMachine(
+            thresholds: LocationTrackingThresholds(stationaryDuration: 60)
+        )
+        let intentSample = sample(at: 10, speed: 12)
+
+        XCTAssertTrue(machine.beginPossibleStop(at: intentSample))
+
+        guard case .maybeStopped(let anchor, let samples) = machine.state else {
+            return XCTFail("Expected a stopped intent to begin maybe-stopped tracking.")
+        }
+        XCTAssertEqual(intentSample.speed, 12)
+        XCTAssertEqual(anchor.speed, -1)
+        XCTAssertEqual(samples, [anchor])
+        XCTAssertTrue(machine.isHighPrecisionTrackingActive)
+    }
+
+    func testStoppedIntentIsIgnoredWhenHighPrecisionIsAlwaysOff() {
+        var machine = LocationTrackingStateMachine(policy: .alwaysOffHighPrecision)
+
+        XCTAssertFalse(machine.beginPossibleStop(at: sample(at: 10, speed: 0)))
+        XCTAssertEqual(machine.state, .idleDetection)
+    }
+
+    func testStoppedIntentWithPoorAccuracyDoesNotBeginPossibleStop() {
+        var machine = LocationTrackingStateMachine()
+
+        XCTAssertFalse(machine.beginPossibleStop(at: sample(at: 10, accuracy: 500, speed: 0)))
+        XCTAssertEqual(machine.state, .idleDetection)
+    }
+
+    func testStoppedIntentConfirmationUsesItsOwnStationaryWindow() {
+        var machine = LocationTrackingStateMachine(
+            thresholds: LocationTrackingThresholds(
+                stationaryDuration: 60,
+                stationaryRadiusMeters: 50,
+                stationarySpeedThreshold: 0.7,
+                minimumUsableHorizontalAccuracyMeters: 100
+            )
+        )
+
+        XCTAssertTrue(machine.beginPossibleStop(at: sample(at: 10, speed: 8)))
+        let transition = machine.record(sample: sample(at: 75, speed: 0))
+
+        XCTAssertEqual(transition, .enterIdleDetection)
+        XCTAssertEqual(machine.state, .idleDetection)
+    }
+
+    func testMovementAfterStoppedIntentCancelsPossibleStop() {
+        var machine = LocationTrackingStateMachine()
+
+        XCTAssertTrue(machine.beginPossibleStop(at: sample(at: 10, speed: 0)))
+        let transition = machine.record(
+            sample: sample(at: 20, latitude: 37.002, longitude: -122.002, speed: 5)
+        )
+
+        XCTAssertEqual(transition, .none)
+        XCTAssertEqual(machine.state, .activeTracking)
+    }
+
+    func testAlwaysOnStoppedIntentTracksPossibleStopWithoutDowngrading() {
+        var machine = LocationTrackingStateMachine(
+            policy: .alwaysOnHighPrecision,
+            thresholds: LocationTrackingThresholds(
+                stationaryDuration: 60,
+                stationaryRadiusMeters: 50,
+                stationarySpeedThreshold: 0.7,
+                minimumUsableHorizontalAccuracyMeters: 100
+            )
+        )
+
+        XCTAssertTrue(machine.beginPossibleStop(at: sample(at: 10, speed: 0)))
+        _ = machine.record(sample: sample(at: 75, speed: 0))
+
+        XCTAssertNotEqual(machine.state, .idleDetection)
+        XCTAssertTrue(machine.isHighPrecisionTrackingActive)
+    }
+
     func testActiveTrackingStopsAfterConfiguredStationaryWindowWhenHybridPolicyIsOff() {
         var machine = LocationTrackingStateMachine(
             thresholds: LocationTrackingThresholds(
