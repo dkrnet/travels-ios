@@ -17,6 +17,7 @@ Do not include unredacted precise location history, home/work addresses, photo m
 - Location history, notes, photo attachment filenames, imported photo metadata, and reverse-geocoded place data are privacy-sensitive.
 - The app must remain local-first unless an explicit future requirement adds sync or server-backed behavior.
 - The app must not add analytics, advertising identifiers, remote logging, telemetry, cloud sync, or third-party network services without an explicit requirements change.
+- Map View is optional and disabled by default. When enabled, Travels requests map tiles from Apple, subject to Apple's privacy practices. While disabled, Travels does not initialize the map view or request map tiles.
 - Reverse geocoding may send location data to Apple services when the user enables address resolution; this must remain disclosed in settings and App Store privacy copy.
 - Photo import requires access to photo metadata and must fail safely when timestamp or location metadata is missing.
 - Authentication lock uses device-owner authentication through LocalAuthentication. It is a privacy lock for casual access, not a replacement for iOS device security or encrypted backups.
