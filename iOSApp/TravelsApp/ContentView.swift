@@ -93,19 +93,19 @@ struct ContentView: View {
                     Button {
                         model.selectDate(Calendar.current.date(byAdding: .day, value: -1, to: model.selectedDate) ?? model.selectedDate)
                     } label: {
-                        Image(systemName: "chevron.left")
+                        Label("Previous Day", systemImage: "chevron.left")
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) <= model.dateSelectionRange().lowerBound)
                     Button {
                         datePickerSelection = model.clampedDateSelection(model.selectedDate)
                         showingDatePicker = true
                     } label: {
-                        Image(systemName: "calendar")
+                        Label("Choose Date", systemImage: "calendar")
                     }
                     Button {
                         model.selectDate(Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate)
                     } label: {
-                        Image(systemName: "chevron.right")
+                        Label("Next Day", systemImage: "chevron.right")
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) >= model.dateSelectionRange().upperBound)
                 }
@@ -180,7 +180,7 @@ struct ContentView: View {
                     Button {
                         showingSearch = true
                     } label: {
-                        Image(systemName: "magnifyingglass")
+                        Label("Search", systemImage: "magnifyingglass")
                     }
                     .disabled(!model.isUnlocked)
 
@@ -223,7 +223,7 @@ struct ContentView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "arrow.triangle.branch")
+                        Label("Select Trips", systemImage: "arrow.triangle.branch")
                     }
                     .disabled(!model.isUnlocked)
 
@@ -235,7 +235,7 @@ struct ContentView: View {
                             model.addCurrentLocation(forceStopped: true)
                         }
                     } label: {
-                        Image(systemName: "plus")
+                        Label("Add Location", systemImage: "plus")
                             // REGRESSION GUARD: keep the add button visibly muted when it is disabled so the inactive state is obvious and the disabled affordance does not regress.
                             .foregroundStyle(model.canAddCurrentLocation ? .primary : .tertiary)
                     } primaryAction: {
