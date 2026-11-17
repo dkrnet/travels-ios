@@ -9,13 +9,23 @@ import SwiftUI
 import TravelsCore
 #endif
 
+enum SettingsScrollTarget: Hashable {
+    case mapView
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var model: TravelsModel
     @Environment(\.dismiss) private var dismiss
+    let initialScrollTarget: SettingsScrollTarget?
+
+    init(initialScrollTarget: SettingsScrollTarget? = nil) {
+        self.initialScrollTarget = initialScrollTarget
+    }
 
     var body: some View {
         NavigationStack {
-            Form {
+            ScrollViewReader { proxy in
+                Form {
                 Section("Tracking") {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Automatic Location Tracking", isOn: $model.settings.autoAddLocations)
@@ -104,6 +114,7 @@ struct SettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+                    .id(SettingsScrollTarget.mapView)
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
                         Text("Shows the tail end of the prior day so trips feel continuous.")
@@ -129,20 +140,29 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-            }
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        model.saveSettings()
-                        dismiss()
+                }
+                .navigationTitle("Settings")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            model.saveSettings()
+                            dismiss()
+                        }
                     }
                 }
-            }
-            .alert("Travels", isPresented: Binding(get: { model.statusMessage != nil }, set: { if !$0 { model.statusMessage = nil } })) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(model.statusMessage ?? "")
+                .alert("Travels", isPresented: Binding(get: { model.statusMessage != nil }, set: { if !$0 { model.statusMessage = nil } })) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(model.statusMessage ?? "")
+                }
+                .task(id: initialScrollTarget) {
+                    guard let initialScrollTarget else { return }
+                    // REGRESSION GUARD: wait until the presented Form has laid out before scrolling to the setting requested by the disabled-map notice.
+                    await Task.yield()
+                    withAnimation {
+                        proxy.scrollTo(initialScrollTarget, anchor: .center)
+                    }
+                }
             }
         }
     }

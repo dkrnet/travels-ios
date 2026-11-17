@@ -22,6 +22,7 @@ struct ContentView: View {
     @State private var showingPhotoImporter = false
     @State private var showingDeveloperDiagnostics = false
     @State private var showingMapDisabledAlert = false
+    @State private var settingsScrollTarget: SettingsScrollTarget?
     @State private var openSettingsAfterWelcome = false
     @State private var shareItem: ShareItem?
     @State private var datePickerSelection = Date()
@@ -169,7 +170,10 @@ struct ContentView: View {
                         showingDeveloperDiagnostics = true
                     }
 #endif
-                    Button("Settings") { showingSettings = true }
+                    Button("Settings") {
+                        settingsScrollTarget = nil
+                        showingSettings = true
+                    }
                 }
 
                 ToolbarItemGroup(placement: .bottomBar) {
@@ -246,8 +250,10 @@ struct ContentView: View {
             .sheet(isPresented: $showingAbout) {
                 AboutView()
             }
-            .sheet(isPresented: $showingSettings) {
-                SettingsView()
+            .sheet(isPresented: $showingSettings, onDismiss: {
+                settingsScrollTarget = nil
+            }) {
+                SettingsView(initialScrollTarget: settingsScrollTarget)
             }
             .sheet(
                 isPresented: Binding(
@@ -261,6 +267,7 @@ struct ContentView: View {
                 onDismiss: {
                     if openSettingsAfterWelcome {
                         openSettingsAfterWelcome = false
+                        settingsScrollTarget = nil
                         showingSettings = true
                     }
                 }
@@ -315,6 +322,7 @@ struct ContentView: View {
             }
             .alert("Map View Disabled", isPresented: $showingMapDisabledAlert) {
                 Button("Open Settings") {
+                    settingsScrollTarget = .mapView
                     showingSettings = true
                 }
                 Button("Not Now", role: .cancel) {}
