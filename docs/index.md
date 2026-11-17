@@ -24,7 +24,7 @@ Your location history is sensitive. Travels is designed to keep it under your co
 - Travels does not sell your information or send your location history to the developer.
 - Address lookup is optional and sends coordinates to Apple only when enabled.
 - Data otherwise leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.
-- An optional device-owner authentication lock can obscure your history when Travels is not unlocked.
+- An optional privacy lock can require Face ID, Touch ID, or your device passcode every time you open Travels.
 
 Read the complete [Travels Privacy Policy](https://github.com/dkrnet/travels-ios/blob/main/PRIVACY.md).
 
@@ -50,13 +50,13 @@ Search your history by text, date, source, notes, and available place informatio
 
 ## Capture locations your way
 
-Travels supports automatic and manual location capture:
+Travels supports both automatic background logging and manual location recording:
 
 - **Automatic** Precise Location Mode balances route detail and battery use by moving between lower-power monitoring and temporary high-precision tracking.
 - **Always On** keeps high-precision tracking active when maximum route fidelity matters more than battery use.
 - **Always Off** keeps automatic tracking in its lower-power mode while preserving manual and Shortcuts-based capture.
 - **Location Detail** presets let you choose the balance between point density and battery use.
-- The **Add** Shortcuts action can capture normal, forced, non-duplicate, stopped, or moving locations through user-created automations.
+- **Apple Shortcuts** integration lets you automate location logging—such as adding your location when you disconnect from CarPlay, connect to a specific WiFi network, or reach a scheduled time of day.
 
 <p align="center">
   <img src="assets/screenshots/flexible-tracking.jpg" alt="Travels settings for automatic tracking, location detail, and precise location mode" width="480">
@@ -70,8 +70,7 @@ Your data is not locked into an online account or developer-operated service.
 
 - Import and export standard GPX location files.
 - Create location events from geotagged photos, with or without copying the photo into Travels.
-- Back up and restore the local Travels database and attachments.
-- Import compatible history from the original Travels app.
+- Back up the local Travels database and attachments.
 
 Exports, backups, photos, and GPX files may contain precise location history. Store and share them with the same care you would give any other sensitive personal record.
 
@@ -87,7 +86,7 @@ Travels is open source, so its implementation and privacy claims can be inspecte
 
 - [Source code and documentation](https://github.com/dkrnet/travels-ios)
 - [Report a problem or request a feature](https://github.com/dkrnet/travels-ios/issues)
-- [Mozilla Public License 2.0](https://www.mozilla.org/MPL/2.0/)
+- [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
 
 Travels requires iOS 17 or later. Automatic history recording requires location permission, and background recording requires the corresponding iOS background-location permission.
 
