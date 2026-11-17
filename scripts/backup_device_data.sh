@@ -15,7 +15,7 @@ Options:
   --device DEVICE_ID    devicectl device identifier or name. If omitted, the
                         script uses the only available paired physical device.
   --output-root PATH    Parent directory for timestamped backups. Defaults to
-                        ../device-backups relative to the repository.
+                        the repository's sibling device-backups directory.
   --truncate-log        Replace the on-device Maintenance.log with an empty
                         file after the backup has been validated.
   -h, --help            Show this help.
@@ -80,6 +80,12 @@ for command in sqlite3 shasum; do
     exit 1
   fi
 done
+
+# REGRESSION GUARD: Normalize the selected root before composing or printing the
+# timestamped destination. Keeping repo_dir/../ in the path made valid backups
+# appear to live in an ambiguous parent-relative location.
+mkdir -p "$output_root"
+output_root="$(cd "$output_root" && pwd -P)"
 
 if [[ -x /usr/bin/devicectl ]]; then
   devicectl_command=(/usr/bin/devicectl)

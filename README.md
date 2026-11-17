@@ -48,6 +48,8 @@ scripts/                # Helper scripts for testing, simulator/device builds, b
 Travels.xcodeproj/      # Xcode project (bundle ID: com.adigitalanalog.travels)
 ```
 
+The device-backup helper reports and uses a canonical absolute destination under the repository's sibling `device-backups` directory by default, while `--output-root` can select another location.
+
 ---
 
 ### Documentation & Synchronization

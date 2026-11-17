@@ -534,6 +534,7 @@ The active export scope is the complete set of exportable events selected by the
 - The standard package test command shall be `swift test`.
 - The standard iOS build command shall be equivalent to `xcodebuild -project Travels.xcodeproj -scheme Travels -destination 'platform=iOS Simulator,name=iPhone 15' build`, with simulator destination updated only when intentionally changed.
 - Repository scripts may wrap the standard regression-test, simulator build/install, physical-device build, and non-destructive physical-device install commands so they can be run consistently outside an AI/LLM-assisted session.
+- The device-backup script shall resolve its selected backup root to a canonical absolute directory before composing, printing, or using the timestamped backup destination; displayed backup paths shall not retain unresolved parent-directory components such as `..`.
 - The simulator build script shall accept an exact simulator name or UDID, default to the iPhone 17 Pro, and print the completed app path and generated build metadata.
 - Simulator installation shall preserve the existing app data by default and shall require an explicit fresh-install option before uninstalling the app and deleting its simulator data.
 - After a successful physical-device build, the device build script shall print the completed app path, numeric bundle version, and custom Travels build ID from the built app's `Info.plist`.
