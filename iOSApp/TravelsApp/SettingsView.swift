@@ -30,6 +30,9 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
+                        Text("Location Density")
+                            .font(.subheadline.weight(.semibold))
+                            .accessibilityHidden(true)
                         Picker("Location Density", selection: $model.settings.locationDetailMode) {
                             ForEach(LocationDetailMode.allCases, id: \.self) { mode in
                                 Text(mode.displayName).tag(mode)
@@ -41,6 +44,9 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
+                        Text("Location Precision")
+                            .font(.subheadline.weight(.semibold))
+                            .accessibilityHidden(true)
                         Picker("Location Precision", selection: $model.settings.preciseLocationMode) {
                             ForEach(PreciseLocationMode.allCases, id: \.self) { mode in
                                 Text(mode.displayName).tag(mode)
