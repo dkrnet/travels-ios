@@ -11,7 +11,7 @@ Travels does not include advertising, analytics, third-party tracking SDKs, remo
 
 ## Apple platform services and maps
 
-Travels displays map tiles from Apple using standard Apple map APIs, which means viewing maps carries the standard network and privacy behaviors inherent to Apple's mapping service. Optional address lookup sends coordinates to Apple only when enabled. Apple's handling of map requests and address lookups is governed by Apple's privacy policies.
+Map View is disabled by default. While it remains disabled, Travels does not initialize the map view or request map tiles. If the user enables Map View, Travels downloads map tiles from Apple using standard Apple map APIs, and Apple receives the network requests needed to provide the map areas viewed. Optional address lookup sends coordinates to Apple only when enabled. Apple's handling of map requests and address lookups is governed by Apple's privacy policies.
 
 The app also uses standard Apple platform services for location permissions, background location delivery, photo selection, device-owner authentication, and Shortcuts.
 

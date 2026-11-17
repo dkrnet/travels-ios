@@ -157,6 +157,7 @@ The database shall maintain indexes needed for fast date filtering, timestamp or
 
 - Location history, notes, photo metadata, geocoded place names, GPX exports, and database backups shall be treated as sensitive personal data.
 - The app shall be local-first and shall not transmit data except for explicit user exports/shares or platform services required for user-enabled features.
+- Map View shall be disabled by default. While disabled, the app shall not initialize its map view, call map presentation APIs, or request map tiles. When the user enables Map View, Apple receives the network requests required to provide map tiles for the areas viewed, and the app shall disclose this behavior.
 - Reverse geocoding may use Apple platform services and shall be disclosed as a platform service dependency.
 - User-facing address-lookup copy shall state: "Address lookup is optional and sends coordinates to Apple only when enabled."
 - Photo import may read photo metadata only with user permission and only for selected assets.
@@ -188,7 +189,8 @@ The app shall persist user settings including at least:
 - Include previous-day context enabled/disabled.
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
-- Preferred initial view, map or list.
+- Map View enabled/disabled, defaulting to disabled.
+- Preferred map or list view when Map View is enabled; new installs shall default to the list.
 - Precise Location Mode: Automatic, Always On, or Always Off.
 - Location Detail: High Detail, Balanced, Battery Saver, or Road Trip.
 - Powered update distance threshold, retained for compatibility or fallback behavior.
@@ -330,9 +332,12 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 
 ## Map and list requirements
 
-- The app shall present events on a map and in a list.
-- The user shall be able to switch between map and list views.
-- The preferred view shall be persisted.
+- The app shall always provide chronological list browsing and shall provide map browsing only when the user enables Map View.
+- New installs shall launch into the list, and Map View shall be disabled by default.
+- While Map View is disabled, the app shall not initialize a map view, call map presentation APIs, or download map tiles from Apple.
+- Tapping the list's map-switching action while Map View is disabled shall briefly explain that maps are disabled and direct the user to the Display settings where Map View can be enabled.
+- When Map View is enabled, the user shall be able to switch between map and list views with the existing controls and behavior.
+- The preferred map or list view shall be persisted while Map View is enabled; disabling Map View shall always present the list.
 - Date navigation, map/list switching, map zoom or list top/bottom navigation, and More actions shall remain accessible when Display Zoom or Larger Text reduces available toolbar width; actions that do not fit may use the native toolbar overflow menu but shall not be dropped or hidden behind a second overflow level.
 - Switching between map and list views shall preserve each view's most recent viewport. When the user selects an event before switching views, the destination view shall center or scroll to that same event without resetting the map to full-day framing or the list to its first row. Map-to-list synchronization shall position the list before it becomes visible rather than visibly scrolling through intervening rows. Manually scrolling the list or using its top/bottom navigation action shall clear the cross-view event selection so a later map/list round trip preserves the user's new list position instead of returning to the formerly selected event.
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.

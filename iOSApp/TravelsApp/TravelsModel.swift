@@ -33,7 +33,7 @@ final class TravelsModel: ObservableObject {
     @Published var events: [EventDetail] = []
     @Published var selectedEvent: EventDetail?
     @Published var settings = AppSettings()
-    @Published var isListView = false
+    @Published var isListView = true
     @Published var isUnlocked = true
     @Published var isHighPrecisionLocationActive = false
     @Published var adaptiveLocationDistanceMeters: Double = AdaptiveLocationDistanceCalculator().state.effectiveDistanceMeters
@@ -113,7 +113,7 @@ final class TravelsModel: ObservableObject {
                 store: launch.store,
                 storeExistedBeforeLaunch: storeExistedBeforeLaunch
             )
-            self.isListView = settings.preferListView
+            self.isListView = settings.shouldPresentListView
             locationService.onStatusMessage = { [weak self] message in
                 self?.statusMessage = message
             }
@@ -289,7 +289,11 @@ final class TravelsModel: ObservableObject {
 
     func saveSettings() {
         do {
-            settings.preferListView = isListView
+            if settings.mapViewEnabled {
+                settings.preferListView = isListView
+            } else {
+                disableMapViewForPrivacy()
+            }
             try settingsStore?.save(settings)
             locationService.update(settings: settings)
             if settings.includeDemoData {
@@ -303,6 +307,15 @@ final class TravelsModel: ObservableObject {
         } catch {
             statusMessage = error.localizedDescription
         }
+    }
+
+    func disableMapViewForPrivacy() {
+        // REGRESSION GUARD: disabling Map View must remove the map branch before any further MapKit rendering or tile requests can occur.
+        isListView = true
+        mapFocusEventIDs = nil
+        mapCenterTargetEventID = nil
+        mapCameraRegion = nil
+        mapCameraFollowMode = .manual
     }
 
     func dismissFirstLaunchWelcome() {
@@ -949,7 +962,7 @@ final class TravelsModel: ObservableObject {
         store = restoredStore
         settingsStore = SettingsStore(store: restoredStore)
         settings = try settingsStore?.load() ?? AppSettings()
-        isListView = settings.preferListView
+        isListView = settings.shouldPresentListView
         if let latest = try restoredStore.latestEventDate(includeDemo: settings.includeDemoData) {
             selectedDate = Calendar.current.startOfDay(for: latest)
         } else {

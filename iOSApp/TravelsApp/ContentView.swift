@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var showingImporter = false
     @State private var showingPhotoImporter = false
     @State private var showingDeveloperDiagnostics = false
+    @State private var showingMapDisabledAlert = false
     @State private var openSettingsAfterWelcome = false
     @State private var shareItem: ShareItem?
     @State private var datePickerSelection = Date()
@@ -31,7 +32,8 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 Group {
-                    if model.isListView {
+                    // REGRESSION GUARD: never construct EventMapView while the privacy setting is off; hiding an initialized map could still request Apple map tiles.
+                    if model.isListView || !model.settings.mapViewEnabled {
                         EventListView(events: model.displayedEvents, topContentInset: listTopContentInset)
                             .id(model.selectedDate)
                     } else {
@@ -111,6 +113,10 @@ struct ContentView: View {
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button {
                         if model.isListView {
+                            guard model.settings.mapViewEnabled else {
+                                showingMapDisabledAlert = true
+                                return
+                            }
                             model.prepareMapFocusFromList()
                         } else {
                             model.prepareListScrollTargetFromMap()
@@ -307,12 +313,25 @@ struct ContentView: View {
             } message: {
                 Text(model.statusMessage ?? "")
             }
+            .alert("Map View Disabled", isPresented: $showingMapDisabledAlert) {
+                Button("Open Settings") {
+                    showingSettings = true
+                }
+                Button("Not Now", role: .cancel) {}
+            } message: {
+                Text("Map View is off to avoid downloading map tiles from Apple. You can enable it in Settings under Display.")
+            }
             .onChange(of: model.selectedDate) { _, _ in
                 listQuickActionShowsTop = false
             }
             .onChange(of: model.isListView) { _, _ in
                 if model.isListView {
                     listQuickActionShowsTop = false
+                }
+            }
+            .onChange(of: model.settings.mapViewEnabled) { _, isEnabled in
+                if !isEnabled {
+                    model.disableMapViewForPrivacy()
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
@@ -520,6 +539,7 @@ struct AboutView: View {
                                 .font(.headline)
                             Text("Travels is a privacy-first location history app. It records and organizes your location history locally on your device, without accounts, advertising, analytics, or cloud tracking.")
                             Label("Your location history is stored locally.", systemImage: "iphone")
+                            Label("Map View is off by default. When enabled, Apple receives the requests needed to download map tiles for the areas you view.", systemImage: "map")
                             Label("Address lookup is optional and sends coordinates to Apple only when enabled.", systemImage: "mappin.and.ellipse")
                             Label("Data leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.", systemImage: "square.and.arrow.up")
                         }

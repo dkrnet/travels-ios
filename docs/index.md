@@ -22,6 +22,7 @@ Your location history is sensitive. Travels is designed to keep it under your co
 - Location history is stored locally in the app's container on your iPhone.
 - No account, advertising, analytics, subscription, or developer-operated location service is required.
 - Travels does not sell your information or send your location history to the developer.
+- Map View is off by default, so list browsing does not request map tiles. If you enable Map View, Apple receives the requests needed to provide map tiles for the areas you view.
 - Address lookup is optional and sends coordinates to Apple only when enabled.
 - Data otherwise leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.
 - An optional privacy lock can require Face ID, Touch ID, or your device passcode every time you open Travels.
@@ -30,7 +31,7 @@ Read the complete [Travels Privacy Policy](https://github.com/dkrnet/travels-ios
 
 ## Remember your days
 
-Browse a day's history on a map or in a chronological list. Travels identifies likely trips and stopped locations, keeps map and list navigation connected, and uses local solar periods to give each event a time-of-day color.
+Browse a day's history in a chronological list, or opt into Apple Map View when you want a visual route. Travels identifies likely trips and stopped locations, keeps map and list navigation connected when maps are enabled, and uses local solar periods to give each event a time-of-day color.
 
 Choose **Show All**, **Show Latest**, or scroll the list to the bottom and Travels keeps that view current as new locations arrive. If you manually pan, zoom, or scroll, Travels instead preserves the position you chose. This reduces the need to keep interacting with the display while traveling.
 

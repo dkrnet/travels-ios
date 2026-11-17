@@ -510,6 +510,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var includePreviousDayContext: Bool
     public var includeDemoData: Bool
     public var requireAuthentication: Bool
+    public var mapViewEnabled: Bool
     public var preferListView: Bool
     public var preciseLocationMode: PreciseLocationMode
     public var locationDetailMode: LocationDetailMode
@@ -531,7 +532,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         includePreviousDayContext: Bool = true,
         includeDemoData: Bool = true,
         requireAuthentication: Bool = false,
-        preferListView: Bool = false,
+        mapViewEnabled: Bool = false,
+        preferListView: Bool = true,
         preciseLocationMode: PreciseLocationMode = .automatic,
         locationDetailMode: LocationDetailMode = .balanced,
         poweredUpdateDistanceMeters: Int = 500,
@@ -545,6 +547,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includePreviousDayContext = includePreviousDayContext
         self.includeDemoData = includeDemoData
         self.requireAuthentication = requireAuthentication
+        self.mapViewEnabled = mapViewEnabled
         self.preferListView = preferListView
         self.preciseLocationMode = preciseLocationMode
         self.locationDetailMode = locationDetailMode
@@ -561,6 +564,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case includePreviousDayContext
         case includeDemoData
         case requireAuthentication
+        case mapViewEnabled
         case preferListView
         case preciseLocationMode
         case locationDetailMode
@@ -579,7 +583,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includePreviousDayContext = try container.decodeIfPresent(Bool.self, forKey: .includePreviousDayContext) ?? true
         self.includeDemoData = try container.decodeIfPresent(Bool.self, forKey: .includeDemoData) ?? true
         self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false
-        self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? false
+        self.mapViewEnabled = try container.decodeIfPresent(Bool.self, forKey: .mapViewEnabled) ?? false
+        self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? true
         if let preciseLocationMode = try container.decodeIfPresent(PreciseLocationMode.self, forKey: .preciseLocationMode) {
             self.preciseLocationMode = preciseLocationMode
         } else if try container.decodeIfPresent(Bool.self, forKey: .alwaysOnHighPrecisionLocation) == true {
@@ -602,12 +607,17 @@ public struct AppSettings: Codable, Equatable, Sendable {
         try container.encode(includePreviousDayContext, forKey: .includePreviousDayContext)
         try container.encode(includeDemoData, forKey: .includeDemoData)
         try container.encode(requireAuthentication, forKey: .requireAuthentication)
+        try container.encode(mapViewEnabled, forKey: .mapViewEnabled)
         try container.encode(preferListView, forKey: .preferListView)
         try container.encode(preciseLocationMode, forKey: .preciseLocationMode)
         try container.encode(locationDetailMode, forKey: .locationDetailMode)
         try container.encode(poweredUpdateDistanceMeters, forKey: .poweredUpdateDistanceMeters)
         try container.encode(batteryUpdateDistanceMeters, forKey: .batteryUpdateDistanceMeters)
         try container.encode(preferredMeasurementSystem, forKey: .preferredMeasurementSystem)
+    }
+
+    public var shouldPresentListView: Bool {
+        !mapViewEnabled || preferListView
     }
 }
 
