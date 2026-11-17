@@ -75,7 +75,7 @@ struct LogCarPlayEventIntent: AppIntent {
 #endif
 
 struct AddLocationIntent: AppIntent, LongRunningIntent {
-    static let title: LocalizedStringResource = "Add"
+    static let title: LocalizedStringResource = "Add Location"
     static let description = IntentDescription(
         "Requests one location using the selected recording mode and movement classification."
     )
@@ -99,7 +99,7 @@ struct AddLocationIntent: AppIntent, LongRunningIntent {
         // REGRESSION GUARD: Shortcuts does not reliably refresh conditional
         // summaries while editing. Keep this title stable and explain choices
         // through the parameter and AppEnum display descriptions instead.
-        Summary("Add location") {
+        Summary("Add Location") {
             \.$mode
             \.$movement
         }
