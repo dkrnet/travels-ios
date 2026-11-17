@@ -88,6 +88,12 @@ struct SettingsView: View {
 
                 Section("Display") {
                     VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Enable Map View", isOn: $model.settings.mapViewEnabled)
+                        Text("Map View downloads map tiles from Apple. When enabled, Apple receives the network requests needed to show the map areas you view. Leave it off to browse your locally stored history in the list without requesting map tiles.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
                         Text("Shows the tail end of the prior day so trips feel continuous.")
                             .font(.footnote)
@@ -161,6 +167,7 @@ struct FirstLaunchWelcomeView: View {
                     Text("With Precise Location Mode set to Automatic, Travels normally uses lower-power monitoring and temporarily increases location accuracy when movement is detected.")
                     Text("Background tracking uses additional battery and may cause iOS to display its location indicator.")
                     Text("Address lookup is optional and sends coordinates to Apple only when enabled.")
+                    Text("Map View is off by default. Enabling it downloads map tiles from Apple; you can enable it later in Settings.")
                 }
 
                 if let firstDemoDate = demoDates.first, let lastDemoDate = demoDates.last {

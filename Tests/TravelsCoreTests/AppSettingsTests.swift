@@ -43,6 +43,49 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.resolveMissingAddresses)
     }
 
+    func testDefaultSettingsDisableMapAndPresentList() {
+        let settings = AppSettings()
+
+        XCTAssertFalse(settings.mapViewEnabled)
+        XCTAssertTrue(settings.preferListView)
+        XCTAssertTrue(settings.shouldPresentListView)
+    }
+
+    func testMissingMapSettingDecodesAsDisabledAndPresentsList() throws {
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data(#"{"preferListView":false}"#.utf8))
+
+        XCTAssertFalse(settings.mapViewEnabled)
+        XCTAssertTrue(settings.shouldPresentListView)
+    }
+
+    func testEnabledMapMayRestoreMapPreference() {
+        let settings = AppSettings(mapViewEnabled: true, preferListView: false)
+
+        XCTAssertFalse(settings.shouldPresentListView)
+    }
+
+    func testMapSettingPersistsThroughSettingsStore() throws {
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let databaseURL = rootURL.appendingPathComponent("Travels.sqlite")
+        try FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: true)
+        defer {
+            try? FileManager.default.removeItem(at: rootURL)
+        }
+
+        let store = try TravelsStore(url: databaseURL)
+        let settingsStore = SettingsStore(store: store)
+        var settings = AppSettings()
+        settings.mapViewEnabled = true
+        settings.preferListView = false
+
+        try settingsStore.save(settings)
+
+        let reloaded = try settingsStore.load()
+        XCTAssertTrue(reloaded.mapViewEnabled)
+        XCTAssertFalse(reloaded.preferListView)
+        XCTAssertFalse(reloaded.shouldPresentListView)
+    }
+
     func testPreciseLocationModeDefaultsToAutomatic() {
         XCTAssertEqual(AppSettings().preciseLocationMode, .automatic)
     }
