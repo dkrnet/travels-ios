@@ -111,6 +111,52 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertTrue(trips[0].endpointEventIDs.isEmpty)
     }
 
+    func testAppendingMovementPreservesTripIdentityAndSelectedFilter() {
+        let originalDetails = [
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 5)
+        ]
+        let originalTrip = detect(originalDetails.map(\.event))[0]
+        let appendedDetails = originalDetails + [
+            makeDetail(id: 3, hour: 8, minute: 20, speed: 6)
+        ]
+        let updatedTrips = detect(appendedDetails.map(\.event))
+
+        XCTAssertEqual(updatedTrips.count, 1)
+        XCTAssertEqual(updatedTrips[0].id, originalTrip.id)
+        XCTAssertEqual(
+            filteredEvents(
+                from: appendedDetails,
+                selection: .trips([originalTrip.id]),
+                detectedTrips: updatedTrips
+            ).compactMap(\.id),
+            [1, 2, 3]
+        )
+    }
+
+    func testAppendingDifferentTripDoesNotChangeSelectedTripEvents() {
+        let selectedTripDetails = [
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 5),
+            makeDetail(id: 3, hour: 8, minute: 20, speed: 0, tripEndpointOverride: .tripEndpoint)
+        ]
+        let selectedTripID = detect(selectedTripDetails.map(\.event))[0].id
+        let allDetails = selectedTripDetails + [
+            makeDetail(id: 4, hour: 15, minute: 0, speed: 6)
+        ]
+        let updatedTrips = detect(allDetails.map(\.event))
+
+        XCTAssertEqual(updatedTrips.count, 2)
+        XCTAssertEqual(
+            filteredEvents(
+                from: allDetails,
+                selection: .trips([selectedTripID]),
+                detectedTrips: updatedTrips
+            ).compactMap(\.id),
+            [1, 2, 3]
+        )
+    }
+
     func testStoppedThenMovingUsesTheStoppedEventAsStartingEndpoint() {
         let events = [
             makeEvent(id: 1, hour: 7, minute: 30, speed: 0),

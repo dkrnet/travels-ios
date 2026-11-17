@@ -107,7 +107,8 @@ struct ContentView: View {
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) >= model.dateSelectionRange().upperBound)
                 }
 
-                ToolbarItemGroup(placement: .topBarTrailing) {
+                // REGRESSION GUARD: keep frequent actions separate from semantic secondary actions so Display Zoom can overflow the latter without dropping zoom/scroll access or nesting the More menu.
+                ToolbarItemGroup(placement: .primaryAction) {
                     Button {
                         if model.isListView {
                             model.prepareMapFocusFromList()
@@ -117,7 +118,10 @@ struct ContentView: View {
                         model.isListView.toggle()
                         model.saveSettings()
                     } label: {
-                        Image(systemName: model.isListView ? "map" : "list.bullet")
+                        Label(
+                            model.isListView ? "Show Map" : "Show List",
+                            systemImage: model.isListView ? "map" : "list.bullet"
+                        )
                     }
                     Button {
                         if model.isListView {
@@ -135,29 +139,31 @@ struct ContentView: View {
                             }
                         }
                     } label: {
-                        Image(systemName: model.isListView
-                              ? (listQuickActionShowsTop ? "arrow.up.to.line.compact" : "arrow.down.to.line.compact")
-                              : (model.mapCameraFollowMode == .showAll ? "location.fill" : "arrow.up.left.and.arrow.down.right"))
+                        Label(
+                            toolbarNavigationActionTitle,
+                            systemImage: model.isListView
+                                ? (listQuickActionShowsTop ? "arrow.up.to.line.compact" : "arrow.down.to.line.compact")
+                                : (model.mapCameraFollowMode == .showAll ? "location.fill" : "arrow.up.left.and.arrow.down.right")
+                        )
                     }
                     .disabled(model.events.isEmpty)
-                    Menu {
-                        Button("About") { showingAbout = true }
-                        Button("Import Location File") { showingImporter = true }
-                        Button("Import Photo") { showingPhotoImporter = true }
-                        Button("Export Location File") {
-                            if let url = model.exportDisplayedGPX() {
-                                shareItem = ShareItem(url: url)
-                            }
+                }
+
+                ToolbarItemGroup(placement: .secondaryAction) {
+                    Button("About") { showingAbout = true }
+                    Button("Import Location File") { showingImporter = true }
+                    Button("Import Photo") { showingPhotoImporter = true }
+                    Button("Export Location File") {
+                        if let url = model.exportDisplayedGPX() {
+                            shareItem = ShareItem(url: url)
                         }
-#if DEBUG
-                        Button("Developer Diagnostics") {
-                            showingDeveloperDiagnostics = true
-                        }
-#endif
-                        Button("Settings") { showingSettings = true }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
                     }
+#if DEBUG
+                    Button("Developer Diagnostics") {
+                        showingDeveloperDiagnostics = true
+                    }
+#endif
+                    Button("Settings") { showingSettings = true }
                 }
 
                 ToolbarItemGroup(placement: .bottomBar) {
@@ -342,6 +348,13 @@ struct ContentView: View {
 
     private var listTopContentInset: CGFloat {
         max(24, topOverlayHeight)
+    }
+
+    private var toolbarNavigationActionTitle: String {
+        if model.isListView {
+            return listQuickActionShowsTop ? "Scroll to Top" : "Scroll to Bottom"
+        }
+        return model.mapCameraFollowMode == .showAll ? "Show Latest" : "Show All"
     }
 
     @ViewBuilder
