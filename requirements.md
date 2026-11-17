@@ -495,6 +495,7 @@ The active export scope is the complete set of exportable events selected by the
 - Trip detection shall honor an explicit per-event trip-endpoint override when present.
 - Stopped-location presentation and trip detection shall honor an explicit per-event movement-state override while preserving the event's recorded speed.
 - Movement-state and trip-endpoint overrides shall remain independent so an event's stopped treatment does not implicitly force or suppress its endpoint treatment.
+- Detected trip identities shall remain stable when later movement is appended to the same trip so passive event additions do not clear selected trips. Map Show All, Map Show Latest, and list Bottom following shall operate only on the selected display subset; an event outside the selected trips shall not change the selection or move the map/list.
 - Trip detection shall treat sufficiently separated moving samples as trip boundaries and preserve those boundary samples as endpoint markers for neighboring trips.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 

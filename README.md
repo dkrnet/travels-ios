@@ -24,7 +24,7 @@ Travels is designed for personal, offline-first location logging on iOS. It reco
 
 * **Local-first storage:** Stores coordinates, movement metadata, notes, and photo attachments in a local SQLite database (`Application Support/Travels/Travels.sqlite`) with built-in backup, restore, and integrity repair.
 * **Adaptive location capture:** Supports manual check-ins, Apple Shortcuts automation, and battery-aware background tracking that dynamically adjusts precision based on movement state (highway vs. town vs. stopped).
-* **Map & list browsing:** Provides day-by-day navigation with synchronized map/list viewports, solar time-of-day coloring, trip/stop filtering, and demo data mode. Native toolbar overflow keeps every action accessible under Display Zoom and Larger Text.
+* **Map & list browsing:** Provides day-by-day navigation with synchronized map/list viewports, solar time-of-day coloring, trip/stop filtering, and demo data mode. Passive Show All, Show Latest, and list-bottom following preserves selected-trip filters and ignores new events outside the selection. Native toolbar overflow keeps every action accessible under Display Zoom and Larger Text.
 * **Data portability & migration:** Imports and exports standard **GPX 1.1** (with a documented `Travels` metadata namespace in `docs/gpx-extension-v1.md`), imports geotagged photos, and migrates older `travels.sqlite` databases.
 * **Search & organization:** Offers fast filtering by text, date, notes, capture source, and hierarchical place names, plus manual overrides for trip endpoints and movement states.
 * **Privacy controls:** Includes an optional `LocalAuthentication` (Face ID / Touch ID) privacy lock and opt-in Apple reverse geocoding (off by default).
