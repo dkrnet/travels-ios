@@ -53,10 +53,10 @@ Search your history by text, date, source, notes, and available place informatio
 
 Travels supports both automatic background logging and manual location recording:
 
-- **Automatic** Precise Location Mode balances route detail and battery use by moving between lower-power monitoring and temporary high-precision tracking.
+- **Automatic** Location Precision balances route detail and battery use by moving between lower-power monitoring and temporary high-precision tracking.
 - **Always On** keeps high-precision tracking active when maximum route fidelity matters more than battery use.
 - **Always Off** keeps automatic tracking in its lower-power mode while preserving manual and Shortcuts-based capture.
-- **Location Detail** presets let you choose the balance between point density and battery use.
+- **Location Density** presets let you choose the balance between point density and battery use.
 - **Apple Shortcuts** integration lets you automate location logging—such as adding your location when you disconnect from CarPlay, connect to a specific WiFi network, or reach a scheduled time of day.
 
 <p align="center">

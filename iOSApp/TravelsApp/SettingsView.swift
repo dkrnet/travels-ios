@@ -9,13 +9,23 @@ import SwiftUI
 import TravelsCore
 #endif
 
+enum SettingsScrollTarget: Hashable {
+    case mapView
+}
+
 struct SettingsView: View {
     @EnvironmentObject private var model: TravelsModel
     @Environment(\.dismiss) private var dismiss
+    let initialScrollTarget: SettingsScrollTarget?
+
+    init(initialScrollTarget: SettingsScrollTarget? = nil) {
+        self.initialScrollTarget = initialScrollTarget
+    }
 
     var body: some View {
         NavigationStack {
-            Form {
+            ScrollViewReader { proxy in
+                Form {
                 Section("Tracking") {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Automatic Location Tracking", isOn: $model.settings.autoAddLocations)
@@ -25,29 +35,34 @@ struct SettingsView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Background Location", isOn: $model.settings.backgroundLocationEnabled)
-                        Text("Lets Travels ask for Always Location access so it can keep recording when you leave the app.")
+                        Text("Lets Travels ask for Always **Location Access** so it can keep recording when you leave the app.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
-                        Picker("Location Detail", selection: $model.settings.locationDetailMode) {
+                        Text("Location Density")
+                            .accessibilityHidden(true)
+                        Picker("Location Density", selection: $model.settings.locationDetailMode) {
                             ForEach(LocationDetailMode.allCases, id: \.self) { mode in
                                 Text(mode.displayName).tag(mode)
                             }
                         }
                         .pickerStyle(.segmented)
-                        Text("Controls how many automatic location points are saved. High Detail saves more points. Road Trip saves fewer points at sustained highway speed while still capturing exits, towns, and stops.")
+                        Text("Controls the density of automatically saved location points. **High Detail** saves more points. **Road Trip** saves fewer points at sustained highway speed.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
-                        Picker("Precise Location Mode", selection: $model.settings.preciseLocationMode) {
+                        Text("Location Precision")
+                            .accessibilityHidden(true)
+                        Picker("Location Precision", selection: $model.settings.preciseLocationMode) {
                             ForEach(PreciseLocationMode.allCases, id: \.self) { mode in
                                 Text(mode.displayName).tag(mode)
                             }
                         }
                         .pickerStyle(.segmented)
-                        Text("Automatic uses precise location only while movement is being tracked. Always On keeps precise tracking active while automatic tracking is enabled. Always Off uses lower-power monitoring plus manual location capture.")
+                        Text("Controls when the app uses high-precision location tracking. **Automatic** uses high precision only while moving, **Always On** keeps it active whenever automatic tracking is enabled, and **Always Off** relies on battery-saving monitoring and manual captures.")
+
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -67,11 +82,16 @@ struct SettingsView: View {
 
                 Section("Shortcuts Automations") {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Travels provides silent actions to capture filtered, non-duplicate, stopped, and forced locations, plus actions to turn Automatic Location Tracking on or off. Non-Duplicate actions save only when the new location is more than 20 meters from the previous event. Stopped actions set the movement override without changing measured speed.")
+                        Text("Travels provides three background Shortcuts actions: **Tracking On**, **Tracking Off**, and **Add Location**. When adding a location, you can choose whether it saves unconditionally or only after you've moved a minimum distance, and optionally override your movement status without changing your measured speed.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                        Text("In Shortcuts, create a personal automation for Wi-Fi, Bluetooth, or Charger, choose Run Immediately, then add the preferred Travels location action. Enable or disable each trigger from the Automation tab in Shortcuts.")
-                            .font(.footnote)
+                        Text("""
+                        1. Open the **Shortcuts** app and go to the **Automation** tab.
+                        2. Create a personal automation using a trigger like **Wi-Fi**, **Bluetooth**, or **CarPlay**.
+                        3. Select **Run Immediately** and add your preferred Travels action.
+                        4. Toggle triggers on or off anytime from the **Automation** tab.
+                        """)
+                           .font(.footnote)
                             .foregroundStyle(.secondary)
                         Link("Open Shortcuts", destination: URL(string: "shortcuts://")!)
                     }
@@ -89,10 +109,12 @@ struct SettingsView: View {
                 Section("Display") {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Enable Map View", isOn: $model.settings.mapViewEnabled)
-                        Text("Map View downloads map tiles from Apple. When enabled, Apple receives the network requests needed to show the map areas you view. Leave it off to browse your locally stored history in the list without requesting map tiles.")
+                        Text("Map View downloads map tiles from Apple. When enabled, Apple receives network requests for the areas you view. Leave it off to browse your saved history as a local list without sending map requests.")
+
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
+                    .id(SettingsScrollTarget.mapView)
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
                         Text("Shows the tail end of the prior day so trips feel continuous.")
@@ -118,20 +140,29 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-            }
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        model.saveSettings()
-                        dismiss()
+                }
+                .navigationTitle("Settings")
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            model.saveSettings()
+                            dismiss()
+                        }
                     }
                 }
-            }
-            .alert("Travels", isPresented: Binding(get: { model.statusMessage != nil }, set: { if !$0 { model.statusMessage = nil } })) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(model.statusMessage ?? "")
+                .alert("Travels", isPresented: Binding(get: { model.statusMessage != nil }, set: { if !$0 { model.statusMessage = nil } })) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(model.statusMessage ?? "")
+                }
+                .task(id: initialScrollTarget) {
+                    guard let initialScrollTarget else { return }
+                    // REGRESSION GUARD: wait until the presented Form has laid out before scrolling to the setting requested by the disabled-map notice.
+                    await Task.yield()
+                    withAnimation {
+                        proxy.scrollTo(initialScrollTarget, anchor: .center)
+                    }
+                }
             }
         }
     }
@@ -164,7 +195,7 @@ struct FirstLaunchWelcomeView: View {
                 }
 
                 Section("What to Expect") {
-                    Text("With Precise Location Mode set to Automatic, Travels normally uses lower-power monitoring and temporarily increases location accuracy when movement is detected.")
+                    Text("With Location Precision set to Automatic, Travels normally uses lower-power monitoring and temporarily increases location accuracy when movement is detected.")
                     Text("Background tracking uses additional battery and may cause iOS to display its location indicator.")
                     Text("Address lookup is optional and sends coordinates to Apple only when enabled.")
                     Text("Map View is off by default. Enabling it downloads map tiles from Apple; you can enable it later in Settings.")
