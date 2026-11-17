@@ -23,8 +23,12 @@ Travels is designed for personal, offline-first location logging on iOS. It reco
 ### Core Capabilities
 
 * **Local-first storage:** Stores coordinates, movement metadata, notes, and photo attachments in a local SQLite database (`Application Support/Travels/Travels.sqlite`) with built-in backup, restore, and integrity repair.
-* **Adaptive location capture:** Supports manual check-ins, Apple Shortcuts automation, and battery-aware background tracking that dynamically adjusts precision based on movement state (highway vs. town vs. stopped). An accepted stopped Shortcuts event can start the normal stationary-confirmation window and represent the confirmed stop without creating a duplicate endpoint.
-* **Private list and optional map browsing:** New installs open in the chronological list without initializing maps. Users can opt into Apple Map View when desired; enabling it downloads map tiles from Apple. When enabled, Travels provides synchronized map/list viewports, solar time-of-day coloring, trip/stop filtering, and demo data mode. Passive Show All, Show Latest, and list-bottom following preserves selected-trip filters and ignores new events outside the selection. Native toolbar overflow keeps every action accessible under Display Zoom and Larger Text.
+* **Flexible Location Capture:** Log your journeys your way with manual check-ins, Apple Shortcuts automations, or hands-free background tracking.
+* **Battery-Aware Smart Tracking:** Background tracking automatically adjusts location precision based on how you move—optimizing power whether you are on the highway, driving through town, or stopped.
+* **Private List-First Browsing:** New installs open directly in a chronological list without initializing maps, keeping your location history private by default.
+* **Optional Apple Map Integration:** Opt into Apple Map View only when you want it, which downloads map tiles directly from Apple.
+* **Rich Map & Trip Controls:** When maps are enabled, explore your journeys with synchronized map and list scrolling, solar time-of-day coloring, trip and stop filtering, and a built-in demo data mode.
+* **Smart Filter Persistence:** Passive "Show All," "Show Latest," and auto-scroll features respect your active trip filters and ignore new events outside your current selection.
 * **Data portability & migration:** Imports and exports standard **GPX 1.1** (with a documented `Travels` metadata namespace in `docs/gpx-extension-v1.md`), imports geotagged photos, and migrates older `travels.sqlite` databases.
 * **Search & organization:** Offers fast filtering by text, date, notes, capture source, and hierarchical place names, plus manual overrides for trip endpoints and movement states.
 * **Privacy controls:** Includes an optional `LocalAuthentication` (Face ID / Touch ID) privacy lock, opt-in Apple reverse geocoding, and an opt-in Apple Map View; both Apple network-backed features are off by default.
