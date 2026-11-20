@@ -3,7 +3,7 @@
 set -euo pipefail
 
 project_dir="${PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-marketing_version="${MARKETING_VERSION:-2.0.0}"
+marketing_version="${MARKETING_VERSION:-2.0.1}"
 state_dir="${TRAVELS_VERSION_STATE_DIR:-${project_dir}/Config/BuildState.local}"
 display_state_file="${state_dir}/travels-version-state"
 bundle_state_file="${state_dir}/travels-bundle-build-state"

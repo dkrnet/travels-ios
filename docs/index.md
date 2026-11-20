@@ -79,7 +79,7 @@ Exports, backups, photos, and GPX files may contain precise location history. St
 
 I created Travels because I wanted a privacy-first way to keep my own location history. It is free because this is a niche app, and charging for it would add more complexity than value.
 
-**You are not the product.** Travels has no advertising, analytics, accounts, subscriptions, or business model based on selling your location data.
+**You are not the product.** Travels has no business model based on selling your location data.
 
 ## Open source
 
@@ -91,4 +91,4 @@ Travels is open source, so its implementation and privacy claims can be inspecte
 
 Travels requires iOS 17 or later. Automatic history recording requires location permission, and background recording requires the corresponding iOS background-location permission.
 
-For private support questions, email [adigitalanalog@proton.me](mailto:adigitalanalog@proton.me). Do not include precise location history, addresses, photos, GPX files, or database backups in a public issue.
+For private support questions, email [travels-ios@proton.me](mailto:travels-ios@proton.me). Do not include precise location history, addresses, photos, GPX files, or database backups in a public issue.

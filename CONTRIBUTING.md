@@ -150,18 +150,18 @@ Production and TestFlight use the same signed Release archive format. The public
 3. Confirm `Config/Signing.local.xcconfig` contains the correct Apple development team and choose an unused numeric build number higher than every build already uploaded to App Store Connect.
 4. Tag the exact release commit with the marketing version before archiving. The release tag removes `-dev` from the About-screen build identifier; setting `--build-number` alone does not.
    ```bash
-   git tag -a v2.0.0 -m "Travels 2.0.0"
-   git push origin v2.0.0
+   git tag -a v2.0.1 -m "Travels 2.0.1"
+   git push origin v2.0.1
    ```
-   The tag must match the current marketing version as either `2.0.0` or `v2.0.0`. Do not move or reuse a published release tag; update these examples when the marketing version changes.
+   The tag must match the current marketing version as either `2.0.1` or `v2.0.1`. Do not move or reuse a published release tag; update these examples when the marketing version changes.
 5. Create and export the validated Release archive, replacing `BUILD_NUMBER` with the unused App Store Connect number:
    ```bash
    scripts/archive_testflight.sh --build-number BUILD_NUMBER --export
    ```
-   For build 499 of version 2.0.0, the default outputs are:
+   For build 499 of version 2.0.1, the default outputs are:
    ```text
-   .build/testflight/Travels-2.0.0-499.xcarchive
-   .build/testflight/Travels-2.0.0-499/Travels.ipa
+   .build/testflight/Travels-2.0.1-499.xcarchive
+   .build/testflight/Travels-2.0.1-499/Travels.ipa
    ```
    The archive uses `com.adigitalanalog.travels`, excludes debug-only diagnostics, and is validated for version/build metadata, encryption declaration, privacy manifest, and opaque App Store icons.
 6. Upload the exported `Travels.ipa` with Transporter, or distribute the `.xcarchive` through Xcode Organizer. The repository script intentionally never uploads a build.

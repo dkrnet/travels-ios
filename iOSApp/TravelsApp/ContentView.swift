@@ -545,11 +545,11 @@ struct AboutView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Your location history. On your device.")
                                 .font(.headline)
-                            Text("Travels is a privacy-first location history app. It records and organizes your location history locally on your device, without accounts, advertising, analytics, or cloud tracking.")
-                            Label("Your location history is stored locally.", systemImage: "iphone")
-                            Label("Map View is off by default. When enabled, Apple receives the requests needed to download map tiles for the areas you view.", systemImage: "map")
-                            Label("Address lookup is optional and sends coordinates to Apple only when enabled.", systemImage: "mappin.and.ellipse")
-                            Label("Data leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.", systemImage: "square.and.arrow.up")
+                            Text("Travels is a privacy-first location history app. It records and organizes your location history locally on your device, without accounts, subscriptions, advertising, analytics, or cloud tracking.")
+                            privacyDisclosureRow("Your location history is stored locally.", systemImage: "iphone")
+                            privacyDisclosureRow("Map View is off by default. When enabled, Apple receives the requests needed to download map tiles for the areas you view.", systemImage: "map")
+                            privacyDisclosureRow("Address lookup is optional and sends coordinates to Apple only when enabled.", systemImage: "mappin.and.ellipse")
+                            privacyDisclosureRow("Data leaves Travels only when you export or share it, or when an enabled feature uses an Apple platform service.", systemImage: "square.and.arrow.up")
                         }
                         .font(.footnote)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -558,7 +558,7 @@ struct AboutView: View {
                     GroupBox {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("I created Travels because I wanted a privacy-first way to keep my own location history. It’s free because this is a niche app, and charging for it would add more complexity than value.")
-                            Text("You are not the product. Travels has no advertising, analytics, accounts, subscriptions, or business model based on selling your location data.")
+                            Text("You are not the product. Travels has no business model based on selling your location data.")
                                 .fontWeight(.semibold)
                         }
                         .font(.footnote)
@@ -579,18 +579,15 @@ struct AboutView: View {
 
                     GroupBox {
                         VStack(alignment: .leading, spacing: 12) {
-                            contactRow(label: "Support:", title: "adigitalanalog@proton.me", url: URL(string: "mailto:adigitalanalog@proton.me"))
+                            contactRow(label: "Support:", title: "travels-ios@proton.me", url: URL(string: "mailto:travels-ios@proton.me"))
                             contactRow(label: "Help:", title: "github.com/dkrnet/travels-ios", url: URL(string: "https://github.com/dkrnet/travels-ios"))
                         }
                         .font(.caption)
                     }
 
                     GroupBox {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Travels is licensed under the Mozilla Public License 2.0.")
-                            Link("Mozilla Public License 2.0", destination: URL(string: "https://www.mozilla.org/MPL/2.0/")!)
-                        }
-                        .font(.footnote)
+                        Text("Travels is licensed under the [Mozilla Public License 2.0](https://www.mozilla.org/MPL/2.0/).")
+                            .font(.footnote)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
@@ -627,6 +624,15 @@ struct AboutView: View {
 
     private func statRow(_ title: String, value: String) -> some View {
         LabeledContent(title, value: value)
+    }
+
+    private func privacyDisclosureRow(_ title: String, systemImage: String) -> some View {
+        Label {
+            Text(title)
+        } icon: {
+            Image(systemName: systemImage)
+                .frame(width: 20)
+        }
     }
 
     private func contactRow(label: String, title: String, url: URL?) -> some View {
