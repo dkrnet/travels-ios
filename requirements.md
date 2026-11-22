@@ -457,7 +457,7 @@ The active export scope is the complete set of exportable events selected by the
 
 - The user shall be able to export a consistent, standalone SQLite snapshot of the complete app database through the standard system share workflow.
 - Database export shall disclose that the file contains sensitive location history and that copied photo attachment files are stored separately and are not included in the SQLite export.
-- Database export shall validate the snapshot before sharing it, shall not modify or replace the active database, and shall remove its protected temporary file after the share workflow is dismissed.
+- Database export shall validate the snapshot before sharing it, shall not modify or replace the active database, and shall remove its protected temporary file after the share workflow is dismissed. If a crash or force-quit prevents dismissal cleanup, the app shall remove stale database-export snapshots and their sidecars on its next launch and before creating another export.
 - Developer diagnostics may restore from a selected backup; regular user-facing database import or restore is not required by the initial database-export feature.
 - Restore shall stop active tracking work, close or checkpoint the current store, replace the database safely, reopen the store, reload current state, and reconfigure tracking as needed.
 - Restore shall not leave the app in a half-restored state without reporting an error.

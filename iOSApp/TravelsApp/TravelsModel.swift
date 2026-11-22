@@ -97,6 +97,10 @@ final class TravelsModel: ObservableObject {
 
     private func performBootstrap() async {
         do {
+            // REGRESSION GUARD: a crash or force-quit can bypass the share sheet's
+            // dismissal cleanup. Remove only stale user-facing database exports
+            // before opening the store so sensitive snapshots do not accumulate.
+            try? TravelsStore.removeStaleDatabaseExports()
             let urls = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             let appSupportRoot = urls[0]
             let appSupport = appSupportRoot.appendingPathComponent("Travels", isDirectory: true)
@@ -908,7 +912,8 @@ final class TravelsModel: ObservableObject {
     }
 
     func createDatabaseExport() throws -> URL {
-        try createDatabaseSnapshot(filenamePrefix: "Travels-database")
+        try TravelsStore.removeStaleDatabaseExports()
+        return try createDatabaseSnapshot(filenamePrefix: TravelsStore.temporaryDatabaseExportFilenamePrefix)
     }
 
     private func createDatabaseSnapshot(filenamePrefix: String) throws -> URL {

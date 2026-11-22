@@ -71,4 +71,35 @@ final class DatabaseExportTests: XCTestCase {
         XCTAssertEqual(try source.eventCount(), 1)
         XCTAssertTrue(try source.databaseHealthReport().isHealthy)
     }
+
+    func testStaleDatabaseExportCleanupRemovesOnlyExportFiles() throws {
+        let rootURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: rootURL, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: rootURL) }
+
+        let staleFiles = [
+            "Travels-database-20261122-090000.sqlite",
+            "Travels-database-20261122-090000.sqlite-wal",
+            "Travels-database-20261122-090000.sqlite-shm"
+        ].map { rootURL.appendingPathComponent($0) }
+        for staleFile in staleFiles {
+            try Data("sensitive".utf8).write(to: staleFile)
+        }
+
+        let developerBackup = rootURL.appendingPathComponent("Travels-backup-20261122-090000.sqlite")
+        let unrelatedFile = rootURL.appendingPathComponent("notes.sqlite")
+        let matchingDirectory = rootURL.appendingPathComponent("Travels-database-directory.sqlite", isDirectory: true)
+        try Data("backup".utf8).write(to: developerBackup)
+        try Data("unrelated".utf8).write(to: unrelatedFile)
+        try FileManager.default.createDirectory(at: matchingDirectory, withIntermediateDirectories: true)
+
+        try TravelsStore.removeStaleDatabaseExports(in: rootURL)
+
+        for staleFile in staleFiles {
+            XCTAssertFalse(FileManager.default.fileExists(atPath: staleFile.path))
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: developerBackup.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: unrelatedFile.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: matchingDirectory.path))
+    }
 }

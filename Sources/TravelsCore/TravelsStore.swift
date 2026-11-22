@@ -6,6 +6,8 @@
 import Foundation
 
 public final class TravelsStore: @unchecked Sendable {
+    public static let temporaryDatabaseExportFilenamePrefix = "Travels-database"
+
     private var database: SQLiteDatabase
     public let databaseURL: URL
 
@@ -481,6 +483,29 @@ public final class TravelsStore: @unchecked Sendable {
         } catch {
             try? fileManager.removeItem(at: destinationURL)
             throw error
+        }
+    }
+
+    public static func removeStaleDatabaseExports(
+        in directoryURL: URL = FileManager.default.temporaryDirectory,
+        fileManager: FileManager = .default
+    ) throws {
+        let keys: Set<URLResourceKey> = [.isRegularFileKey, .isSymbolicLinkKey]
+        let candidates = try fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: Array(keys),
+            options: [.skipsHiddenFiles]
+        )
+
+        for candidate in candidates {
+            let name = candidate.lastPathComponent
+            guard name.hasPrefix(temporaryDatabaseExportFilenamePrefix + "-"),
+                  name.hasSuffix(".sqlite") || name.hasSuffix(".sqlite-wal") || name.hasSuffix(".sqlite-shm") else {
+                continue
+            }
+            let values = try candidate.resourceValues(forKeys: keys)
+            guard values.isRegularFile == true, values.isSymbolicLink != true else { continue }
+            try fileManager.removeItem(at: candidate)
         }
     }
 
