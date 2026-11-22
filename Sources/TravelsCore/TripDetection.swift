@@ -20,6 +20,29 @@ public func isStoppedLocationEvent(_ event: LocationEvent) -> Bool {
     !isMovingLocationEvent(event)
 }
 
+public func shouldDisplayMapMarker(
+    for event: LocationEvent,
+    mode: MapMarkerDisplayMode,
+    selection: MapDisplaySelection
+) -> Bool {
+    if case .stoppedOnly = selection {
+        // REQUIREMENTS: the explicit Stopped Only day selection temporarily
+        // overrides marker preferences without changing the saved setting.
+        return isStoppedLocationEvent(event)
+    }
+
+    switch mode {
+    case .stoppedAndMoving:
+        return true
+    case .stoppedOnly:
+        return isStoppedLocationEvent(event)
+    case .movingOnly:
+        return isMovingLocationEvent(event)
+    case .noMarkers:
+        return false
+    }
+}
+
 public func mapMarkerPriorityOrder(_ events: [EventDetail]) -> [EventDetail] {
     // REGRESSION GUARD: map thinning must consider stopped events before moving
     // route samples so a nearby moving marker cannot consume the stopped marker's slot.

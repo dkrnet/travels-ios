@@ -192,6 +192,7 @@ The app shall persist user settings including at least:
 - Require authentication/privacy lock enabled/disabled.
 - Map View enabled/disabled, defaulting to disabled.
 - Show route lines enabled/disabled, defaulting to enabled to preserve existing map presentation.
+- Map marker display mode: Stopped and Moving, Stopped Only, Moving Only, or No Markers, defaulting to Stopped and Moving.
 - Preferred map or list view when Map View is enabled; new installs shall default to the list.
 - Location Precision: Automatic, Always On, or Always Off.
 - Location Density: High Detail, Balanced, Battery Saver, or Road Trip.
@@ -347,6 +348,10 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
 - The user shall be able to hide or show route lines independently of map markers. Changing route-line visibility shall not alter the displayed event set, trip selection, map framing, or marker interactions.
+- Map marker display mode shall affect only map annotations and shall not change route geometry, the chronological list, trip detection or selection, map framing, synchronization, or export scope.
+- Settings shall prevent route lines and map markers from both being disabled: No Markers shall be unavailable while route lines are hidden, and route lines shall not be disableable while No Markers is selected.
+- If settings are loaded with both route lines and markers disabled, both shall be restored to their default enabled presentation values.
+- The existing Stopped Only display selection shall temporarily show stopped markers even when the saved marker mode excludes them, without changing the saved marker preference.
 - Route segments connecting a context event to its neighboring displayed event shall use a visually distinct dashed style when route lines are shown.
 - The map shall show an always-visible scale marker near the lower-right corner.
 - The map scale marker shall update as the user pans or zooms, shall use the user's preferred measurement system, and shall avoid an opaque background so it does not unnecessarily cover map content.

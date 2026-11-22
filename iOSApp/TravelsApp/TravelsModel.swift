@@ -293,6 +293,7 @@ final class TravelsModel: ObservableObject {
 
     func saveSettings() {
         do {
+            settings.repairMapVisibilityIfNeeded()
             if settings.mapViewEnabled {
                 settings.preferListView = isListView
             } else {

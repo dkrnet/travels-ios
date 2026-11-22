@@ -16,6 +16,7 @@ Travels 2.1.0 is the active development line. Its theme is clearer trip context,
 
 ### Planned
 
+- [#42 Add configurable map marker display modes](https://github.com/dkrnet/travels-ios/issues/42): independently show both marker types, stopped markers, moving markers, or no markers while ensuring route lines or markers always remain visible and preserving `Stopped Only` as a temporary stopped-marker override.
 - [#52 Add unified context events around trips](https://github.com/dkrnet/travels-ios/issues/52): include eligible stopped events around selected trips, bring previous-day context under the same setting, and distinguish context connections visually without changing trip identity or timing.
 - [#48 Add a setting to show or hide route lines](https://github.com/dkrnet/travels-ios/issues/48): let users display markers without ordinary route connectors while preserving map state and privacy defaults.
 - [#55 Export location events returned by search](https://github.com/dkrnet/travels-ios/issues/55): export the complete filtered result set through the existing standards-compatible GPX workflow.
@@ -25,7 +26,6 @@ Travels 2.1.0 is the active development line. Its theme is clearer trip context,
 
 - [#51 Improve CarPlay automation setup with App Shortcuts and guidance](https://github.com/dkrnet/travels-ios/issues/51): improve discovery and setup guidance for recommended CarPlay Connect and Disconnect personal automations.
 - [#53 Cluster repeated same-location events on the map](https://github.com/dkrnet/travels-ios/issues/53): replace obscuring overlapping markers with an accessible count and event-selection workflow.
-- [#42 Add configurable map marker display modes](https://github.com/dkrnet/travels-ios/issues/42): independently show both marker types, stopped markers, moving markers, or no markers while ensuring route lines or markers always remain visible and preserving `Stopped Only` as a temporary stopped-marker override.
 - [#54 Add date-range reports and optional heat-map summaries](https://github.com/dkrnet/travels-ios/issues/54): summarize local data across standard or custom periods without overstating incomplete history.
 - [#50 Add an optional scheduled daily summary](https://github.com/dkrnet/travels-ios/issues/50): provide a privacy-conscious, opt-in daily summary after reusable report calculations are defined.
 
