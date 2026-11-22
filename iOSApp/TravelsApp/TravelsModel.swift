@@ -97,6 +97,10 @@ final class TravelsModel: ObservableObject {
 
     private func performBootstrap() async {
         do {
+            // REGRESSION GUARD: a crash or force-quit can bypass the share sheet's
+            // dismissal cleanup. Remove only stale user-facing database exports
+            // before opening the store so sensitive snapshots do not accumulate.
+            try? TravelsStore.removeStaleDatabaseExports()
             let urls = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
             let appSupportRoot = urls[0]
             let appSupport = appSupportRoot.appendingPathComponent("Travels", isDirectory: true)
@@ -904,19 +908,37 @@ final class TravelsModel: ObservableObject {
     }
 
     func createDatabaseBackup() throws -> URL {
-        guard let store, let storeURL else {
+        try createDatabaseSnapshot(filenamePrefix: "Travels-backup")
+    }
+
+    func createDatabaseExport() throws -> URL {
+        try TravelsStore.removeStaleDatabaseExports()
+        return try createDatabaseSnapshot(filenamePrefix: TravelsStore.temporaryDatabaseExportFilenamePrefix)
+    }
+
+    private func createDatabaseSnapshot(filenamePrefix: String) throws -> URL {
+        guard let store else {
             throw TravelsError.databaseOpenFailed("Database is unavailable.")
         }
         try store.checkpoint()
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let filename = "Travels-backup-\(formatter.string(from: Date())).sqlite"
-        let backupURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        if FileManager.default.fileExists(atPath: backupURL.path) {
-            try FileManager.default.removeItem(at: backupURL)
+        let filename = "\(filenamePrefix)-\(formatter.string(from: Date())).sqlite"
+        let snapshotURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+        if FileManager.default.fileExists(atPath: snapshotURL.path) {
+            try FileManager.default.removeItem(at: snapshotURL)
         }
-        try FileManager.default.copyItem(at: storeURL, to: backupURL)
-        return backupURL
+        do {
+            try store.exportDatabase(to: snapshotURL)
+            try FileManager.default.setAttributes(
+                [.protectionKey: FileProtectionType.complete],
+                ofItemAtPath: snapshotURL.path
+            )
+            return snapshotURL
+        } catch {
+            try? FileManager.default.removeItem(at: snapshotURL)
+            throw error
+        }
     }
 
     func createMaintenanceLogExport() throws -> URL {

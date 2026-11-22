@@ -6,6 +6,8 @@
 import Foundation
 
 public final class TravelsStore: @unchecked Sendable {
+    public static let temporaryDatabaseExportFilenamePrefix = "Travels-database"
+
     private var database: SQLiteDatabase
     public let databaseURL: URL
 
@@ -449,6 +451,62 @@ public final class TravelsStore: @unchecked Sendable {
 
     public func checkpoint() throws {
         _ = try database.query("PRAGMA wal_checkpoint(FULL)")
+    }
+
+    public func exportDatabase(to destinationURL: URL) throws {
+        let sourceURL = databaseURL.standardizedFileURL
+        let destinationURL = destinationURL.standardizedFileURL
+        guard sourceURL != destinationURL else {
+            throw TravelsError.databaseExecutionFailed("The export destination cannot replace the active database.")
+        }
+
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: destinationURL.path) {
+            try fileManager.removeItem(at: destinationURL)
+        }
+
+        do {
+            try database.backup(to: destinationURL.path)
+
+            let snapshot = try SQLiteDatabase(path: destinationURL.path)
+            defer { snapshot.close() }
+            let integrityMessages = try snapshot.integrityCheck().map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            let isHealthy = !integrityMessages.isEmpty && integrityMessages.allSatisfy {
+                $0.caseInsensitiveCompare("ok") == .orderedSame
+            }
+            let foreignKeyIssues = try snapshot.query("PRAGMA foreign_key_check")
+            guard isHealthy, foreignKeyIssues.isEmpty else {
+                throw TravelsError.databaseExecutionFailed("The exported database did not pass integrity validation.")
+            }
+        } catch {
+            try? fileManager.removeItem(at: destinationURL)
+            throw error
+        }
+    }
+
+    public static func removeStaleDatabaseExports(
+        in directoryURL: URL = FileManager.default.temporaryDirectory,
+        fileManager: FileManager = .default
+    ) throws {
+        let keys: Set<URLResourceKey> = [.isRegularFileKey, .isSymbolicLinkKey]
+        let candidates = try fileManager.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: Array(keys),
+            options: [.skipsHiddenFiles]
+        )
+
+        for candidate in candidates {
+            let name = candidate.lastPathComponent
+            guard name.hasPrefix(temporaryDatabaseExportFilenamePrefix + "-"),
+                  name.hasSuffix(".sqlite") || name.hasSuffix(".sqlite-wal") || name.hasSuffix(".sqlite-shm") else {
+                continue
+            }
+            let values = try candidate.resourceValues(forKeys: keys)
+            guard values.isRegularFile == true, values.isSymbolicLink != true else { continue }
+            try fileManager.removeItem(at: candidate)
+        }
     }
 
     public func transaction<T>(_ work: () throws -> T) throws -> T {

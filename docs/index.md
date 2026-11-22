@@ -71,7 +71,7 @@ Your data is not locked into an online account or developer-operated service.
 
 - Import and export standard GPX location files.
 - Create location events from geotagged photos, with or without copying the photo into Travels.
-- Back up the local Travels database and attachments.
+- Export a complete standalone snapshot of the local Travels database. Copied photo files are stored separately and are not included in the SQLite export.
 
 Exports, backups, photos, and GPX files may contain precise location history. Store and share them with the same care you would give any other sensitive personal record.
 
