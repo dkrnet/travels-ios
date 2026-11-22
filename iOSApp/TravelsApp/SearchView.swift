@@ -27,6 +27,7 @@ struct SearchView: View {
     @State private var bodyOfWater: String?
     @State private var searchResultsScrollCommandID = UUID()
     @State private var isSearching = false
+    @State private var shareItem: ShareItem?
 
     init(initialCriteria: SearchCriteria = SearchCriteria()) {
         // REGRESSION GUARD: restore the last confirmed search criteria so the form does not fall back to blank "Any" defaults every time the sheet opens.
@@ -120,6 +121,16 @@ struct SearchView: View {
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         } else {
+                            // REGRESSION GUARD: keep export with the results so the primary
+                            // Search action remains directly accessible in the toolbar.
+                            Button {
+                                if let url = model.exportSearchResultsGPX() {
+                                    shareItem = ShareItem(url: url)
+                                }
+                            } label: {
+                                Label("Export Results", systemImage: "square.and.arrow.up")
+                            }
+
                             ForEach(model.searchResults) { detail in
                                 EventRow(detail: detail)
                                     .onTapGesture {
@@ -180,6 +191,9 @@ struct SearchView: View {
                     }
                 }
             }
+        }
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.url])
         }
     }
 
