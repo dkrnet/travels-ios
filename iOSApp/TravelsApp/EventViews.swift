@@ -47,7 +47,7 @@ struct EventMapView: View {
                             )
                         )
                 }
-                ForEach(displayedEvents) { detail in
+                ForEach(displayedMarkerEvents) { detail in
                     Annotation(markerTitle(for: detail), coordinate: detail.coordinate) {
                         Button {
                             model.selectEventForDetails(detail)
@@ -163,6 +163,16 @@ struct EventMapView: View {
             detectedTrips: model.detectedTrips,
             contextEventIDs: contextEventIDs
         )
+    }
+
+    private var displayedMarkerEvents: [EventDetail] {
+        displayedEvents.filter { detail in
+            shouldDisplayMapMarker(
+                for: detail.event,
+                mode: model.settings.mapMarkerDisplayMode,
+                selection: model.selectedMapDisplay
+            )
+        }
     }
 
     private var effectiveViewportSize: CGSize {

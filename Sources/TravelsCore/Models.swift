@@ -502,6 +502,32 @@ public enum LocationDetailMode: String, Codable, CaseIterable, Sendable {
     }
 }
 
+public enum MapMarkerDisplayMode: String, Codable, CaseIterable, Sendable {
+    case stoppedAndMoving
+    case stoppedOnly
+    case movingOnly
+    case noMarkers
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        self = MapMarkerDisplayMode(rawValue: rawValue) ?? .stoppedAndMoving
+    }
+
+    public var displayName: String {
+        switch self {
+        case .stoppedAndMoving:
+            "Stopped and Moving"
+        case .stoppedOnly:
+            "Stopped Only"
+        case .movingOnly:
+            "Moving Only"
+        case .noMarkers:
+            "No Markers"
+        }
+    }
+}
+
 public struct AppSettings: Codable, Equatable, Sendable {
     public var autoAddLocations: Bool
     public var backgroundLocationEnabled: Bool
@@ -512,6 +538,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var requireAuthentication: Bool
     public var mapViewEnabled: Bool
     public var showRouteLines: Bool
+    public var mapMarkerDisplayMode: MapMarkerDisplayMode
     public var preferListView: Bool
     public var preciseLocationMode: PreciseLocationMode
     public var locationDetailMode: LocationDetailMode
@@ -535,6 +562,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         requireAuthentication: Bool = false,
         mapViewEnabled: Bool = false,
         showRouteLines: Bool = true,
+        mapMarkerDisplayMode: MapMarkerDisplayMode = .stoppedAndMoving,
         preferListView: Bool = true,
         preciseLocationMode: PreciseLocationMode = .automatic,
         locationDetailMode: LocationDetailMode = .balanced,
@@ -551,12 +579,14 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.requireAuthentication = requireAuthentication
         self.mapViewEnabled = mapViewEnabled
         self.showRouteLines = showRouteLines
+        self.mapMarkerDisplayMode = mapMarkerDisplayMode
         self.preferListView = preferListView
         self.preciseLocationMode = preciseLocationMode
         self.locationDetailMode = locationDetailMode
         self.poweredUpdateDistanceMeters = poweredUpdateDistanceMeters
         self.batteryUpdateDistanceMeters = batteryUpdateDistanceMeters
         self.preferredMeasurementSystem = preferredMeasurementSystem
+        repairMapVisibilityIfNeeded()
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -569,6 +599,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case requireAuthentication
         case mapViewEnabled
         case showRouteLines
+        case mapMarkerDisplayMode
         case preferListView
         case preciseLocationMode
         case locationDetailMode
@@ -589,6 +620,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false
         self.mapViewEnabled = try container.decodeIfPresent(Bool.self, forKey: .mapViewEnabled) ?? false
         self.showRouteLines = try container.decodeIfPresent(Bool.self, forKey: .showRouteLines) ?? true
+        self.mapMarkerDisplayMode = try container.decodeIfPresent(MapMarkerDisplayMode.self, forKey: .mapMarkerDisplayMode) ?? .stoppedAndMoving
         self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? true
         if let preciseLocationMode = try container.decodeIfPresent(PreciseLocationMode.self, forKey: .preciseLocationMode) {
             self.preciseLocationMode = preciseLocationMode
@@ -601,6 +633,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.poweredUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .poweredUpdateDistanceMeters) ?? 500
         self.batteryUpdateDistanceMeters = try container.decodeIfPresent(Int.self, forKey: .batteryUpdateDistanceMeters) ?? 1_000
         self.preferredMeasurementSystem = try container.decodeIfPresent(MeasurementSystemPreference.self, forKey: .preferredMeasurementSystem) ?? .default
+        repairMapVisibilityIfNeeded()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -614,6 +647,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         try container.encode(requireAuthentication, forKey: .requireAuthentication)
         try container.encode(mapViewEnabled, forKey: .mapViewEnabled)
         try container.encode(showRouteLines, forKey: .showRouteLines)
+        try container.encode(mapMarkerDisplayMode, forKey: .mapMarkerDisplayMode)
         try container.encode(preferListView, forKey: .preferListView)
         try container.encode(preciseLocationMode, forKey: .preciseLocationMode)
         try container.encode(locationDetailMode, forKey: .locationDetailMode)
@@ -624,6 +658,14 @@ public struct AppSettings: Codable, Equatable, Sendable {
 
     public var shouldPresentListView: Bool {
         !mapViewEnabled || preferListView
+    }
+
+    public mutating func repairMapVisibilityIfNeeded() {
+        guard !showRouteLines, mapMarkerDisplayMode == .noMarkers else { return }
+        // REGRESSION GUARD: a migrated or corrupted preference combination must
+        // not leave an enabled map with neither routes nor event markers visible.
+        showRouteLines = true
+        mapMarkerDisplayMode = .stoppedAndMoving
     }
 }
 

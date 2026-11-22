@@ -48,6 +48,7 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertFalse(settings.mapViewEnabled)
         XCTAssertTrue(settings.showRouteLines)
+        XCTAssertEqual(settings.mapMarkerDisplayMode, .stoppedAndMoving)
         XCTAssertTrue(settings.preferListView)
         XCTAssertTrue(settings.shouldPresentListView)
     }
@@ -63,6 +64,33 @@ final class AppSettingsTests: XCTestCase {
         let settings = try JSONDecoder().decode(AppSettings.self, from: Data("{}".utf8))
 
         XCTAssertTrue(settings.showRouteLines)
+        XCTAssertEqual(settings.mapMarkerDisplayMode, .stoppedAndMoving)
+    }
+
+    func testUnknownMarkerDisplayModeFallsBackToBothMarkerTypes() throws {
+        let settings = try JSONDecoder().decode(
+            AppSettings.self,
+            from: Data(#"{"mapMarkerDisplayMode":"unexpected"}"#.utf8)
+        )
+
+        XCTAssertEqual(settings.mapMarkerDisplayMode, .stoppedAndMoving)
+    }
+
+    func testInvalidInvisibleMapSettingsRepairToDefaultsWhenDecoded() throws {
+        let settings = try JSONDecoder().decode(
+            AppSettings.self,
+            from: Data(#"{"showRouteLines":false,"mapMarkerDisplayMode":"noMarkers"}"#.utf8)
+        )
+
+        XCTAssertTrue(settings.showRouteLines)
+        XCTAssertEqual(settings.mapMarkerDisplayMode, .stoppedAndMoving)
+    }
+
+    func testInvalidInvisibleMapSettingsRepairToDefaultsWhenConstructed() {
+        let settings = AppSettings(showRouteLines: false, mapMarkerDisplayMode: .noMarkers)
+
+        XCTAssertTrue(settings.showRouteLines)
+        XCTAssertEqual(settings.mapMarkerDisplayMode, .stoppedAndMoving)
     }
 
     func testEnabledMapMayRestoreMapPreference() {
@@ -84,6 +112,7 @@ final class AppSettingsTests: XCTestCase {
         var settings = AppSettings()
         settings.mapViewEnabled = true
         settings.showRouteLines = false
+        settings.mapMarkerDisplayMode = .movingOnly
         settings.preferListView = false
 
         try settingsStore.save(settings)
@@ -91,6 +120,7 @@ final class AppSettingsTests: XCTestCase {
         let reloaded = try settingsStore.load()
         XCTAssertTrue(reloaded.mapViewEnabled)
         XCTAssertFalse(reloaded.showRouteLines)
+        XCTAssertEqual(reloaded.mapMarkerDisplayMode, .movingOnly)
         XCTAssertFalse(reloaded.preferListView)
         XCTAssertFalse(reloaded.shouldPresentListView)
     }

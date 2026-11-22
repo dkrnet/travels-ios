@@ -590,6 +590,29 @@ final class TripDetectionTests: XCTestCase {
         XCTAssertEqual(mapMarkerPriorityOrder(events).compactMap(\.id), [2, 4, 1, 3])
     }
 
+    func testMapMarkerDisplayModesSelectOnlyRequestedMovementTypes() {
+        let moving = makeEvent(id: 1, hour: 8, speed: 5)
+        let stopped = makeEvent(id: 2, hour: 9, speed: 0)
+
+        XCTAssertTrue(shouldDisplayMapMarker(for: moving, mode: .stoppedAndMoving, selection: .all))
+        XCTAssertTrue(shouldDisplayMapMarker(for: stopped, mode: .stoppedAndMoving, selection: .all))
+        XCTAssertFalse(shouldDisplayMapMarker(for: moving, mode: .stoppedOnly, selection: .all))
+        XCTAssertTrue(shouldDisplayMapMarker(for: stopped, mode: .stoppedOnly, selection: .all))
+        XCTAssertTrue(shouldDisplayMapMarker(for: moving, mode: .movingOnly, selection: .all))
+        XCTAssertFalse(shouldDisplayMapMarker(for: stopped, mode: .movingOnly, selection: .all))
+        XCTAssertFalse(shouldDisplayMapMarker(for: moving, mode: .noMarkers, selection: .all))
+        XCTAssertFalse(shouldDisplayMapMarker(for: stopped, mode: .noMarkers, selection: .all))
+    }
+
+    func testStoppedOnlySelectionTemporarilyOverridesMarkerPreference() {
+        let moving = makeEvent(id: 1, hour: 8, speed: 5)
+        let stopped = makeEvent(id: 2, hour: 9, speed: 0)
+
+        XCTAssertFalse(shouldDisplayMapMarker(for: moving, mode: .noMarkers, selection: .stoppedOnly))
+        XCTAssertTrue(shouldDisplayMapMarker(for: stopped, mode: .noMarkers, selection: .stoppedOnly))
+        XCTAssertTrue(shouldDisplayMapMarker(for: stopped, mode: .movingOnly, selection: .stoppedOnly))
+    }
+
     func testMapDisplaySelectionTripReturnsTripEvents() {
         let events = [
             makeDetail(id: 1, hour: 8, minute: 0, speed: 4),

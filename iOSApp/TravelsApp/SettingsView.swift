@@ -117,7 +117,21 @@ struct SettingsView: View {
                     .id(SettingsScrollTarget.mapView)
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Show Route Lines", isOn: $model.settings.showRouteLines)
+                            .disabled(model.settings.mapMarkerDisplayMode == .noMarkers)
                         Text("Connects consecutive displayed locations on the map. Turn this off to show markers without route lines.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Picker("Map Markers", selection: mapMarkerDisplayModeBinding) {
+                            ForEach(MapMarkerDisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.displayName)
+                                    .tag(mode)
+                                    .disabled(mode == .noMarkers && !model.settings.showRouteLines)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        Text("Choose which event markers appear on the map. Route lines or markers must remain visible.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -172,6 +186,16 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    private var mapMarkerDisplayModeBinding: Binding<MapMarkerDisplayMode> {
+        Binding(
+            get: { model.settings.mapMarkerDisplayMode },
+            set: { mode in
+                guard mode != .noMarkers || model.settings.showRouteLines else { return }
+                model.settings.mapMarkerDisplayMode = mode
+            }
+        )
     }
 }
 
