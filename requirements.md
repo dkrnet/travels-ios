@@ -187,7 +187,7 @@ The app shall persist user settings including at least:
 - Background location capture enabled/disabled.
 - Reverse address resolution enabled/disabled.
 - Resolve missing addresses enabled/disabled.
-- Include previous-day context enabled/disabled.
+- Include context events enabled/disabled, controlling both previous-day context and eligible stopped events adjacent to selected trips.
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
 - Map View enabled/disabled, defaulting to disabled.
@@ -329,7 +329,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The user shall be able to choose a date from a date picker.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
 - Changing the selected date shall reload events and reset stale focused-selection state.
-- When previous-day context is enabled, the most recent non-demo event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
+- When context events are enabled, the most recent non-demo event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
 - Demo events shall never be used as previous-day context, even when Include Demo Data is enabled.
 
 ## Map and list requirements
@@ -347,6 +347,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
 - The user shall be able to hide or show route lines independently of map markers. Changing route-line visibility shall not alter the displayed event set, trip selection, map framing, or marker interactions.
+- Route segments connecting a context event to its neighboring displayed event shall use a visually distinct dashed style when route lines are shown.
 - The map shall show an always-visible scale marker near the lower-right corner.
 - The map scale marker shall update as the user pans or zooms, shall use the user's preferred measurement system, and shall avoid an opaque background so it does not unnecessarily cover map content.
 - Export actions that operate from the map/list context shall use the active export scope rather than the transient set of events physically visible on screen, unless the user explicitly chooses a viewport-only or visible-only export mode.
@@ -511,6 +512,10 @@ The active export scope is the complete set of exportable events selected by the
 - Movement-state and trip-endpoint overrides shall remain independent so an event's stopped treatment does not implicitly force or suppress its endpoint treatment.
 - Detected trip identities shall remain stable when later movement is appended to the same trip so passive event additions do not clear selected trips. Map Show All, Map Show Latest, and list Bottom following shall operate only on the selected display subset; an event outside the selected trips shall not change the selection or move the map/list.
 - Trip detection shall treat sufficiently separated moving samples as trip boundaries and preserve those boundary samples as endpoint markers for neighboring trips.
+- When Include Context Events is enabled, a selected trip shall also display an eligible stopped event immediately before and after the trip when available. Multiple selected trips shall share adjacent context without duplicate presentation.
+- Context-event roles shall be calculated for presentation rather than persisted, and context events shall remain outside trip identity, naming, moving start/end time, sorting, and analytics.
+- Previous-day context shall use the same presentation role as adjacent-trip context. Disabling Include Context Events shall remove both forms of context.
+- Context events shall remain visibly distinguishable in map and list presentation and shall participate in selected-trip map framing and list scrolling.
 - Trip and stopped-location behavior shall be deterministic and covered by tests where implemented.
 
 ## UI presentation requirements

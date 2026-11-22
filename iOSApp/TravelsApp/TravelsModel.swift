@@ -623,7 +623,29 @@ final class TravelsModel: ObservableObject {
     }
 
     var displayedEvents: [EventDetail] {
-        filteredEvents(from: events, selection: selectedMapDisplay, detectedTrips: detectedTrips)
+        displayedEventSet.events
+    }
+
+    var displayedContextEventIDs: Set<Int64> {
+        displayedEventSet.contextEventIDs
+    }
+
+    private var displayedEventSet: EventDisplaySet {
+        eventDisplaySet(
+            from: events,
+            selection: selectedMapDisplay,
+            detectedTrips: detectedTrips,
+            includeContextEvents: settings.includePreviousDayContext,
+            previousDayContextEventIDs: previousDayContextEventIDs
+        )
+    }
+
+    private var previousDayContextEventIDs: Set<Int64> {
+        let displayedDay = TravelsDateTools.localizedDayString(for: selectedDate, timeZoneIdentifier: nil)
+        return Set(events.compactMap { detail in
+            guard detail.event.localizedDate != displayedDay else { return nil }
+            return detail.id
+        })
     }
 
     func updateNote(for detail: EventDetail, note: String) {
@@ -1326,9 +1348,15 @@ final class TravelsModel: ObservableObject {
             return
         }
 
-        let tripEventIDs = selectedTrips.reduce(into: Set<Int64>()) { partialResult, trip in
-            partialResult.formUnion(trip.displayEventIDs)
-        }
+        // REGRESSION GUARD: trip focus must use the same presentation set as the
+        // map and list so adjacent context markers participate in framing and scrolling.
+        let tripEventIDs = Set(eventDisplaySet(
+            from: events,
+            selection: .trips(tripIDs),
+            detectedTrips: detectedTrips,
+            includeContextEvents: settings.includePreviousDayContext,
+            previousDayContextEventIDs: previousDayContextEventIDs
+        ).events.compactMap(\.id))
         guard !tripEventIDs.isEmpty else {
             clearTripFocus()
             return

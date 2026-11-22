@@ -31,7 +31,7 @@ Read the complete [Travels Privacy Policy](https://github.com/dkrnet/travels-ios
 
 ## Remember your days
 
-Browse a day's history in a chronological list, or opt into Apple Map View when you want a visual route. Route lines can be hidden when you prefer to see only location markers. Travels identifies likely trips and stopped locations, keeps map and list navigation connected when maps are enabled, and uses local solar periods to give each event a time-of-day color.
+Browse a day's history in a chronological list, or opt into Apple Map View when you want a visual route. Route lines can be hidden when you prefer to see only location markers. Travels identifies likely trips and stopped locations, can include clearly identified context events around selected trips and day boundaries, keeps map and list navigation connected when maps are enabled, and uses local solar periods to give each event a time-of-day color.
 
 Choose **Show All**, **Show Latest**, or scroll the list to the bottom and Travels keeps that view current as new locations arrive. If you manually pan, zoom, or scroll, Travels instead preserves the position you chose. This reduces the need to keep interacting with the display while traveling.
 
