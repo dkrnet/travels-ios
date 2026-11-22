@@ -22,9 +22,11 @@ struct ContentView: View {
     @State private var showingPhotoImporter = false
     @State private var showingDeveloperDiagnostics = false
     @State private var showingMapDisabledAlert = false
+    @State private var showingDatabaseExportConfirmation = false
     @State private var settingsScrollTarget: SettingsScrollTarget?
     @State private var openSettingsAfterWelcome = false
     @State private var shareItem: ShareItem?
+    @State private var pendingDatabaseExportURL: URL?
     @State private var datePickerSelection = Date()
     @State private var listQuickActionShowsTop = false
     @State private var topOverlayHeight: CGFloat = 0
@@ -165,6 +167,10 @@ struct ContentView: View {
                             shareItem = ShareItem(url: url)
                         }
                     }
+                    Button("Export Database") {
+                        showingDatabaseExportConfirmation = true
+                    }
+                    .disabled(!model.isUnlocked)
 #if DEBUG
                     Button("Developer Diagnostics") {
                         showingDeveloperDiagnostics = true
@@ -307,7 +313,7 @@ struct ContentView: View {
                 DeveloperDiagnosticsView()
             }
 #endif
-            .sheet(item: $shareItem) { item in
+            .sheet(item: $shareItem, onDismiss: removePendingDatabaseExport) { item in
                 ShareSheet(items: [item.url])
             }
             .fileImporter(isPresented: $showingImporter, allowedContentTypes: [UTType(filenameExtension: "gpx") ?? .xml], allowsMultipleSelection: false) { result in
@@ -328,6 +334,14 @@ struct ContentView: View {
                 Button("Not Now", role: .cancel) {}
             } message: {
                 Text("Map View is off to avoid downloading map tiles from Apple. You can enable it in Settings under Display.")
+            }
+            .alert("Export Complete Database?", isPresented: $showingDatabaseExportConfirmation) {
+                Button("Export Database") {
+                    prepareDatabaseExport()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("The SQLite file contains your complete location history, notes, saved addresses, and photo references. Copied photo files are not included. Anyone with the exported file can read its contents.")
             }
             .onChange(of: model.selectedDate) { _, _ in
                 listQuickActionShowsTop = false
@@ -367,6 +381,22 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
+    }
+
+    private func prepareDatabaseExport() {
+        do {
+            let url = try model.createDatabaseExport()
+            pendingDatabaseExportURL = url
+            shareItem = ShareItem(url: url)
+        } catch {
+            model.statusMessage = error.localizedDescription
+        }
+    }
+
+    private func removePendingDatabaseExport() {
+        guard let pendingDatabaseExportURL else { return }
+        try? FileManager.default.removeItem(at: pendingDatabaseExportURL)
+        self.pendingDatabaseExportURL = nil
     }
 
     private var titleTopPadding: CGFloat {

@@ -22,7 +22,7 @@ Do not include unredacted precise location history, home/work addresses, photo m
 - Photo import requires access to photo metadata and must fail safely when timestamp or location metadata is missing.
 - Authentication lock uses device-owner authentication through LocalAuthentication. It is a privacy lock for casual access, not a replacement for iOS device security or encrypted backups.
 - Database repair, backup, restore, and legacy import operations must avoid silent data loss.
-- GPX exports and database backups can contain precise location history and must be treated as sensitive user-controlled files.
+- GPX exports and database snapshots can contain precise location history and must be treated as sensitive user-controlled files. User-facing database export must clearly disclose that risk, use a validated standalone snapshot, and remove its protected temporary copy after sharing is dismissed.
 
 ## Deployment and distribution notes
 

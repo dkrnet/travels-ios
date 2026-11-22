@@ -451,6 +451,39 @@ public final class TravelsStore: @unchecked Sendable {
         _ = try database.query("PRAGMA wal_checkpoint(FULL)")
     }
 
+    public func exportDatabase(to destinationURL: URL) throws {
+        let sourceURL = databaseURL.standardizedFileURL
+        let destinationURL = destinationURL.standardizedFileURL
+        guard sourceURL != destinationURL else {
+            throw TravelsError.databaseExecutionFailed("The export destination cannot replace the active database.")
+        }
+
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: destinationURL.path) {
+            try fileManager.removeItem(at: destinationURL)
+        }
+
+        do {
+            try database.backup(to: destinationURL.path)
+
+            let snapshot = try SQLiteDatabase(path: destinationURL.path)
+            defer { snapshot.close() }
+            let integrityMessages = try snapshot.integrityCheck().map {
+                $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            let isHealthy = !integrityMessages.isEmpty && integrityMessages.allSatisfy {
+                $0.caseInsensitiveCompare("ok") == .orderedSame
+            }
+            let foreignKeyIssues = try snapshot.query("PRAGMA foreign_key_check")
+            guard isHealthy, foreignKeyIssues.isEmpty else {
+                throw TravelsError.databaseExecutionFailed("The exported database did not pass integrity validation.")
+            }
+        } catch {
+            try? fileManager.removeItem(at: destinationURL)
+            throw error
+        }
+    }
+
     public func transaction<T>(_ work: () throws -> T) throws -> T {
         try database.transaction(work)
     }

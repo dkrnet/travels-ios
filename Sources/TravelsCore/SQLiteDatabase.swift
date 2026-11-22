@@ -77,6 +77,34 @@ final class SQLiteDatabase: @unchecked Sendable {
         }
     }
 
+    func backup(to destinationPath: String) throws {
+        try lock.withLock {
+            guard let handle else {
+                throw TravelsError.databaseOpenFailed("The source database is closed.")
+            }
+
+            var destinationHandle: OpaquePointer?
+            guard sqlite3_open(destinationPath, &destinationHandle) == SQLITE_OK else {
+                let message = Self.message(from: destinationHandle)
+                sqlite3_close(destinationHandle)
+                throw TravelsError.databaseOpenFailed(message)
+            }
+            defer { sqlite3_close(destinationHandle) }
+
+            guard let backup = sqlite3_backup_init(destinationHandle, "main", handle, "main") else {
+                throw TravelsError.databaseExecutionFailed(Self.message(from: destinationHandle))
+            }
+
+            // REGRESSION GUARD: use SQLite's online-backup API so accepted events
+            // cannot produce a torn export between a WAL checkpoint and file copy.
+            let stepResult = sqlite3_backup_step(backup, -1)
+            let finishResult = sqlite3_backup_finish(backup)
+            guard stepResult == SQLITE_DONE, finishResult == SQLITE_OK else {
+                throw TravelsError.databaseExecutionFailed(Self.message(from: destinationHandle))
+            }
+        }
+    }
+
     func lastInsertRowID() -> Int64 {
         lock.withLock {
             sqlite3_last_insert_rowid(handle)
