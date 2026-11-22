@@ -82,6 +82,16 @@ public enum MapDisplaySelection: Equatable, Sendable {
     case trips(Set<DetectedTrip.ID>)
 }
 
+public struct EventDisplaySet: Equatable, Sendable {
+    public let events: [EventDetail]
+    public let contextEventIDs: Set<Int64>
+
+    public init(events: [EventDetail], contextEventIDs: Set<Int64>) {
+        self.events = events
+        self.contextEventIDs = contextEventIDs
+    }
+}
+
 public struct TripDetectionService: Sendable {
     public static let tripSeparationInterval: TimeInterval = 30 * 60
     public var thresholds: LocationTrackingThresholds
@@ -357,28 +367,95 @@ public func filteredEvents(
     selection: MapDisplaySelection,
     detectedTrips: [DetectedTrip]
 ) -> [EventDetail] {
+    eventDisplaySet(
+        from: events,
+        selection: selection,
+        detectedTrips: detectedTrips,
+        includeContextEvents: false
+    ).events
+}
+
+public func eventDisplaySet(
+    from events: [EventDetail],
+    selection: MapDisplaySelection,
+    detectedTrips: [DetectedTrip],
+    includeContextEvents: Bool,
+    previousDayContextEventIDs: Set<Int64> = []
+) -> EventDisplaySet {
+    let availablePreviousDayContextIDs = includeContextEvents
+        ? previousDayContextEventIDs.intersection(events.compactMap(\.id))
+        : []
+
     switch selection {
     case .all:
-        return events
+        return EventDisplaySet(
+            events: events,
+            contextEventIDs: availablePreviousDayContextIDs
+        )
 
     case .stoppedOnly:
-        return events.filter { isStoppedLocationEvent($0.event) }
+        let allowedIDs = Set(events.compactMap { detail -> Int64? in
+            guard isStoppedLocationEvent(detail.event) else { return nil }
+            return detail.id
+        }).union(availablePreviousDayContextIDs)
+        return EventDisplaySet(
+            events: events.filter { detail in
+                guard let id = detail.id else { return false }
+                return allowedIDs.contains(id)
+            },
+            contextEventIDs: availablePreviousDayContextIDs
+        )
 
     case .trips(let tripIDs):
         guard !tripIDs.isEmpty else {
-            return []
+            return EventDisplaySet(events: [], contextEventIDs: [])
         }
-        let allowedIDs = Set(
-            detectedTrips
-                .filter { tripIDs.contains($0.id) }
-                .flatMap(\.displayEventIDs)
-        )
-        guard !allowedIDs.isEmpty else { return [] }
-        return events.filter { detail in
+
+        let selectedTrips = detectedTrips.filter { tripIDs.contains($0.id) }
+        var allowedIDs = Set(selectedTrips.flatMap(\.displayEventIDs))
+        guard !allowedIDs.isEmpty else {
+            return EventDisplaySet(events: [], contextEventIDs: [])
+        }
+
+        var contextEventIDs = Set<Int64>()
+        if includeContextEvents {
+            let orderedEvents = events.sorted(by: eventDisplayOrder)
+            for trip in selectedTrips {
+                let tripIndices = orderedEvents.indices.filter { index in
+                    guard let id = orderedEvents[index].id else { return false }
+                    return trip.displayEventIDs.contains(id)
+                }
+                guard let firstIndex = tripIndices.first, let lastIndex = tripIndices.last else {
+                    continue
+                }
+
+                let neighboringIndices = [orderedEvents.index(firstIndex, offsetBy: -1, limitedBy: orderedEvents.startIndex),
+                                          orderedEvents.index(lastIndex, offsetBy: 1, limitedBy: orderedEvents.endIndex - 1)]
+                    .compactMap { $0 }
+                for index in neighboringIndices {
+                    let detail = orderedEvents[index]
+                    guard let id = detail.id, !allowedIDs.contains(id) else { continue }
+                    guard availablePreviousDayContextIDs.contains(id) || isStoppedLocationEvent(detail.event) else {
+                        continue
+                    }
+                    contextEventIDs.insert(id)
+                }
+            }
+            allowedIDs.formUnion(contextEventIDs)
+        }
+
+        return EventDisplaySet(events: events.filter { detail in
             guard let id = detail.id else { return false }
             return allowedIDs.contains(id)
-        }
+        }, contextEventIDs: contextEventIDs)
     }
+}
+
+private func eventDisplayOrder(_ lhs: EventDetail, _ rhs: EventDetail) -> Bool {
+    if lhs.event.timestamp != rhs.event.timestamp {
+        return lhs.event.timestamp < rhs.event.timestamp
+    }
+    return (lhs.id ?? .max) < (rhs.id ?? .max)
 }
 
 private struct PartialTrip {

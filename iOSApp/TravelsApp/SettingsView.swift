@@ -122,8 +122,9 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                     VStack(alignment: .leading, spacing: 4) {
-                        Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
-                        Text("Shows the tail end of the prior day so trips feel continuous.")
+                        // REQUIREMENTS: Keep the legacy stored property name so existing preferences migrate without resetting the user's context choice.
+                        Toggle("Include Context Events", isOn: $model.settings.includePreviousDayContext)
+                        Text("Shows the prior day's final location and eligible stopped locations immediately around selected trips so their surrounding context remains visible.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }

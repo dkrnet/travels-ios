@@ -23,6 +23,7 @@ struct EventMapView: View {
     @EnvironmentObject private var model: TravelsModel
     let day: Date
     let events: [EventDetail]
+    let contextEventIDs: Set<Int64>
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var scaleRegion: MKCoordinateRegion?
     @State private var mapViewportSize: CGSize = .zero
@@ -34,14 +35,24 @@ struct EventMapView: View {
             Map(position: $cameraPosition) {
                 ForEach(routeSegments) { segment in
                     MapPolyline(coordinates: segment.coordinates)
-                        .stroke(segment.color, lineWidth: 3)
+                        .stroke(
+                            segment.color,
+                            style: StrokeStyle(
+                                lineWidth: 3,
+                                lineCap: .round,
+                                dash: segment.isContextConnection ? [7, 5] : []
+                            )
+                        )
                 }
                 ForEach(displayedEvents) { detail in
                     Annotation(markerTitle(for: detail), coordinate: detail.coordinate) {
                         Button {
                             model.selectEventForDetails(detail)
                         } label: {
-                            EventMapBadge(detail: detail)
+                            EventMapBadge(
+                                detail: detail,
+                                isContext: detail.id.map(contextEventIDs.contains) ?? false
+                            )
                                 // REGRESSION GUARD: selected moving events may intentionally
                                 // overlap, but they must never visually cover a stopped marker.
                                 .zIndex(isStoppedLocationEvent(detail.event) ? 1 : 0)
@@ -117,7 +128,10 @@ struct EventMapView: View {
             RouteSegment(
                 id: "\(index)-\(index + 1)",
                 coordinates: [orderedEvents[index].coordinate, orderedEvents[index + 1].coordinate],
-                color: color(for: orderedEvents[index + 1]).opacity(0.9)
+                color: color(for: orderedEvents[index + 1]).opacity(0.9),
+                isContextConnection: [orderedEvents[index].id, orderedEvents[index + 1].id]
+                    .compactMap { $0 }
+                    .contains(where: contextEventIDs.contains)
             )
         }
     }
@@ -143,7 +157,8 @@ struct EventMapView: View {
             region: model.mapCameraRegion,
             viewportSize: effectiveViewportSize,
             minimumSpacing: minimumMarkerSpacing,
-            detectedTrips: model.detectedTrips
+            detectedTrips: model.detectedTrips,
+            contextEventIDs: contextEventIDs
         )
     }
 
@@ -207,7 +222,8 @@ struct EventMapView: View {
                 region: model.mapCameraRegion,
                 viewportSize: effectiveViewportSize,
                 minimumSpacing: minimumMarkerSpacing,
-                detectedTrips: model.detectedTrips
+                detectedTrips: model.detectedTrips,
+                contextEventIDs: contextEventIDs
             )
         } else if model.mapCameraFollowMode == .showLatest,
                   let latestEvent = fullDayEvents().last {
@@ -312,7 +328,8 @@ struct EventMapView: View {
         region: MKCoordinateRegion?,
         viewportSize: CGSize,
         minimumSpacing: CGFloat,
-        detectedTrips: [DetectedTrip]
+        detectedTrips: [DetectedTrip],
+        contextEventIDs: Set<Int64>
     ) -> [EventDetail] {
         let ordered = events.sorted { $0.event.timestamp < $1.event.timestamp }
         guard ordered.count > 1 else { return ordered }
@@ -392,6 +409,9 @@ struct EventMapView: View {
             }
         }
 
+        for context in ordered where context.id.map(contextEventIDs.contains) ?? false {
+            _ = append(context, requireSpacing: false)
+        }
         for stopped in mapMarkerPriorityOrder(ordered) where isStoppedLocationEvent(stopped.event) {
             _ = append(stopped, requireSpacing: false)
         }
@@ -824,12 +844,14 @@ private struct MapScaleMarker: View {
 struct EventListView: View {
     @EnvironmentObject private var model: TravelsModel
     let events: [EventDetail]
+    let contextEventIDs: Set<Int64>
     let topContentInset: CGFloat
     @State private var isInitiallyPositioned = false
     private let topAnchorID = "EventListTopAnchor"
 
-    init(events: [EventDetail], topContentInset: CGFloat = 0) {
+    init(events: [EventDetail], contextEventIDs: Set<Int64> = [], topContentInset: CGFloat = 0) {
         self.events = events
+        self.contextEventIDs = contextEventIDs
         self.topContentInset = topContentInset
     }
 
@@ -848,7 +870,10 @@ struct EventListView: View {
                         Button {
                             model.selectEventForDetails(detail)
                         } label: {
-                            EventRow(detail: detail)
+                            EventRow(
+                                detail: detail,
+                                isContext: detail.id.map(contextEventIDs.contains) ?? false
+                            )
                                 .padding(.horizontal)
                                 .padding(.vertical, 6)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -970,6 +995,7 @@ private struct EventListRowFramesKey: PreferenceKey {
 struct EventRow: View {
     @EnvironmentObject private var model: TravelsModel
     let detail: EventDetail
+    var isContext = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -982,6 +1008,10 @@ struct EventRow: View {
                         .offset(y: -1)
                     Text(timeText)
                     Spacer()
+                    if isContext {
+                        Label("Context", systemImage: "link")
+                            .font(.caption2.weight(.semibold))
+                    }
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -1416,30 +1446,44 @@ private struct RouteSegment: Identifiable {
     let id: String
     let coordinates: [CLLocationCoordinate2D]
     let color: Color
+    let isContextConnection: Bool
 }
 
 private struct EventMapBadge: View {
     let detail: EventDetail
+    let isContext: Bool
 
     var body: some View {
         let color = color(for: detail)
         let rotation = badgeRotation(for: detail)
 
-        if detail.event.source == .photo {
+        Group {
+            if detail.event.source == .photo {
             // REGRESSION GUARD: photo provenance takes precedence over movement styling so imported photos remain recognizable.
-            sourceBadge(color: color)
-        } else if isMovingLocationEvent(detail.event) {
+                sourceBadge(color: color)
+            } else if isMovingLocationEvent(detail.event) {
             // BUGFIX: moving imported events can lack a usable course value, but they still need the moving-style badge instead of falling back to a source icon.
-            if let rotation {
-                DirectionPointer(color: color)
-                    .scaleEffect(x: 0.92, y: 1.14)
-                    .rotationEffect(.degrees(rotation))
+                if let rotation {
+                    DirectionPointer(color: color)
+                        .scaleEffect(x: 0.92, y: 1.14)
+                        .rotationEffect(.degrees(rotation))
+                } else {
+                    DirectionPointer(color: color)
+                        .scaleEffect(x: 0.92, y: 1.14)
+                }
             } else {
-                DirectionPointer(color: color)
-                    .scaleEffect(x: 0.92, y: 1.14)
+                sourceBadge(color: color)
             }
-        } else {
-            sourceBadge(color: color)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if isContext {
+                Image(systemName: "link")
+                    .font(.system(size: 7, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 12, height: 12)
+                    .background(.regularMaterial, in: Circle())
+                    .accessibilityLabel("Context event")
+            }
         }
     }
 

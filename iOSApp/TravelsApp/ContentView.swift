@@ -37,12 +37,17 @@ struct ContentView: View {
                 Group {
                     // REGRESSION GUARD: never construct EventMapView while the privacy setting is off; hiding an initialized map could still request Apple map tiles.
                     if model.isListView || !model.settings.mapViewEnabled {
-                        EventListView(events: model.displayedEvents, topContentInset: listTopContentInset)
+                        EventListView(
+                            events: model.displayedEvents,
+                            contextEventIDs: model.displayedContextEventIDs,
+                            topContentInset: listTopContentInset
+                        )
                             .id(model.selectedDate)
                     } else {
                         EventMapView(
                             day: model.selectedDate,
-                            events: model.displayedEvents
+                            events: model.displayedEvents,
+                            contextEventIDs: model.displayedContextEventIDs
                         )
                             .id(model.selectedDate)
                     }

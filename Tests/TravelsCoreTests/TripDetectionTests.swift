@@ -626,4 +626,124 @@ final class TripDetectionTests: XCTestCase {
         let filtered = filteredEvents(from: events, selection: .trips([trips[0].id, trips[1].id]), detectedTrips: trips)
         XCTAssertEqual(filtered.compactMap(\.id), [1, 2, 3, 4, 5, 6])
     }
+
+    func testTripDisplayIncludesAdjacentStoppedContextEvents() {
+        let events = [
+            makeDetail(id: 1, hour: 7, minute: 59, speed: 0),
+            makeDetail(id: 2, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 3, hour: 8, minute: 10, speed: 5),
+            makeDetail(id: 4, hour: 8, minute: 11, speed: 0)
+        ]
+        let trip = makeDetectedTrip(id: "selected", eventIDs: [2, 3], startHour: 8, endMinute: 10)
+
+        let display = eventDisplaySet(
+            from: events,
+            selection: .trips([trip.id]),
+            detectedTrips: [trip],
+            includeContextEvents: true
+        )
+
+        XCTAssertEqual(display.events.compactMap(\.id), [1, 2, 3, 4])
+        XCTAssertEqual(display.contextEventIDs, [1, 4])
+    }
+
+    func testTripDisplayDoesNotIncludeAdjacentMovingEventsAsContext() {
+        let events = [
+            makeDetail(id: 1, hour: 7, minute: 59, speed: 3),
+            makeDetail(id: 2, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 3, hour: 8, minute: 10, speed: 5),
+            makeDetail(id: 4, hour: 8, minute: 11, speed: 2)
+        ]
+        let trip = makeDetectedTrip(id: "selected", eventIDs: [2, 3], startHour: 8, endMinute: 10)
+
+        let display = eventDisplaySet(
+            from: events,
+            selection: .trips([trip.id]),
+            detectedTrips: [trip],
+            includeContextEvents: true
+        )
+
+        XCTAssertEqual(display.events.compactMap(\.id), [2, 3])
+        XCTAssertTrue(display.contextEventIDs.isEmpty)
+    }
+
+    func testMultipleSelectedTripsDeduplicateSharedContextEvent() {
+        let events = [
+            makeDetail(id: 1, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 10, speed: 5),
+            makeDetail(id: 3, hour: 8, minute: 11, speed: 0),
+            makeDetail(id: 4, hour: 8, minute: 20, speed: 4),
+            makeDetail(id: 5, hour: 8, minute: 30, speed: 5)
+        ]
+        let firstTrip = makeDetectedTrip(id: "first", eventIDs: [1, 2], startHour: 8, endMinute: 0)
+        let secondTrip = makeDetectedTrip(id: "second", eventIDs: [4, 5], startHour: 8, endMinute: 20)
+
+        let display = eventDisplaySet(
+            from: events,
+            selection: .trips([firstTrip.id, secondTrip.id]),
+            detectedTrips: [firstTrip, secondTrip],
+            includeContextEvents: true
+        )
+
+        XCTAssertEqual(display.events.compactMap(\.id), [1, 2, 3, 4, 5])
+        XCTAssertEqual(display.contextEventIDs, [3])
+    }
+
+    func testPreviousDayContextCanBridgeToFirstSelectedTripEvenWhenMoving() {
+        let events = [
+            makeDetail(id: 1, day: 6, hour: 23, minute: 55, speed: 4),
+            makeDetail(id: 2, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 3, hour: 8, minute: 10, speed: 5)
+        ]
+        let trip = makeDetectedTrip(id: "selected", eventIDs: [2, 3], startHour: 8, endMinute: 10)
+
+        let display = eventDisplaySet(
+            from: events,
+            selection: .trips([trip.id]),
+            detectedTrips: [trip],
+            includeContextEvents: true,
+            previousDayContextEventIDs: [1]
+        )
+
+        XCTAssertEqual(display.events.compactMap(\.id), [1, 2, 3])
+        XCTAssertEqual(display.contextEventIDs, [1])
+    }
+
+    func testDisablingContextRemovesAdjacentAndPreviousDayContext() {
+        let events = [
+            makeDetail(id: 1, day: 6, hour: 23, minute: 55, speed: 0),
+            makeDetail(id: 2, hour: 8, minute: 0, speed: 4),
+            makeDetail(id: 3, hour: 8, minute: 10, speed: 5),
+            makeDetail(id: 4, hour: 8, minute: 11, speed: 0)
+        ]
+        let trip = makeDetectedTrip(id: "selected", eventIDs: [2, 3], startHour: 8, endMinute: 10)
+
+        let display = eventDisplaySet(
+            from: events,
+            selection: .trips([trip.id]),
+            detectedTrips: [trip],
+            includeContextEvents: false,
+            previousDayContextEventIDs: [1]
+        )
+
+        XCTAssertEqual(display.events.compactMap(\.id), [2, 3])
+        XCTAssertTrue(display.contextEventIDs.isEmpty)
+    }
+
+    private func makeDetectedTrip(
+        id: String,
+        eventIDs: Set<Int64>,
+        startHour: Int,
+        endMinute: Int
+    ) -> DetectedTrip {
+        DetectedTrip(
+            id: id,
+            movingStartDate: makeDate(hour: startHour),
+            movingEndDate: makeDate(hour: startHour, minute: endMinute),
+            movingEventIDs: eventIDs,
+            endpointEventIDs: [],
+            displayEventIDs: eventIDs,
+            displayName: id
+        )
+    }
 }
