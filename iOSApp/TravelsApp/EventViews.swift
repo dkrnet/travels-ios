@@ -108,6 +108,9 @@ struct EventMapView: View {
     }
 
     private var routeSegments: [RouteSegment] {
+        // REGRESSION GUARD: hiding route lines is presentation-only; markers,
+        // trip selection, framing, and the displayed event set must not change.
+        guard model.settings.showRouteLines else { return [] }
         let orderedEvents = events.sorted { $0.event.timestamp < $1.event.timestamp }
         guard orderedEvents.count > 1 else { return [] }
         return orderedEvents.indices.dropLast().map { index in
