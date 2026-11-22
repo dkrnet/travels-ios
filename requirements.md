@@ -67,10 +67,10 @@ A future developer should be able to regenerate the application from scratch wit
 
 - Travels shall use semantic marketing versions for the App Store-facing version number.
 - Travels shall use a positive numeric, monotonically increasing App Store bundle build number in `CFBundleVersion` so archives are valid for App Store Connect and TestFlight.
-- The current marketing version shall be `2.0.1` unless intentionally changed.
+- The current marketing version shall be `2.1.0` unless intentionally changed.
 - The App Store bundle build number shall begin above the legacy App Store build `310`, increment for each build, and may be stored in a gitignored local state file outside disposable build output so routine build cleanup does not reset it. Release automation shall permit an explicit numeric override when App Store Connect already contains a higher build number.
-- Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.0.1-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.0.1.0+<git-short-sha>` and reset the development counter to `0`.
-- The About screen shall display the human-readable development version, for example `Version 2.0.1-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
+- Human-readable development metadata shall be stored separately from `CFBundleVersion`: untagged builds shall use the form `2.1.0-dev.<build-count>+<git-short-sha>`, while tagged builds shall use `2.1.0.0+<git-short-sha>` and reset the development counter to `0`.
+- The About screen shall display the human-readable development version, for example `Version 2.1.0-dev.0+8508546`, while falling back safely to the numeric bundle build when that metadata is unavailable.
 - The physical-device build helper shall validate the completed app bundle and fail if its numeric bundle version or Git-based display version was not stamped successfully.
 
 ## Data storage requirements

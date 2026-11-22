@@ -6,7 +6,7 @@ This checklist prepares an external TestFlight build without weakening Travels' 
 
 - Confirm all Apple Developer Program agreements are accepted.
 - Confirm the App Store Connect app record uses `com.adigitalanalog.travels`.
-- Confirm the marketing version is `2.0.1`.
+- Confirm the marketing version is `2.1.0`.
 - In App Store Connect, find the highest build number already uploaded and choose a larger unused positive integer.
 - Confirm the public privacy policy will be available at `https://github.com/dkrnet/travels-ios/blob/main/PRIVACY.md` after this change is merged.
 - Confirm MPL-covered source remains publicly available to TestFlight recipients.
