@@ -38,8 +38,11 @@ struct EventMapView: View {
                         .stroke(
                             segment.color,
                             style: StrokeStyle(
-                                lineWidth: 3,
-                                lineCap: .round,
+                                // REGRESSION GUARD: MapKit renders rounded dashed strokes
+                                // heavier than continuous strokes at the same numeric width.
+                                // Compensate so context and ordinary routes have equal visual weight.
+                                lineWidth: segment.isContextConnection ? 1.5 : 3,
+                                lineCap: .butt,
                                 dash: segment.isContextConnection ? [7, 5] : []
                             )
                         )
