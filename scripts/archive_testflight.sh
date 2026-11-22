@@ -19,7 +19,7 @@ USAGE
 }
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-marketing_version="2.0.1"
+marketing_version="2.1.0"
 build_number=""
 archive_path=""
 export_path=""
