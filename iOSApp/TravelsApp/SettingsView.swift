@@ -116,6 +116,12 @@ struct SettingsView: View {
                     }
                     .id(SettingsScrollTarget.mapView)
                     VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Show Route Lines", isOn: $model.settings.showRouteLines)
+                        Text("Connects consecutive displayed locations on the map. Turn this off to show markers without route lines.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
                         Toggle("Include Previous Day Context", isOn: $model.settings.includePreviousDayContext)
                         Text("Shows the tail end of the prior day so trips feel continuous.")
                             .font(.footnote)

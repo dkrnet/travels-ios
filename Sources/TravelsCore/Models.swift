@@ -511,6 +511,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var includeDemoData: Bool
     public var requireAuthentication: Bool
     public var mapViewEnabled: Bool
+    public var showRouteLines: Bool
     public var preferListView: Bool
     public var preciseLocationMode: PreciseLocationMode
     public var locationDetailMode: LocationDetailMode
@@ -533,6 +534,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         includeDemoData: Bool = true,
         requireAuthentication: Bool = false,
         mapViewEnabled: Bool = false,
+        showRouteLines: Bool = true,
         preferListView: Bool = true,
         preciseLocationMode: PreciseLocationMode = .automatic,
         locationDetailMode: LocationDetailMode = .balanced,
@@ -548,6 +550,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includeDemoData = includeDemoData
         self.requireAuthentication = requireAuthentication
         self.mapViewEnabled = mapViewEnabled
+        self.showRouteLines = showRouteLines
         self.preferListView = preferListView
         self.preciseLocationMode = preciseLocationMode
         self.locationDetailMode = locationDetailMode
@@ -565,6 +568,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case includeDemoData
         case requireAuthentication
         case mapViewEnabled
+        case showRouteLines
         case preferListView
         case preciseLocationMode
         case locationDetailMode
@@ -584,6 +588,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.includeDemoData = try container.decodeIfPresent(Bool.self, forKey: .includeDemoData) ?? true
         self.requireAuthentication = try container.decodeIfPresent(Bool.self, forKey: .requireAuthentication) ?? false
         self.mapViewEnabled = try container.decodeIfPresent(Bool.self, forKey: .mapViewEnabled) ?? false
+        self.showRouteLines = try container.decodeIfPresent(Bool.self, forKey: .showRouteLines) ?? true
         self.preferListView = try container.decodeIfPresent(Bool.self, forKey: .preferListView) ?? true
         if let preciseLocationMode = try container.decodeIfPresent(PreciseLocationMode.self, forKey: .preciseLocationMode) {
             self.preciseLocationMode = preciseLocationMode
@@ -608,6 +613,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         try container.encode(includeDemoData, forKey: .includeDemoData)
         try container.encode(requireAuthentication, forKey: .requireAuthentication)
         try container.encode(mapViewEnabled, forKey: .mapViewEnabled)
+        try container.encode(showRouteLines, forKey: .showRouteLines)
         try container.encode(preferListView, forKey: .preferListView)
         try container.encode(preciseLocationMode, forKey: .preciseLocationMode)
         try container.encode(locationDetailMode, forKey: .locationDetailMode)

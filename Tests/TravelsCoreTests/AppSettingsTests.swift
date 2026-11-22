@@ -47,6 +47,7 @@ final class AppSettingsTests: XCTestCase {
         let settings = AppSettings()
 
         XCTAssertFalse(settings.mapViewEnabled)
+        XCTAssertTrue(settings.showRouteLines)
         XCTAssertTrue(settings.preferListView)
         XCTAssertTrue(settings.shouldPresentListView)
     }
@@ -56,6 +57,12 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertFalse(settings.mapViewEnabled)
         XCTAssertTrue(settings.shouldPresentListView)
+    }
+
+    func testMissingRouteLineSettingDecodesAsEnabled() throws {
+        let settings = try JSONDecoder().decode(AppSettings.self, from: Data("{}".utf8))
+
+        XCTAssertTrue(settings.showRouteLines)
     }
 
     func testEnabledMapMayRestoreMapPreference() {
@@ -76,12 +83,14 @@ final class AppSettingsTests: XCTestCase {
         let settingsStore = SettingsStore(store: store)
         var settings = AppSettings()
         settings.mapViewEnabled = true
+        settings.showRouteLines = false
         settings.preferListView = false
 
         try settingsStore.save(settings)
 
         let reloaded = try settingsStore.load()
         XCTAssertTrue(reloaded.mapViewEnabled)
+        XCTAssertFalse(reloaded.showRouteLines)
         XCTAssertFalse(reloaded.preferListView)
         XCTAssertFalse(reloaded.shouldPresentListView)
     }

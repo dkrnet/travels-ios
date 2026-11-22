@@ -191,6 +191,7 @@ The app shall persist user settings including at least:
 - Include demo data enabled/disabled.
 - Require authentication/privacy lock enabled/disabled.
 - Map View enabled/disabled, defaulting to disabled.
+- Show route lines enabled/disabled, defaulting to enabled to preserve existing map presentation.
 - Preferred map or list view when Map View is enabled; new installs shall default to the list.
 - Location Precision: Automatic, Always On, or Always Off.
 - Location Density: High Detail, Balanced, Battery Saver, or Road Trip.
@@ -345,6 +346,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - When the app is actively using high-precision location tracking, both the map interface and the list interface shall show a compact centered status badge reading `Precise Location Active`; the badge shall reflect live tracking state and shall not depend on the selected date or the event count.
 - The map/list shall visually obscure or hide sensitive details while the app is locked.
 - The map shall support displaying all visible events, stopped locations only, or trip-oriented views where trip detection is available.
+- The user shall be able to hide or show route lines independently of map markers. Changing route-line visibility shall not alter the displayed event set, trip selection, map framing, or marker interactions.
 - The map shall show an always-visible scale marker near the lower-right corner.
 - The map scale marker shall update as the user pans or zooms, shall use the user's preferred measurement system, and shall avoid an opaque background so it does not unnecessarily cover map content.
 - Export actions that operate from the map/list context shall use the active export scope rather than the transient set of events physically visible on screen, unless the user explicitly chooses a viewport-only or visible-only export mode.
