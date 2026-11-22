@@ -8,6 +8,7 @@ Travels iOS is a personal, privacy-first location history tracker built around l
 * **Privacy policy:** `PRIVACY.md`
 * **Building, testing & contributing:** `CONTRIBUTING.md`
 * **Authoritative specs:** `requirements.md`
+* **Future planning:** `ROADMAP.md`
 * **AI/LLM editing guardrails:** `AGENTS.md`
 
 ---
