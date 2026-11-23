@@ -456,8 +456,19 @@ final class TravelsModel: ObservableObject {
         mapCameraCommandID = UUID()
     }
 
+    func panMapToFirstEvent() {
+        guard let firstEventID = displayedEvents.first?.id else { return }
+        // REQUIREMENTS: Show First respects the active displayed subset and is a
+        // one-time focus action rather than a new automatic camera-follow mode.
+        mapCameraFollowMode = .manual
+        mapFocusEventIDs = [firstEventID]
+        mapCameraCommandID = UUID()
+    }
+
     func panMapToMostRecentEvent() {
-        guard let lastEventID = displayedEvents.last?.id ?? events.last?.id else { return }
+        // REGRESSION GUARD: explicit framing actions must not escape the active
+        // trip/filter selection by falling back to an undisplayed event.
+        guard let lastEventID = displayedEvents.last?.id else { return }
         mapCameraFollowMode = .showLatest
         mapFocusEventIDs = [lastEventID]
         mapCameraCommandID = UUID()

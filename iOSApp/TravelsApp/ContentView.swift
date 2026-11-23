@@ -103,16 +103,41 @@ struct ContentView: View {
                         Label("Previous Day", systemImage: "chevron.left")
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) <= model.dateSelectionRange().lowerBound)
-                    Button {
-                        datePickerSelection = model.clampedDateSelection(model.selectedDate)
-                        showingDatePicker = true
+                    Menu {
+                        Button {
+                            presentDatePicker()
+                        } label: {
+                            Label("Select Date", systemImage: "calendar")
+                        }
+                        Button {
+                            selectToday()
+                        } label: {
+                            Label("Go to Today", systemImage: "calendar.badge.clock")
+                        }
                     } label: {
                         Label("Choose Date", systemImage: "calendar")
+                    } primaryAction: {
+                        // REQUIREMENTS: preserve the calendar button's one-tap
+                        // picker while exposing native long-press date shortcuts.
+                        presentDatePicker()
                     }
-                    Button {
-                        model.selectDate(Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate)
+                    Menu {
+                        Button {
+                            selectNextDay()
+                        } label: {
+                            Label("Next Day", systemImage: "chevron.right")
+                        }
+                        Button {
+                            selectToday()
+                        } label: {
+                            Label("Go to Today", systemImage: "calendar.badge.clock")
+                        }
                     } label: {
                         Label("Next Day", systemImage: "chevron.right")
+                    } primaryAction: {
+                        // REQUIREMENTS: preserve one-tap next-day navigation while
+                        // exposing the same native long-press Today shortcut.
+                        selectNextDay()
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) >= model.dateSelectionRange().upperBound)
                 }
@@ -137,30 +162,62 @@ struct ContentView: View {
                             systemImage: model.isListView ? "map" : "list.bullet"
                         )
                     }
-                    Button {
-                        if model.isListView {
-                            if listQuickActionShowsTop {
-                                model.scrollListToTop()
-                            } else {
-                                model.scrollListToBottom()
+                    if model.isListView {
+                        Menu {
+                            Button {
+                                scrollListToTop()
+                            } label: {
+                                Label("Scroll to Top", systemImage: "arrow.up.to.line.compact")
                             }
-                            listQuickActionShowsTop.toggle()
-                        } else {
-                            if model.mapCameraFollowMode == .showAll {
-                                model.panMapToMostRecentEvent()
-                            } else {
-                                model.resetMapZoomToFullDay()
+                            Button {
+                                scrollListToBottom()
+                            } label: {
+                                Label("Scroll to Bottom", systemImage: "arrow.down.to.line.compact")
                             }
+                        } label: {
+                            Label(
+                                toolbarNavigationActionTitle,
+                                systemImage: listQuickActionShowsTop
+                                    ? "arrow.up.to.line.compact"
+                                    : "arrow.down.to.line.compact"
+                            )
+                        } primaryAction: {
+                            // REQUIREMENTS: retain the adaptive one-tap list action
+                            // while exposing both explicit destinations on long press.
+                            performListNavigationAction()
                         }
-                    } label: {
-                        Label(
-                            toolbarNavigationActionTitle,
-                            systemImage: model.isListView
-                                ? (listQuickActionShowsTop ? "arrow.up.to.line.compact" : "arrow.down.to.line.compact")
-                                : (model.mapCameraFollowMode == .showAll ? "location.fill" : "arrow.up.left.and.arrow.down.right")
-                        )
+                        .disabled(model.events.isEmpty)
+                    } else {
+                        Menu {
+                            Button {
+                                model.resetMapZoomToFullDay()
+                            } label: {
+                                Label("Show All", systemImage: "arrow.up.left.and.arrow.down.right")
+                            }
+                            Button {
+                                model.panMapToFirstEvent()
+                            } label: {
+                                Label("Show First", systemImage: "backward.end.fill")
+                            }
+                            Button {
+                                model.panMapToMostRecentEvent()
+                            } label: {
+                                Label("Show Latest", systemImage: "location.fill")
+                            }
+                        } label: {
+                            Label(
+                                toolbarNavigationActionTitle,
+                                systemImage: model.mapCameraFollowMode == .showAll
+                                    ? "location.fill"
+                                    : "arrow.up.left.and.arrow.down.right"
+                            )
+                        } primaryAction: {
+                            // REQUIREMENTS: retain the adaptive one-tap map action
+                            // while exposing every explicit framing choice on long press.
+                            performMapNavigationAction()
+                        }
+                        .disabled(model.displayedEvents.isEmpty)
                     }
-                    .disabled(model.events.isEmpty)
                 }
 
                 ToolbarItemGroup(placement: .secondaryAction) {
@@ -239,10 +296,10 @@ struct ContentView: View {
                     .disabled(!model.isUnlocked)
 
                     Menu {
-                        Button("Add Current Location") {
+                        Button("Add Location") {
                             model.addCurrentLocation()
                         }
-                        Button("Force Add Stopped Location") {
+                        Button("Add Stopped Location") {
                             model.addCurrentLocation(forceStopped: true)
                         }
                     } label: {
@@ -386,6 +443,47 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
+    }
+
+    private func presentDatePicker() {
+        datePickerSelection = model.clampedDateSelection(model.selectedDate)
+        showingDatePicker = true
+    }
+
+    private func selectNextDay() {
+        model.selectDate(
+            Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate
+        )
+    }
+
+    private func selectToday() {
+        model.selectDate(Date())
+    }
+
+    private func performMapNavigationAction() {
+        if model.mapCameraFollowMode == .showAll {
+            model.panMapToMostRecentEvent()
+        } else {
+            model.resetMapZoomToFullDay()
+        }
+    }
+
+    private func performListNavigationAction() {
+        if listQuickActionShowsTop {
+            scrollListToTop()
+        } else {
+            scrollListToBottom()
+        }
+    }
+
+    private func scrollListToTop() {
+        model.scrollListToTop()
+        listQuickActionShowsTop = false
+    }
+
+    private func scrollListToBottom() {
+        model.scrollListToBottom()
+        listQuickActionShowsTop = true
     }
 
     private func prepareDatabaseExport() {

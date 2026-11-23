@@ -243,6 +243,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 ## Location capture requirements
 
 - The app shall allow a user to add the current location manually for today's selected date.
+- Tapping the Add toolbar action shall retain the standard manual location capture, while touching and holding it shall present native Add Location and Add Stopped Location actions.
 - The add-current-location button shall be enabled only for today's selected date.
 - When the add-current-location function is unavailable, disabled, or unsafe to perform, the Add button shall be visibly disabled or grayed out rather than appearing actionable. This includes, at minimum, non-today selected dates, unavailable location services, missing required permission, an active privacy lock state that blocks interaction, or any internal disabled state that prevents the function from running.
 - The app shall present a Location Precision setting with Automatic, Always On, and Always Off choices.
@@ -326,8 +327,9 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The user shall be able to browse events by selected calendar day.
 - The selected day shall be shown with the event count in a full-width banner below the date navigation toolbar.
 - When high-precision tracking is active, the selected-day banner shall include a trailing `Precise Location` indicator with the location glyph; the indicator text shall be visually smaller than the selected-day/count text and shall fit on narrow phone screens without obscuring the date or count.
-- The user shall be able to move to the previous day and next day.
+- The user shall be able to move to the previous day and next day; tapping the Next Day toolbar action shall retain ordinary next-day navigation, while touching and holding it shall present native Next Day and Go to Today actions.
 - The user shall be able to choose a date from a date picker.
+- Tapping the calendar toolbar action shall open the date picker, while touching and holding it shall present native Select Date and Go to Today actions; Go to Today shall use normal date navigation so the displayed date, events, and focused state update consistently.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
 - Changing the selected date shall reload events and reset stale focused-selection state.
 - When context events are enabled, the most recent non-demo event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
@@ -359,11 +361,12 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
 - The map shall provide sensible full-day and recent-event zoom behavior.
+- Tapping the map Show All/Show Latest toolbar action shall retain its adaptive behavior, while touching and holding it shall present native Show All, Show First, and Show Latest actions without changing the current trip selection; Show First and Show Latest shall use the first and last events in the currently displayed subset.
 - On initial app launch into the map view, the first loaded event set for the selected day shall be framed using the full-day show-all view rather than retaining a temporary camera established before events finished loading.
 - After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
 - Show All and Show Latest map actions shall remain active follow modes: newly added events shall respectively reframe the complete displayed set or keep the newest event framed.
 - Manually panning or zooming the map shall cancel automatic map following, make full-day zoom the next toolbar action, and preserve the user's camera position through automatic location additions, address-resolution updates, and other passive reloads.
-- Scrolling the list to the bottom with the toolbar action shall keep it following newly appended events until the user manually scrolls or chooses another list navigation action. Manual list scrolling shall preserve the user's position during passive event additions. Scroll to Top shall retain its existing behavior.
+- Scrolling the list to the bottom with the toolbar action shall keep it following newly appended events until the user manually scrolls or chooses another list navigation action. Manual list scrolling shall preserve the user's position during passive event additions. Scroll to Top shall retain its existing behavior. Tapping the adaptive list navigation action shall retain its existing Top/Bottom behavior, while touching and holding it shall present native Scroll to Top and Scroll to Bottom actions.
 - Persistent map and list follow actions shall minimize the need for repeated interaction as new events arrive, particularly when a user may have left the display open while traveling; passive updates shall not require repeated toolbar taps to maintain an explicitly selected view.
 - Photo-source events shall use the photo marker glyph even when their recorded speed would otherwise classify them as moving.
 - Map marker thinning shall prioritize every stopped event over nearby moving events, and a moving marker shall not hide or displace a stopped marker.
