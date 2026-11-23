@@ -163,13 +163,17 @@ struct ContentView: View {
                         )
                     }
                     if model.isListView {
-                        Button {
-                            if listQuickActionShowsTop {
-                                model.scrollListToTop()
-                            } else {
-                                model.scrollListToBottom()
+                        Menu {
+                            Button {
+                                scrollListToTop()
+                            } label: {
+                                Label("Scroll to Top", systemImage: "arrow.up.to.line.compact")
                             }
-                            listQuickActionShowsTop.toggle()
+                            Button {
+                                scrollListToBottom()
+                            } label: {
+                                Label("Scroll to Bottom", systemImage: "arrow.down.to.line.compact")
+                            }
                         } label: {
                             Label(
                                 toolbarNavigationActionTitle,
@@ -177,6 +181,10 @@ struct ContentView: View {
                                     ? "arrow.up.to.line.compact"
                                     : "arrow.down.to.line.compact"
                             )
+                        } primaryAction: {
+                            // REQUIREMENTS: retain the adaptive one-tap list action
+                            // while exposing both explicit destinations on long press.
+                            performListNavigationAction()
                         }
                         .disabled(model.events.isEmpty)
                     } else {
@@ -458,6 +466,24 @@ struct ContentView: View {
         } else {
             model.resetMapZoomToFullDay()
         }
+    }
+
+    private func performListNavigationAction() {
+        if listQuickActionShowsTop {
+            scrollListToTop()
+        } else {
+            scrollListToBottom()
+        }
+    }
+
+    private func scrollListToTop() {
+        model.scrollListToTop()
+        listQuickActionShowsTop = false
+    }
+
+    private func scrollListToBottom() {
+        model.scrollListToBottom()
+        listQuickActionShowsTop = true
     }
 
     private func prepareDatabaseExport() {
