@@ -103,11 +103,23 @@ struct ContentView: View {
                         Label("Previous Day", systemImage: "chevron.left")
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) <= model.dateSelectionRange().lowerBound)
-                    Button {
-                        datePickerSelection = model.clampedDateSelection(model.selectedDate)
-                        showingDatePicker = true
+                    Menu {
+                        Button {
+                            presentDatePicker()
+                        } label: {
+                            Label("Select Date", systemImage: "calendar")
+                        }
+                        Button {
+                            model.selectDate(Date())
+                        } label: {
+                            Label("Go to Today", systemImage: "calendar.badge.clock")
+                        }
                     } label: {
                         Label("Choose Date", systemImage: "calendar")
+                    } primaryAction: {
+                        // REQUIREMENTS: preserve the calendar button's one-tap
+                        // picker while exposing native long-press date shortcuts.
+                        presentDatePicker()
                     }
                     Button {
                         model.selectDate(Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate)
@@ -386,6 +398,11 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return "\(formatter.string(from: model.selectedDate)) (\(model.displayedEvents.count))"
+    }
+
+    private func presentDatePicker() {
+        datePickerSelection = model.clampedDateSelection(model.selectedDate)
+        showingDatePicker = true
     }
 
     private func prepareDatabaseExport() {

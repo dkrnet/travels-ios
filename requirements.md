@@ -328,6 +328,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - When high-precision tracking is active, the selected-day banner shall include a trailing `Precise Location` indicator with the location glyph; the indicator text shall be visually smaller than the selected-day/count text and shall fit on narrow phone screens without obscuring the date or count.
 - The user shall be able to move to the previous day and next day.
 - The user shall be able to choose a date from a date picker.
+- Tapping the calendar toolbar action shall open the date picker, while touching and holding it shall present native Select Date and Go to Today actions; Go to Today shall use normal date navigation so the displayed date, events, and focused state update consistently.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
 - Changing the selected date shall reload events and reset stale focused-selection state.
 - When context events are enabled, the most recent non-demo event from the previous day shall be shown even when the selected day has no events, and it shall be included in full-day map framing.
