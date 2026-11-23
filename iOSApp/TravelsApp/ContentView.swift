@@ -110,7 +110,7 @@ struct ContentView: View {
                             Label("Select Date", systemImage: "calendar")
                         }
                         Button {
-                            model.selectDate(Date())
+                            selectToday()
                         } label: {
                             Label("Go to Today", systemImage: "calendar.badge.clock")
                         }
@@ -121,10 +121,23 @@ struct ContentView: View {
                         // picker while exposing native long-press date shortcuts.
                         presentDatePicker()
                     }
-                    Button {
-                        model.selectDate(Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate)
+                    Menu {
+                        Button {
+                            selectNextDay()
+                        } label: {
+                            Label("Next Day", systemImage: "chevron.right")
+                        }
+                        Button {
+                            selectToday()
+                        } label: {
+                            Label("Go to Today", systemImage: "calendar.badge.clock")
+                        }
                     } label: {
                         Label("Next Day", systemImage: "chevron.right")
+                    } primaryAction: {
+                        // REQUIREMENTS: preserve one-tap next-day navigation while
+                        // exposing the same native long-press Today shortcut.
+                        selectNextDay()
                     }
                     .disabled(Calendar.current.startOfDay(for: model.selectedDate) >= model.dateSelectionRange().upperBound)
                 }
@@ -251,10 +264,10 @@ struct ContentView: View {
                     .disabled(!model.isUnlocked)
 
                     Menu {
-                        Button("Add Current Location") {
+                        Button("Add Location") {
                             model.addCurrentLocation()
                         }
-                        Button("Force Add Stopped Location") {
+                        Button("Add Stopped Location") {
                             model.addCurrentLocation(forceStopped: true)
                         }
                     } label: {
@@ -403,6 +416,16 @@ struct ContentView: View {
     private func presentDatePicker() {
         datePickerSelection = model.clampedDateSelection(model.selectedDate)
         showingDatePicker = true
+    }
+
+    private func selectNextDay() {
+        model.selectDate(
+            Calendar.current.date(byAdding: .day, value: 1, to: model.selectedDate) ?? model.selectedDate
+        )
+    }
+
+    private func selectToday() {
+        model.selectDate(Date())
     }
 
     private func prepareDatabaseExport() {

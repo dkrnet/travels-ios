@@ -243,6 +243,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 ## Location capture requirements
 
 - The app shall allow a user to add the current location manually for today's selected date.
+- Tapping the Add toolbar action shall retain the standard manual location capture, while touching and holding it shall present native Add Location and Add Stopped Location actions.
 - The add-current-location button shall be enabled only for today's selected date.
 - When the add-current-location function is unavailable, disabled, or unsafe to perform, the Add button shall be visibly disabled or grayed out rather than appearing actionable. This includes, at minimum, non-today selected dates, unavailable location services, missing required permission, an active privacy lock state that blocks interaction, or any internal disabled state that prevents the function from running.
 - The app shall present a Location Precision setting with Automatic, Always On, and Always Off choices.
@@ -326,7 +327,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - The user shall be able to browse events by selected calendar day.
 - The selected day shall be shown with the event count in a full-width banner below the date navigation toolbar.
 - When high-precision tracking is active, the selected-day banner shall include a trailing `Precise Location` indicator with the location glyph; the indicator text shall be visually smaller than the selected-day/count text and shall fit on narrow phone screens without obscuring the date or count.
-- The user shall be able to move to the previous day and next day.
+- The user shall be able to move to the previous day and next day; tapping the Next Day toolbar action shall retain ordinary next-day navigation, while touching and holding it shall present native Next Day and Go to Today actions.
 - The user shall be able to choose a date from a date picker.
 - Tapping the calendar toolbar action shall open the date picker, while touching and holding it shall present native Select Date and Go to Today actions; Go to Today shall use normal date navigation so the displayed date, events, and focused state update consistently.
 - Navigation shall clamp or disable impossible movement outside available bounds when appropriate.
