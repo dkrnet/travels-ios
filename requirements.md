@@ -361,6 +361,7 @@ Startup shall fail gracefully with user-visible recovery options when the databa
 - Stopped-location controls shall be disabled or hidden when no stopped-location data exists.
 - The list shall show useful event summary information including time, source, place summary when available, and note/photo indicators when applicable.
 - The map shall provide sensible full-day and recent-event zoom behavior.
+- Tapping the map Show All/Show Latest toolbar action shall retain its adaptive behavior, while touching and holding it shall present native Show All, Show First, and Show Latest actions without changing the current trip selection; Show First and Show Latest shall use the first and last events in the currently displayed subset.
 - On initial app launch into the map view, the first loaded event set for the selected day shall be framed using the full-day show-all view rather than retaining a temporary camera established before events finished loading.
 - After the user manually zooms the map in or out, the map zoom toolbar action shall next offer full-day zoom out.
 - Show All and Show Latest map actions shall remain active follow modes: newly added events shall respectively reframe the complete displayed set or keep the newest event framed.

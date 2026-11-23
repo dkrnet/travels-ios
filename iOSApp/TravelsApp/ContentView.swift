@@ -162,30 +162,54 @@ struct ContentView: View {
                             systemImage: model.isListView ? "map" : "list.bullet"
                         )
                     }
-                    Button {
-                        if model.isListView {
+                    if model.isListView {
+                        Button {
                             if listQuickActionShowsTop {
                                 model.scrollListToTop()
                             } else {
                                 model.scrollListToBottom()
                             }
                             listQuickActionShowsTop.toggle()
-                        } else {
-                            if model.mapCameraFollowMode == .showAll {
-                                model.panMapToMostRecentEvent()
-                            } else {
-                                model.resetMapZoomToFullDay()
-                            }
+                        } label: {
+                            Label(
+                                toolbarNavigationActionTitle,
+                                systemImage: listQuickActionShowsTop
+                                    ? "arrow.up.to.line.compact"
+                                    : "arrow.down.to.line.compact"
+                            )
                         }
-                    } label: {
-                        Label(
-                            toolbarNavigationActionTitle,
-                            systemImage: model.isListView
-                                ? (listQuickActionShowsTop ? "arrow.up.to.line.compact" : "arrow.down.to.line.compact")
-                                : (model.mapCameraFollowMode == .showAll ? "location.fill" : "arrow.up.left.and.arrow.down.right")
-                        )
+                        .disabled(model.events.isEmpty)
+                    } else {
+                        Menu {
+                            Button {
+                                model.resetMapZoomToFullDay()
+                            } label: {
+                                Label("Show All", systemImage: "arrow.up.left.and.arrow.down.right")
+                            }
+                            Button {
+                                model.panMapToFirstEvent()
+                            } label: {
+                                Label("Show First", systemImage: "backward.end.fill")
+                            }
+                            Button {
+                                model.panMapToMostRecentEvent()
+                            } label: {
+                                Label("Show Latest", systemImage: "location.fill")
+                            }
+                        } label: {
+                            Label(
+                                toolbarNavigationActionTitle,
+                                systemImage: model.mapCameraFollowMode == .showAll
+                                    ? "location.fill"
+                                    : "arrow.up.left.and.arrow.down.right"
+                            )
+                        } primaryAction: {
+                            // REQUIREMENTS: retain the adaptive one-tap map action
+                            // while exposing every explicit framing choice on long press.
+                            performMapNavigationAction()
+                        }
+                        .disabled(model.displayedEvents.isEmpty)
                     }
-                    .disabled(model.events.isEmpty)
                 }
 
                 ToolbarItemGroup(placement: .secondaryAction) {
@@ -426,6 +450,14 @@ struct ContentView: View {
 
     private func selectToday() {
         model.selectDate(Date())
+    }
+
+    private func performMapNavigationAction() {
+        if model.mapCameraFollowMode == .showAll {
+            model.panMapToMostRecentEvent()
+        } else {
+            model.resetMapZoomToFullDay()
+        }
     }
 
     private func prepareDatabaseExport() {
