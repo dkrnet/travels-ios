@@ -24,6 +24,7 @@ Travels 2.1.0 is the active development line. Its theme is clearer trip context,
 
 ### Candidates
 
+- [#64 Add saved places and frequent-place suggestions](https://github.com/dkrnet/travels-ios/issues/64): let users create and manage locally stored named places, and optionally suggest frequently visited places from repeated stopped visits for user confirmation.
 - [#51 Improve CarPlay automation setup with App Shortcuts and guidance](https://github.com/dkrnet/travels-ios/issues/51): improve discovery and setup guidance for recommended CarPlay Connect and Disconnect personal automations.
 - [#53 Cluster repeated same-location events on the map](https://github.com/dkrnet/travels-ios/issues/53): replace obscuring overlapping markers with an accessible count and event-selection workflow.
 - [#54 Add date-range reports and optional heat-map summaries](https://github.com/dkrnet/travels-ios/issues/54): summarize local data across standard or custom periods without overstating incomplete history.
@@ -31,6 +32,7 @@ Travels 2.1.0 is the active development line. Its theme is clearer trip context,
 
 ### Research
 
+- [#65 Research place-based capture and trip policies](https://github.com/dkrnet/travels-ios/issues/65): define best-effort arrival/departure capture and place-based trip exclusion behavior, including Core Location monitoring limits, authorization, privacy, route continuity, and failure handling.
 - [#49 Research native CarPlay integration feasibility](https://github.com/dkrnet/travels-ios/issues/49): evaluate Apple eligibility, entitlement, template, distraction, review, and privacy constraints before committing to a CarPlay UI.
 
 ## Suggested sequencing
