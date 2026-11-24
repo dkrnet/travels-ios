@@ -138,6 +138,19 @@ struct EnableAutomaticLocationTrackingIntent: AppIntent {
     }
 }
 
+struct WakeTravelsIntent: AppIntent, LongRunningIntent {
+    static let title: LocalizedStringResource = "Wake Travels"
+    static let description = IntentDescription(
+        "Wakes Travels so normal tracking and enabled maintenance work can resume. It does not request a location on its own."
+    )
+    static let openAppWhenRun = false
+
+    func perform() async throws -> some IntentResult {
+        await TravelsModel.shared.wakeFromShortcut()
+        return .result()
+    }
+}
+
 struct TravelsAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
 #if DEBUG
@@ -176,6 +189,14 @@ struct TravelsAppShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Tracking On",
             systemImageName: "location.fill"
+        )
+        AppShortcut(
+            intent: WakeTravelsIntent(),
+            phrases: [
+                "Wake \(.applicationName)"
+            ],
+            shortTitle: "Wake Travels",
+            systemImageName: "arrow.clockwise"
         )
     }
 }

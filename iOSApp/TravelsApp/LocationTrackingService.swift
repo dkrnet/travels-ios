@@ -370,6 +370,15 @@ final class LocationTrackingService: NSObject, @preconcurrency CLLocationManager
         refreshAuthorization()
     }
 
+    func resumeNormalProcessingAfterExternalWake() {
+        traceLocationEvent("Wake Travels requested routine processing; no location capture was requested by the intent.")
+        applyBackgroundLocationConfiguration(for: managerMode, reason: "Wake Travels intent")
+        reevaluatePowerState()
+        // REQUIREMENTS: Wake Travels may let an already-overdue automatic watchdog
+        // perform its normal work, but the intent itself must not request a location.
+        evaluateOverdueHybridWatchdogIfNeeded(reason: "Wake Travels intent")
+    }
+
     func stop() {
         pendingManualCapture = false
         pendingForcedStoppedCapture = false

@@ -240,6 +240,12 @@ final class TravelsModel: ObservableObject {
         locationService.recordCarPlayConnectionEvent(eventType)
     }
 
+    func wakeFromShortcut() async {
+        await bootstrap()
+        locationService.resumeNormalProcessingAfterExternalWake()
+        requestAddressResolution()
+    }
+
     func reloadEvents(recenterSelectedTrips: Bool = false) throws {
         guard let store else { return }
         let previousBottomEventID = displayedEvents.last?.id
