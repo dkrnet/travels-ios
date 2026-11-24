@@ -15,6 +15,8 @@ struct DeveloperDiagnosticsView: View {
     @State private var backupShareItem: ShareItem?
     @State private var maintenanceLogShareItem: ShareItem?
     @State private var solarPeriodRebuildTimeZoneIdentifier = TimeZone.current.identifier
+    @State private var resolutionStatistics: AboutStatistics?
+    @State private var isLoadingResolutionStatistics = false
 
     var body: some View {
         NavigationStack {
@@ -27,15 +29,19 @@ struct DeveloperDiagnosticsView: View {
                 }
 
                 Section("Resolution Queue") {
-                    LabeledContent("All Events", value: "\(allEvents.count)")
-                    LabeledContent("All Resolved", value: "\(allResolvedEvents)")
-                    LabeledContent("All Unresolved", value: "\(allUnresolvedEvents)")
+                    LabeledContent("All Events", value: formattedCount(resolutionStatistics?.totalLocations))
+                    LabeledContent("All Resolved", value: formattedCount(allResolvedEvents))
+                    LabeledContent("All Unresolved", value: formattedCount(resolutionStatistics?.unaddressedLocations))
                     LabeledContent("Status", value: model.addressResolutionStatus)
                     LabeledContent("Pending", value: "\(model.addressResolutionPendingCount)")
                     LabeledContent("Current", value: model.addressResolutionCurrentTarget ?? "None")
                     LabeledContent("Last Run", value: formatted(model.addressResolutionLastRunAt))
                     LabeledContent("Last Success", value: formatted(model.addressResolutionLastSuccessAt))
                     LabeledContent("Last Error", value: model.addressResolutionLastError ?? "None")
+                    Button("Refresh Counts") {
+                        Task { await loadResolutionStatistics() }
+                    }
+                    .disabled(isLoadingResolutionStatistics)
                 }
 
                 Section("Live Settings") {
@@ -140,6 +146,9 @@ struct DeveloperDiagnosticsView: View {
                     model.statusMessage = error.localizedDescription
                 }
             }
+            .task {
+                await loadResolutionStatistics()
+            }
         }
     }
 
@@ -150,19 +159,21 @@ struct DeveloperDiagnosticsView: View {
         }.count
     }
 
-    private var allEvents: [EventDetail] {
-        model.allEventDetails()
+    private var allResolvedEvents: Int? {
+        guard let resolutionStatistics else { return nil }
+        return resolutionStatistics.totalLocations - resolutionStatistics.unaddressedLocations
     }
 
-    private var allResolvedEvents: Int {
-        allEvents.filter { event in
-            guard let geolocation = event.geolocation else { return false }
-            return !geolocation.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }.count
+    private func loadResolutionStatistics() async {
+        guard !isLoadingResolutionStatistics else { return }
+        isLoadingResolutionStatistics = true
+        resolutionStatistics = await model.developerResolutionStatistics()
+        isLoadingResolutionStatistics = false
     }
 
-    private var allUnresolvedEvents: Int {
-        allEvents.count - allResolvedEvents
+    private func formattedCount(_ count: Int?) -> String {
+        guard let count else { return isLoadingResolutionStatistics ? "Loading…" : "—" }
+        return "\(count)"
     }
 
     private func formatted(_ date: Date?) -> String {

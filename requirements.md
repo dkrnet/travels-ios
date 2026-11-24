@@ -542,6 +542,7 @@ The active export scope is the complete set of exportable events selected by the
 - Import/export errors shall report enough detail to explain what failed without exposing unnecessary internal details.
 - Database, migration, backup, restore, and repair errors shall avoid silent data loss.
 - Debug diagnostics may expose more detail in development builds than in release builds.
+- Developer Diagnostics shall obtain all-history resolution counts through aggregate database queries outside the main actor rather than loading the complete joined event history during view rendering.
 - Maintenance and developer diagnostics log entries shown in the developer diagnostics view shall also be mirrored to a local file in the app's Application Support `Travels` directory for troubleshooting across app launches.
 - The maintenance diagnostics log file shall remain local to the device unless the user explicitly exports, backs up, or shares app data.
 - The developer diagnostics view shall provide a user-initiated way to share or save a snapshot copy of the maintenance diagnostics log without modifying or deleting the active database.
