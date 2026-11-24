@@ -368,15 +368,6 @@ final class TravelsModel: ObservableObject {
         }
     }
 
-    func allEventDetails() -> [EventDetail] {
-        do {
-            return try store?.allEvents(includeDemo: settings.includeDemoData) ?? []
-        } catch {
-            statusMessage = error.localizedDescription
-            return []
-        }
-    }
-
     func aboutStatistics() -> AboutStatistics {
         do {
             let statistics = try store?.locationStatistics(includeDemo: settings.includeDemoData)
@@ -1030,6 +1021,27 @@ final class TravelsModel: ObservableObject {
     }
 
 #if DEBUG
+    func developerResolutionStatistics() async -> AboutStatistics {
+        guard let store else { return .empty }
+        let includeDemo = settings.includeDemoData
+        do {
+            // BUGFIX: Developer Diagnostics previously loaded every joined event
+            // several times per render. Large histories then blocked the main actor,
+            // especially while live log updates repeatedly invalidated the view.
+            let statistics = try await Task.detached(priority: .userInitiated) {
+                try store.locationStatistics(includeDemo: includeDemo)
+            }.value
+            return AboutStatistics(
+                totalLocations: statistics.totalLocations,
+                uniqueLocations: statistics.uniqueLocations,
+                unaddressedLocations: statistics.unaddressedLocations
+            )
+        } catch {
+            statusMessage = error.localizedDescription
+            return .empty
+        }
+    }
+
     func rerunAddressResolutionQueue() {
         requestAddressResolution(maxBatchSize: nil)
     }
