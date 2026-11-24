@@ -82,7 +82,7 @@ struct SettingsView: View {
 
                 Section("Shortcuts Automations") {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Travels provides three background Shortcuts actions: **Tracking On**, **Tracking Off**, and **Add Location**. When adding a location, you can choose whether it saves unconditionally or only after you've moved a minimum distance, and optionally override your movement status without changing your measured speed.")
+                        Text("Travels provides four background Shortcuts actions: **Tracking On**, **Tracking Off**, **Add Location**, and **Wake Travels**. Wake Travels lets enabled routine processing resume without requesting a location on its own. When adding a location, you can choose whether it saves unconditionally or only after you've moved a minimum distance, and optionally override your movement status without changing its measured speed.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                         Text("""

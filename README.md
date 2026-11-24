@@ -24,7 +24,7 @@ Travels is designed for personal, offline-first location logging on iOS. It reco
 ### Core Capabilities
 
 * **Local-first storage:** Stores coordinates, movement metadata, notes, and photo attachments in a local SQLite database (`Application Support/Travels/Travels.sqlite`) with built-in backup, restore, and integrity repair.
-* **Flexible Location Capture:** Log your journeys your way with manual check-ins, Apple Shortcuts automations, or hands-free background tracking.
+* **Flexible Location Capture:** Log your journeys your way with manual check-ins, Apple Shortcuts automations, or hands-free background tracking. A separate Wake Travels action resumes enabled routine processing without directly requesting a location.
 * **Battery-Aware Smart Tracking:** Background tracking automatically adjusts location precision based on how you move—optimizing power whether you are on the highway, driving through town, or stopped.
 * **Private List-First Browsing:** New installs open directly in a chronological list without initializing maps, keeping your location history private by default.
 * **Optional Apple Map Integration:** Opt into Apple Map View only when you want it, which downloads map tiles directly from Apple.
