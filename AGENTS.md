@@ -76,6 +76,13 @@ Use consistent markers for bug-fix and regression-protection comments:
 - REGRESSION GUARD:
 - REQUIREMENTS:
 
+Implementation efficiency:
+
+- Keep investigation scoped to the requested task. Use targeted searches and inspect relevant files. Expand the investigation when dependencies, risk, or incomplete evidence warrant it.
+- Reuse existing implementations, conventions, and architecture where practical. Reuse prior findings unless the relevant code has changed or the evidence is insufficient.
+- Keep progress updates and final summaries concise, while clearly reporting validation, failures, and skipped checks.
+- Do not trade correctness, security, reliability, or required test coverage for speed or lower resource use.
+
 AI/LLM change delivery modes:
 AI/LLM-assisted changes must use the delivery mode that matches the assistant's access level.
 
@@ -127,7 +134,8 @@ Maintenance checklist for AI/LLM edits:
 10. Update `requirements.md`, `README.md`, and tests when behavior changes.
 11. Keep requirements outcome-focused and avoid unnecessary implementation constraints.
 12. Use patch-only or repository-connected delivery mode as appropriate.
-13. Run or recommend the Swift Package test suite and the iOS app build/test commands after edits.
+13. Use targeted tests during development. Run broader regression checks when warranted by the scope or risk of the change, and follow all required validation in `requirements.md`.
+    Run or recommend the Swift Package test suite and the iOS app build/test commands after edits.
     Use `scripts/build_simulator.sh` and `scripts/install_simulator.sh` for repeatable simulator builds and installs; pass `--fresh` only when simulator data deletion is intended.
 14. Do not weaken location privacy, photo privacy, database safety, file-import safety, LocalAuthentication behavior, XML escaping, or SQL parameterization.
 15. When adding or editing comment-capable project-owned source/build files, preserve or add the short embedded AI/LLM guardrail comment when it is safe for that file type.
